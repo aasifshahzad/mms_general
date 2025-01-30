@@ -6,7 +6,7 @@ from typing import List, Optional
 from typing import Annotated
 
 
-from general.db import get_session
+from db import get_session
 from schemas.students_model import Students, StudentsCreate, StudentsResponse, StudentsUpdate
 
 students_router = APIRouter(

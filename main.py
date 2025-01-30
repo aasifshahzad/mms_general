@@ -4,7 +4,7 @@ from fastapi import APIRouter, FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 
-from general.db import create_db_and_tables, engine, get_session
+from db import create_db_and_tables, engine, get_session
 
 from router.attendance_value import attendancevalue_router
 from router.attendance_time import attendance_time_router

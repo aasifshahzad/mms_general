@@ -16,7 +16,7 @@ from sqlmodel import Session, select
 from typing import List
 
 
-from general.db import get_session
+from db import get_session
 
 
 adm_del_router = APIRouter(

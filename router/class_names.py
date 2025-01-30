@@ -3,7 +3,7 @@ from typing import List
 from fastapi import APIRouter, Depends, HTTPException
 from sqlmodel import Session, select
 
-from general.db import get_session
+from db import get_session
 from schemas.class_names_model import ClassNames, ClassNamesCreate, ClassNamesResponse
 
 classnames_router = APIRouter(

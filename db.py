@@ -1,5 +1,5 @@
 from sqlmodel import SQLModel, create_engine, Session
-from general import setting
+import setting
 
 
 CONN_STRING: str = str(setting.DATABASE_URL)

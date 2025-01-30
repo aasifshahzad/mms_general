@@ -13,7 +13,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlmodel import Session, select
 from typing import List
 
-from general.db import get_session
+from db import get_session
 from schemas.attendance_model import (
     AttendanceCreate,
     BulkAttendanceCreate,
