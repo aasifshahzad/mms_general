@@ -1,0 +1,85 @@
+from sqlmodel import Field, SQLModel
+from datetime import datetime
+
+
+class AttendanceValueBase(SQLModel):
+    attendance_value_id: int | None = Field(default=None, primary_key=True)
+    created_at: datetime = Field(default=datetime.now(), nullable=False)
+
+
+class AttendanceValue(AttendanceValueBase, table=True):
+    attendance_value: str = Field(index=True, unique=True)
+
+
+class AttendanceValueCreate(SQLModel):
+    created_at: datetime = Field(default=datetime.now(), nullable=False)
+    attendance_value: str = Field(index=True, unique=True)
+
+
+class AttendanceValueResponse (AttendanceValueBase, SQLModel):
+    attendance_value: str
+
+# ****************************************************************************************
+# Attendance Time
+
+
+class AttendanceTimeBase(SQLModel):
+    attendance_time_id: int | None = Field(default=None, primary_key=True)
+    created_at: datetime = Field(default=datetime.now(), nullable=False)
+
+
+class AttendanceTime(AttendanceTimeBase, table=True):
+    attendance_time: str = Field(index=True, unique=True)
+
+
+class AttendanceTimeCreate(SQLModel):
+    created_at: datetime = Field(default=datetime.now(), nullable=False)
+    attendance_time: str = Field(index=True, unique=True)
+
+
+class AttendanceTimeResponse (AttendanceTimeBase, SQLModel):
+    attendance_time: str
+
+
+# ****************************************************************************************
+# Teacher Names
+
+
+class TeacherNamesBase(SQLModel):
+    teacher_name_id: int | None = Field(default=None, primary_key=True)
+    created_at: datetime = Field(default=datetime.now(), nullable=False)
+
+
+class TeacherNames(TeacherNamesBase, table=True):
+    teacher_name: str = Field(index=True, unique=True)
+
+
+class TeacherNamesCreate(SQLModel):
+    created_at: datetime = Field(default=datetime.now(), nullable=False)
+    teacher_name: str = Field(index=True, unique=True)
+
+
+class TeacherNamesResponse(TeacherNamesBase, SQLModel):
+    teacher_name: str
+
+
+# ****************************************************************************************
+# Class Names
+
+
+class ClassNamesBase(SQLModel):
+    class_name_id: int | None = Field(default=None, primary_key=True)
+    created_at: datetime = Field(default=datetime.now(), nullable=False)
+
+
+class ClassNames(ClassNamesBase, table=True):
+    class_name: str = Field(index=True, unique=True)
+
+
+class ClassNamesCreate(SQLModel):
+    created_at: datetime = Field(default=datetime.now(), nullable=False)
+    class_name: str = Field(index=True, unique=True)
+
+
+class ClassNamesResponse(ClassNamesBase, SQLModel):
+    class_name: str
