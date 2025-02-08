@@ -5,8 +5,7 @@ from typing import List, Optional
 
 from sqlmodel import Field, SQLModel
 from datetime import datetime
-# from attendance_model import Attendance
-# from admission_model import Admission
+
 # ****************************************************************************************
 # Students
 
@@ -21,7 +20,7 @@ class Students(StudentsBase, table=True):
     student_gender: str
     student_age: str
     student_education: str
-    student_class_name: str
+    class_name: str
     student_city: str
     student_address: str
 
@@ -43,7 +42,7 @@ class StudentsCreate(SQLModel):
     student_gender: str
     student_age: str
     student_education: str
-    student_class_name: str
+    class_name: str
     student_city: str
     student_address: str
     father_name: str
@@ -60,7 +59,7 @@ class StudentsResponse(StudentsBase):
     student_gender: str
     student_age: str
     student_education: str
-    student_class_name: str
+    class_name: str
     student_city: str
     student_address: str
 
@@ -78,7 +77,7 @@ class StudentsUpdate(SQLModel):
     student_gender: Optional[str] = None
     student_age: Optional[str] = None
     student_education: Optional[str] = None
-    student_class_name: Optional[str] = None
+    class_name: Optional[str] = None
     student_city: Optional[str] = None
     student_address: Optional[str] = None
 
