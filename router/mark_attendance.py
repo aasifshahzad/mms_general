@@ -69,15 +69,45 @@ def get_filtered_attendance(session: Session = Depends(get_session)):
     ]
 
 
+# @mark_attendance_router.post("/add_attendance/", response_model=FilteredAttendanceResponse)
+# def add_attendance(create_attendance: AttendanceCreate, session: Session = Depends(get_session)):
+#     # Create a new Attendance record using dictionary unpacking
+#     db_attendance = Attendance(**create_attendance.model_dump())
+#     session.add(db_attendance)
+#     session.commit()
+#     session.refresh(db_attendance)  # Refresh to get updated related fields
+
+#     # Create a filtered response object with the required fields
+#     filtered_response = FilteredAttendanceResponse(
+#         attendance_id=db_attendance.attendance_id,
+#         attendance_date=db_attendance.attendance_date,
+#         attendance_time=db_attendance.attendance_time.attendance_time,
+#         attendance_class=db_attendance.attendance_class.class_name,
+#         attendance_teacher=db_attendance.attendance_teacher.teacher_name,
+#         attendance_student=db_attendance.attendance_student.student_name,
+#         attendance_std_fname=db_attendance.attendance_student.father_name,
+#         attendance_value=db_attendance.attendance_value.attendance_value,
+#     )
+
+#     # Return the filtered response
+#     return filtered_response
+
 @mark_attendance_router.post("/add_attendance/", response_model=FilteredAttendanceResponse)
 def add_attendance(create_attendance: AttendanceCreate, session: Session = Depends(get_session)):
-    # Create a new Attendance record using dictionary unpacking
-    db_attendance = Attendance(**create_attendance.model.dump())
+    # First verify that the student exists
+    student = session.get(Students, create_attendance.student_id)
+    if not student:
+        raise HTTPException(
+            status_code=404,
+            detail=f"Student with ID {create_attendance.student_id} not found"
+        )
+
+    # Create attendance record only if student exists
+    db_attendance = Attendance(**create_attendance.model_dump())
     session.add(db_attendance)
     session.commit()
-    session.refresh(db_attendance)  # Refresh to get updated related fields
+    session.refresh(db_attendance)
 
-    # Create a filtered response object with the required fields
     filtered_response = FilteredAttendanceResponse(
         attendance_id=db_attendance.attendance_id,
         attendance_date=db_attendance.attendance_date,
@@ -89,23 +119,7 @@ def add_attendance(create_attendance: AttendanceCreate, session: Session = Depen
         attendance_value=db_attendance.attendance_value.attendance_value,
     )
 
-    # Return the filtered response
     return filtered_response
-
-
-@mark_attendance_router.delete("/delete_attendance/{attendance_id}", response_model=str)
-def delete_attendance(attendance_id: int, session: Session = Depends(get_session)):
-    # Query to find the attendance record by ID
-    attendance = session.get(Attendance, attendance_id)
-    if not attendance:
-        # Raise an error if attendance record is not found
-        raise HTTPException(
-            status_code=404, detail="Attendance record not found")
-
-    # Delete the record if found
-    session.delete(attendance)
-    session.commit()  # Commit to save changes
-    return f"Attendance record with ID {attendance_id} deleted successfully."
 
 
 @mark_attendance_router.post("/add_bulk_attendance/", response_model=List[FilteredAttendanceResponse])
@@ -119,7 +133,7 @@ def add_bulk_attendance(
     # Loop through each attendance record
     for attendance_data in bulk_attendance.attendances:
         # Create a new Attendance record
-        db_attendance = Attendance(**attendance_data.dict())
+        db_attendance = Attendance(**attendance_data.model_dump())
 
         # Add and commit each record
         session.add(db_attendance)
@@ -142,3 +156,20 @@ def add_bulk_attendance(
 
     # Return the list of filtered responses
     return filtered_responses
+
+
+
+@mark_attendance_router.delete("/delete_attendance/{attendance_id}", response_model=str)
+def delete_attendance(attendance_id: int, session: Session = Depends(get_session)):
+    # Query to find the attendance record by ID
+    attendance = session.get(Attendance, attendance_id)
+    if not attendance:
+        # Raise an error if attendance record is not found
+        raise HTTPException(
+            status_code=404, detail="Attendance record not found")
+
+    # Delete the record if found
+    session.delete(attendance)
+    session.commit()  # Commit to save changes
+    return f"Attendance record with ID {attendance_id} deleted successfully."
+
