@@ -85,18 +85,3 @@ def reset_attendance_id(session: Session = Depends(get_session)):
     return "Attendance IDs have been reset to start from 1."
 
 
-@attendancevalue_router.post("/reset_attendance_id", response_model=str)
-def reset_attendance_id(session: Session = Depends(get_session)):
-    # Delete all attendance records
-    session.exec(select(AttendanceValue)).all()  # Fetch all records
-    # Use text() to wrap the SQL command
-    session.execute(text("DELETE FROM attendancevalue"))
-    session.commit()
-
-    # Reset the sequence (if using PostgreSQL)
-    # Use text() for the sequence reset
-    session.execute(
-        text("ALTER SEQUENCE attendance_attendance_id_seq RESTART WITH 1"))
-    session.commit()
-
-    return "Attendance IDs have been reset to start from 1."

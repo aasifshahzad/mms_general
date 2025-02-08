@@ -85,7 +85,7 @@ def all_students(session: Annotated[Session, Depends(get_session)]):
 
 @students_router.get("/by_class_name/", response_model=List[StudentsResponse])
 def get_students_by_class(class_name: str, session: Annotated[Session, Depends(get_session)]):
-    query = select(Students).where(Students.student_class_name == class_name)
+    query = select(Students).where(Students.class_name == class_name)
     students = session.exec(query).all()
     if not students:
         raise HTTPException(
@@ -97,7 +97,7 @@ def get_students_by_class(class_id: int, session: Annotated[Session, Depends(get
     class_name = read_classname(class_id, session=session)
     if not class_name:
         raise HTTPException(status_code=404, detail="Class not found")
-    query = select(Students).where(Students.student_class_name == class_name.class_name)
+    query = select(Students).where(Students.class_name == class_name.class_name)
     students = session.exec(query).all()
     if not students:
         raise HTTPException(
