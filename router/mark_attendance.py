@@ -2,6 +2,7 @@ from schemas.attendance_model import (
     Attendance,
     AttendanceCreate,
     AttendanceTime,
+    AttendanceUpdate,
     BulkAttendanceCreate,
     ClassNames,
     FilteredAttendanceResponse,
@@ -157,7 +158,14 @@ def add_bulk_attendance(
     # Return the list of filtered responses
     return filtered_responses
 
-
+# @mark_attendance_router.patch("/update_attendance/{attendance_id}", response_model=FilteredAttendanceResponse)
+# def update_attendance(attendance_id: int, update_data: AttendanceUpdate, session: Session = Depends(get_session)):
+#     # Query to find the attendance record by ID
+#     attendance = session.get(Attendance, attendance_id)
+#     if not attendance:
+#         # Raise an error if attendance record is not found
+#         raise HTTPException(
+#             status_code=404, detail="Attendance record not found")
 
 @mark_attendance_router.delete("/delete_attendance/{attendance_id}", response_model=str)
 def delete_attendance(attendance_id: int, session: Session = Depends(get_session)):
@@ -173,3 +181,34 @@ def delete_attendance(attendance_id: int, session: Session = Depends(get_session
     session.commit()  # Commit to save changes
     return f"Attendance record with ID {attendance_id} deleted successfully."
 
+@mark_attendance_router.patch("/update_attendance/{attendance_id}", response_model=FilteredAttendanceResponse)
+def update_attendance(
+    attendance_id: int,
+    attendance_update: AttendanceUpdate,
+    session: Session = Depends(get_session)
+):
+    # Get existing attendance record
+    db_attendance = session.get(Attendance, attendance_id)
+    if not db_attendance:
+        raise HTTPException(status_code=404, detail="Attendance record not found")
+
+    # Update the attendance record
+    attendance_data = attendance_update.model_dump(exclude_unset=True)
+    for key, value in attendance_data.items():
+        setattr(db_attendance, key, value)
+
+    session.add(db_attendance)
+    session.commit()
+    session.refresh(db_attendance)
+
+    # Return the updated record in the expected format
+    return FilteredAttendanceResponse(
+        attendance_id=db_attendance.attendance_id,
+        attendance_date=db_attendance.attendance_date,
+        attendance_time=db_attendance.attendance_time.attendance_time,
+        attendance_class=db_attendance.attendance_class.class_name,
+        attendance_teacher=db_attendance.attendance_teacher.teacher_name,
+        attendance_student=db_attendance.attendance_student.student_name,
+        attendance_std_fname=db_attendance.attendance_student.father_name,
+        attendance_value=db_attendance.attendance_value.attendance_value
+    )
