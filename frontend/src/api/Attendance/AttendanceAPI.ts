@@ -4,12 +4,12 @@ import AxiosInstance from "@/api/axiosInterceptorInstance";
 
 // eslint-disable-next-line @typescript-eslint/no-namespace
 export namespace AttendanceAPI {
-export const Create = async (ClassName: MarkAttInput) => {
+export const Create = async (Attendances: MarkAttInput) => {
     try {
-        ClassName = GetActionDetail(ClassName, "create");
+      Attendances = GetActionDetail(Attendances, "create");
       const response = await AxiosInstance.post<MarkAttInput>(
-        "/class_name/add_class_name/",
-        JSON.stringify(ClassName),
+        "/mark_attendance/add_bulk_attendance/",
+        JSON.stringify(Attendances),
         {
           headers: {
             "Content-Type": "application/json",

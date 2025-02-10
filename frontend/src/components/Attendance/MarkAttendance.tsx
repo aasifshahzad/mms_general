@@ -24,17 +24,8 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import Loader from "../Loader";
-
-interface MarkAttInput {
-  attendance_date: string;
-  attendance_class: string;
-  student_id?: number;
-  attendance_Attendance: string;
-  attendance_std_fname: string;
-  attendance_teacher: string;
-  attendance_value_id: string;
-  attendance_time: string;
-}
+import { AttendanceAPI } from "@/api/Attendance/AttendanceAPI";
+import { MarkAttInput } from "@/models/markattendace/markattendance";
 
 type Attendance = {
   id: string;
@@ -71,14 +62,22 @@ export interface SelectOption {
 }
 
 const MarkAttendance = () => {
-  const [classNameList, setClassNameList] = useState<SelectComponentOption[]>([]);
-  const [classTimeList, setClassTimeList] = useState<SelectComponentOption[]>([]);
-  const [teacherNameList, setTeacherNameList] = useState<SelectComponentOption[]>([]);
+  const [classNameList, setClassNameList] = useState<SelectComponentOption[]>(
+    []
+  );
+  const [classTimeList, setClassTimeList] = useState<SelectComponentOption[]>(
+    []
+  );
+  const [teacherNameList, setTeacherNameList] = useState<
+    SelectComponentOption[]
+  >([]);
   const [data, setData] = useState<Attendance[]>([]);
-  const [studentByFilter, setStudentByFilter] = useState<SelectComponentOption[]>([]);
+  const [studentByFilter, setStudentByFilter] = useState<
+    SelectComponentOption[]
+  >([]);
   const [isLoading, setLoading] = useState(false);
 
-  <Loader isActive={isLoading} />
+  <Loader isActive={isLoading} />;
   useEffect(() => {
     GetClassName();
     GetClassTime();
@@ -101,7 +100,7 @@ const MarkAttendance = () => {
   const GetClassName = async () => {
     try {
       setLoading(true);
-      const response = await API.Get() as { data: ClassNameResponse[] };
+      const response = (await API.Get()) as { data: ClassNameResponse[] };
       if (response.data && Array.isArray(response.data)) {
         setClassNameList(
           response.data.map((item: ClassNameResponse) => ({
@@ -118,7 +117,7 @@ const MarkAttendance = () => {
   const GetClassTime = async () => {
     try {
       setLoading(true);
-      const response = await API1.Get() as { data: AttendanceTimeResponse[] };
+      const response = (await API1.Get()) as { data: AttendanceTimeResponse[] };
       if (response.data && Array.isArray(response.data)) {
         setClassTimeList(
           response.data.map((item: AttendanceTimeResponse) => ({
@@ -136,7 +135,9 @@ const MarkAttendance = () => {
   const GetTeacherName = async () => {
     try {
       setLoading(true);
-      const response = await API2.Get() as unknown as { data: TeacherResponse[] };
+      const response = (await API2.Get()) as unknown as {
+        data: TeacherResponse[];
+      };
       if (response.data && Array.isArray(response.data)) {
         setTeacherNameList(
           response.data.map((item: TeacherResponse) => ({
@@ -246,24 +247,33 @@ const MarkAttendance = () => {
   });
 
   const onSubmit = (formData: MarkAttInput) => {
-    const ApiPayload = data.map(student => ({
-      attendance_date: new Date(formData.attendance_date).toISOString(),
-      attendance_time_id: parseInt(formData.attendance_time),
-      class_name_id: parseInt(formData.attendance_class), 
-      teacher_name_id: parseInt(formData.attendance_teacher),
-      student_id: parseInt(student.id),
-      attendance_value_id: student.present ? 1 : 
-                         student.absent ? 2 : 
-                         student.late ? 3 : 
-                         student.sick ? 4 : 0
-  }));
-    console.log("Submitting attendance:", ApiPayload);
-    // Add API call here to post attendance
+    const payload = {
+  attendances: [
+    {
+      attendance_date: "2025-02-03",
+      attendance_time_id: "1",
+      class_name_id: "1", 
+      teacher_name_id: "1",
+      student_id: studentId, // You need to include student IDs
+      attendance_value_id: attendanceValue // 1 for present, 2 for absent, etc.
+    }
+    // ... more attendance records as needed
+  ]
+};
+
+    console.log("Submitting attendance:", payload);
+    try {
+      const response = AttendanceAPI.Create(formData);
+    } catch {
+      console.error("error");
+    }
   };
 
-   const HandleSubmitForStudentGet = async (formData: MarkAttInput) => {
+  const HandleSubmitForStudentGet = async (formData: MarkAttInput) => {
     try {
-      const response = await API3.GetStudentbyFilter(parseInt(formData.attendance_class)) as { data: StudentResponse[] };
+      const response = (await API3.GetStudentbyFilter(
+        parseInt(formData.class_name_id)
+      )) as { data: StudentResponse[] };
       if (response.data && Array.isArray(response.data)) {
         setStudentByFilter(
           response.data.map((item: StudentResponse) => ({
@@ -289,7 +299,9 @@ const MarkAttendance = () => {
               <Input
                 type="date"
                 className="border-gray-300 w-36"
-                {...register("attendance_date", { required: "Date is required" })}
+                {...register("attendance_date", {
+                  required: "Date is required",
+                })}
               />
               <p className="text-red-500">{errors.attendance_date?.message}</p>
             </div>
@@ -298,33 +310,41 @@ const MarkAttendance = () => {
               <Select
                 label="Class Time"
                 options={classTimeList}
-                {...register("attendance_time", { required: "Time is required" })}
+                {...register("attendance_time_id", {
+                  required: "Time is required",
+                })}
                 DisplayItem="title"
                 className="w-full"
               />
-              <p className="text-red-500">{errors.attendance_time?.message}</p>
+              <p className="text-red-500">
+                {errors.attendance_time_id?.message}
+              </p>
             </div>
 
             <div className="py-2 w-36">
               <Select
                 label="Class Name"
                 options={classNameList}
-                {...register("attendance_class", { required: "Class is required" })}
+                {...register("class_name_id", {
+                  required: "Class is required",
+                })}
                 DisplayItem="title"
                 className="w-full"
               />
-              <p className="text-red-500">{errors.attendance_class?.message}</p>
+              <p className="text-red-500">{errors.class_name_id?.message}</p>
             </div>
 
             <div className="py-2 w-36">
               <Select
                 label="Teacher Name"
                 options={teacherNameList}
-                {...register("attendance_teacher", { required: "Teacher is required" })}
+                {...register("teacher_name_id", {
+                  required: "Teacher is required",
+                })}
                 DisplayItem="title"
                 className="w-full"
               />
-              <p className="text-red-500">{errors.attendance_teacher?.message}</p>
+              <p className="text-red-500">{errors.teacher_name_id?.message}</p>
             </div>
 
             <Button
