@@ -26,6 +26,7 @@ import {
 import Loader from "../Loader";
 import { AttendanceAPI } from "@/api/Attendance/AttendanceAPI";
 import { MarkAttInput } from "@/models/markattendace/markattendance";
+import { toast } from "sonner";
 
 type Attendance = {
   id: string;
@@ -75,9 +76,7 @@ const MarkAttendance = () => {
   const [studentByFilter, setStudentByFilter] = useState<
     SelectComponentOption[]
   >([]);
-  const [isLoading, setLoading] = useState(false);
-
-  <Loader isActive={isLoading} />;
+  const [isLoading, setIsLoading] = useState(false);
   useEffect(() => {
     GetClassName();
     GetClassTime();
@@ -99,7 +98,7 @@ const MarkAttendance = () => {
 
   const GetClassName = async () => {
     try {
-      setLoading(true);
+      setIsLoading(true);
       const response = (await API.Get()) as { data: ClassNameResponse[] };
       if (response.data && Array.isArray(response.data)) {
         setClassNameList(
@@ -112,11 +111,12 @@ const MarkAttendance = () => {
     } catch (error) {
       console.error("Error fetching class names:", error);
     }
+    setIsLoading(false);
   };
 
   const GetClassTime = async () => {
     try {
-      setLoading(true);
+      setIsLoading(true);
       const response = (await API1.Get()) as { data: AttendanceTimeResponse[] };
       if (response.data && Array.isArray(response.data)) {
         setClassTimeList(
@@ -129,12 +129,12 @@ const MarkAttendance = () => {
     } catch (error) {
       console.error("Error fetching class times:", error);
     }
-    setLoading(false);
+    setIsLoading(false);
   };
 
   const GetTeacherName = async () => {
     try {
-      setLoading(true);
+      setIsLoading(true);
       const response = (await API2.Get()) as unknown as {
         data: TeacherResponse[];
       };
@@ -150,7 +150,7 @@ const MarkAttendance = () => {
       console.error("Error fetching teachers:", error);
     }
 
-    setLoading(false);
+    setIsLoading(false);
   };
 
   const {
@@ -246,33 +246,56 @@ const MarkAttendance = () => {
     getCoreRowModel: getCoreRowModel(),
   });
 
-  const onSubmit = (formData: MarkAttInput) => {
-    const payload = {
-  attendances: [
-    {
-      attendance_date: "2025-02-03",
-      attendance_time_id: "1",
-      class_name_id: "1", 
-      teacher_name_id: "1",
-      student_id: studentId, // You need to include student IDs
-      attendance_value_id: attendanceValue // 1 for present, 2 for absent, etc.
-    }
-    // ... more attendance records as needed
-  ]
-};
+  const onSubmit = async (formData: MarkAttInput) => {
+    setIsLoading(true);
+    const attendances = data.map((student) => {
+      let attendance_value_id = "";
+      if (student.present) attendance_value_id = "1";
+      if (student.absent) attendance_value_id = "2";
+      if (student.late) attendance_value_id = "3";
+      if (student.sick) attendance_value_id = "4";
+
+      return {
+        attendance_date: formData.attendance_date,
+        attendance_time_id: String(formData.attendance_time_id),
+        class_name_id: String(formData.class_name_id),
+        teacher_name_id: String(formData.teacher_name_id),
+        student_id: String(student.id),
+        attendance_value_id: attendance_value_id,
+      };
+    });
+
+    const payload: MarkAttInput = {
+      attendance_date: formData.attendance_date,
+      attendance_time_id: formData.attendance_time_id,
+      class_name_id: formData.class_name_id,
+      teacher_name_id: formData.teacher_name_id,
+      attendances: attendances,
+    };
 
     console.log("Submitting attendance:", payload);
     try {
-      const response = AttendanceAPI.Create(formData);
-    } catch {
+      setIsLoading(true);
+      const response = await AttendanceAPI.Create(payload);
+      if (response.status === 200) {
+        toast.success("Attendance submitted successfully", {
+          position: "bottom-center",
+          duration: 5000,
+        });
+      } else {
+        console.error("Error submitting attendance:", response.statusText);
+      }
+    } catch (error) {
       console.error("error");
     }
+    setIsLoading(false);
   };
 
   const HandleSubmitForStudentGet = async (formData: MarkAttInput) => {
     try {
+      setIsLoading(true);
       const response = (await API3.GetStudentbyFilter(
-        parseInt(formData.class_name_id)
+        parseInt(formData.class_name_id.toString())
       )) as { data: StudentResponse[] };
       if (response.data && Array.isArray(response.data)) {
         setStudentByFilter(
@@ -285,10 +308,12 @@ const MarkAttendance = () => {
     } catch (error) {
       console.error("Error fetching students:", error);
     }
+    setIsLoading(false);
   };
 
   return (
     <div className="mt-2 flex flex-col gap-5">
+      <Loader isActive={isLoading} />;
       <div className="ml-2 bg-white dark:bg-transparent border border-gray-200 rounded-lg w-[82.5rem] p-4">
         <form onSubmit={handleSubmit(onSubmit)}>
           <div className="flex gap-32 ml-8">

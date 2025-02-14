@@ -1,10 +1,16 @@
 import { EntityBase } from "../EntityBase";
 
-export interface MarkAttInput extends EntityBase {
+export interface MarkAttInput {
+  attendance_date: string;
+  attendance_time_id: number;
+  class_name_id: number;
+  teacher_name_id: number;
+  attendances: {
     attendance_date: string;
     attendance_time_id: string;
     class_name_id: string;
     teacher_name_id: string;
-    student_id?: number;
+    student_id: string;
     attendance_value_id: string;
-  }
+  }[];
+}
