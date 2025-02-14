@@ -179,9 +179,471 @@ def update_attendance(
         attendance_student=db_attendance.attendance_student.student_name,
         attendance_std_fname=db_attendance.attendance_student.father_name,
         attendance_value=db_attendance.attendance_value.attendance_value
-    )
 
-@mark_attendance_router.get("/filtered_attendance", response_model=List[FilteredAttendanceResponse])
+
+
+
+
+@mark_attendance_router.get("/filter_attendance_by_ids", response_model=List[FilteredAttendanceResponse])
+def filter_attendance_by_ids(
+    session: Session = Depends(get_session),
+    attendance_date: Optional[str] = Query(None, description="Filter by Attendance date"),
+    attendance_time_id: Optional[int] = Query(None, description="Filter by Attendance Time ID"),
+    class_name_id: Optional[int] = Query(None, description="Filter by Class Name ID"),
+    teacher_name_id: Optional[int] = Query(None, description="Filter by Teacher Name ID"),
+    student_id: Optional[int] = Query(None, description="Filter by Student ID"),
+    father_name: Optional[str] = Query(None, description="Filter by Father's Name"),
+    attendance_value_id: Optional[int] = Query(None, description="Filter by Attendance Value ID"),
+):
+    query = session.query(Attendance)
+
+    if attendance_date:
+        query = query.filter(Attendance.attendance_date == attendance_date)
+    if attendance_time_id:
+        query = query.filter(Attendance.attendance_time_id == attendance_time_id)
+    if class_name_id:
+        query = query.filter(Attendance.class_name_id == class_name_id)
+    if teacher_name_id:
+        query = query.filter(Attendance.teacher_name_id == teacher_name_id)
+    if student_id:
+        query = query.filter(Attendance.student_id == student_id)
+    if father_name:
+        query = query.join(Students).filter(Students.father_name == father_name)
+    if attendance_value_id:
+        query = query.filter(Attendance.attendance_value_id == attendance_value_id)
+
+    filtered_attendance = query.all()
+    
+    if not filtered_attendance:
+        raise HTTPException(status_code=404, detail="No attendance records found matching the criteria")
+    
+    filtered_responses = [
+        FilteredAttendanceResponse(
+            attendance_id=att.attendance_id,
+            attendance_date=att.attendance_date,
+            attendance_time=att.attendance_time.attendance_time,
+            attendance_class=att.attendance_class.class_name,
+            attendance_teacher=att.attendance_teacher.teacher_name,
+            attendance_student=att.attendance_student.student_name,
+            attendance_std_fname=att.attendance_student.father_name,
+            attendance_value=att.attendance_value.attendance_value
+        ) for att in filtered_attendance
+    ]
+
+    return filtered_responses
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+@mark_attendance_router.get("/filtered_attendance_by_name", response_model=List[FilteredAttendanceResponse])
 def get_filtered_attendance(
     session: Session = Depends(get_session),
     class_name: Optional[str] = Query(None, description="Filter by Class name"),
