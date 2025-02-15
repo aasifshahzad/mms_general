@@ -240,7 +240,6 @@ const AttendanceTable: React.FC<{ data: AttendanceRecord[] }> = ({ data }) => {
               type="date"
               className="border-gray-300 w-36"
               {...register("attendance_date", {
-                required: "Date is required",
               })}
             />
             <p className="text-red-500">
@@ -256,6 +255,7 @@ const AttendanceTable: React.FC<{ data: AttendanceRecord[] }> = ({ data }) => {
                 required: "Time is required",
               })}
               DisplayItem="title"
+              selectOption={false} 
               className="w-full"
             />
             <p className="text-red-500">
