@@ -24,17 +24,9 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import Loader from "../Loader";
-
-interface MarkAttInput {
-  attendance_date: string;
-  attendance_class: string;
-  student_id?: number;
-  attendance_Attendance: string;
-  attendance_std_fname: string;
-  attendance_teacher: string;
-  attendance_value_id: string;
-  attendance_time: string;
-}
+import { AttendanceAPI } from "@/api/Attendance/AttendanceAPI";
+import { MarkAttInput } from "@/models/markattendace/markattendance";
+import { toast } from "sonner";
 
 type Attendance = {
   id: string;
@@ -71,14 +63,20 @@ export interface SelectOption {
 }
 
 const MarkAttendance = () => {
-  const [classNameList, setClassNameList] = useState<SelectComponentOption[]>([]);
-  const [classTimeList, setClassTimeList] = useState<SelectComponentOption[]>([]);
-  const [teacherNameList, setTeacherNameList] = useState<SelectComponentOption[]>([]);
+  const [classNameList, setClassNameList] = useState<SelectComponentOption[]>(
+    []
+  );
+  const [classTimeList, setClassTimeList] = useState<SelectComponentOption[]>(
+    []
+  );
+  const [teacherNameList, setTeacherNameList] = useState<
+    SelectComponentOption[]
+  >([]);
   const [data, setData] = useState<Attendance[]>([]);
-  const [studentByFilter, setStudentByFilter] = useState<SelectComponentOption[]>([]);
-  const [isLoading, setLoading] = useState(false);
-
-  <Loader isActive={isLoading} />
+  const [studentByFilter, setStudentByFilter] = useState<
+    SelectComponentOption[]
+  >([]);
+  const [isLoading, setIsLoading] = useState(false);
   useEffect(() => {
     GetClassName();
     GetClassTime();
@@ -100,8 +98,8 @@ const MarkAttendance = () => {
 
   const GetClassName = async () => {
     try {
-      setLoading(true);
-      const response = await API.Get() as { data: ClassNameResponse[] };
+      setIsLoading(true);
+      const response = (await API.Get()) as { data: ClassNameResponse[] };
       if (response.data && Array.isArray(response.data)) {
         setClassNameList(
           response.data.map((item: ClassNameResponse) => ({
@@ -113,12 +111,13 @@ const MarkAttendance = () => {
     } catch (error) {
       console.error("Error fetching class names:", error);
     }
+    setIsLoading(false);
   };
 
   const GetClassTime = async () => {
     try {
-      setLoading(true);
-      const response = await API1.Get() as { data: AttendanceTimeResponse[] };
+      setIsLoading(true);
+      const response = (await API1.Get()) as { data: AttendanceTimeResponse[] };
       if (response.data && Array.isArray(response.data)) {
         setClassTimeList(
           response.data.map((item: AttendanceTimeResponse) => ({
@@ -130,13 +129,15 @@ const MarkAttendance = () => {
     } catch (error) {
       console.error("Error fetching class times:", error);
     }
-    setLoading(false);
+    setIsLoading(false);
   };
 
   const GetTeacherName = async () => {
     try {
-      setLoading(true);
-      const response = await API2.Get() as unknown as { data: TeacherResponse[] };
+      setIsLoading(true);
+      const response = (await API2.Get()) as unknown as {
+        data: TeacherResponse[];
+      };
       if (response.data && Array.isArray(response.data)) {
         setTeacherNameList(
           response.data.map((item: TeacherResponse) => ({
@@ -149,7 +150,7 @@ const MarkAttendance = () => {
       console.error("Error fetching teachers:", error);
     }
 
-    setLoading(false);
+    setIsLoading(false);
   };
 
   const {
@@ -245,25 +246,57 @@ const MarkAttendance = () => {
     getCoreRowModel: getCoreRowModel(),
   });
 
-  const onSubmit = (formData: MarkAttInput) => {
-    const ApiPayload = data.map(student => ({
-      attendance_date: new Date(formData.attendance_date).toISOString(),
-      attendance_time_id: parseInt(formData.attendance_time),
-      class_name_id: parseInt(formData.attendance_class), 
-      teacher_name_id: parseInt(formData.attendance_teacher),
-      student_id: parseInt(student.id),
-      attendance_value_id: student.present ? 1 : 
-                         student.absent ? 2 : 
-                         student.late ? 3 : 
-                         student.sick ? 4 : 0
-  }));
-    console.log("Submitting attendance:", ApiPayload);
-    // Add API call here to post attendance
+  const onSubmit = async (formData: MarkAttInput) => {
+    setIsLoading(true);
+    const attendances = data.map((student) => {
+      let attendance_value_id = "";
+      if (student.present) attendance_value_id = "1";
+      if (student.absent) attendance_value_id = "2";
+      if (student.late) attendance_value_id = "3";
+      if (student.sick) attendance_value_id = "4";
+
+      return {
+        attendance_date: formData.attendance_date,
+        attendance_time_id: String(formData.attendance_time_id),
+        class_name_id: String(formData.class_name_id),
+        teacher_name_id: String(formData.teacher_name_id),
+        student_id: String(student.id),
+        attendance_value_id: attendance_value_id,
+      };
+    });
+
+    const payload: MarkAttInput = {
+      attendance_date: formData.attendance_date,
+      attendance_time_id: formData.attendance_time_id,
+      class_name_id: formData.class_name_id,
+      teacher_name_id: formData.teacher_name_id,
+      attendances: attendances,
+    };
+
+    console.log("Submitting attendance:", payload);
+    try {
+      setIsLoading(true);
+      const response = await AttendanceAPI.Create(payload);
+      if (response.status === 200) {
+        toast.success("Attendance submitted successfully", {
+          position: "bottom-center",
+          duration: 5000,
+        });
+      } else {
+        console.error("Error submitting attendance:", response.statusText);
+      }
+    } catch (error) {
+      console.error("error");
+    }
+    setIsLoading(false);
   };
 
-   const HandleSubmitForStudentGet = async (formData: MarkAttInput) => {
+  const HandleSubmitForStudentGet = async (formData: MarkAttInput) => {
     try {
-      const response = await API3.GetStudentbyFilter(parseInt(formData.attendance_class)) as { data: StudentResponse[] };
+      setIsLoading(true);
+      const response = (await API3.GetStudentbyFilter(
+        parseInt(formData.class_name_id.toString())
+      )) as { data: StudentResponse[] };
       if (response.data && Array.isArray(response.data)) {
         setStudentByFilter(
           response.data.map((item: StudentResponse) => ({
@@ -275,10 +308,12 @@ const MarkAttendance = () => {
     } catch (error) {
       console.error("Error fetching students:", error);
     }
+    setIsLoading(false);
   };
 
   return (
     <div className="mt-2 flex flex-col gap-5">
+      <Loader isActive={isLoading} />;
       <div className="ml-2 bg-white dark:bg-transparent border border-gray-200 rounded-lg w-[82.5rem] p-4">
         <form onSubmit={handleSubmit(onSubmit)}>
           <div className="flex gap-32 ml-8">
@@ -289,7 +324,9 @@ const MarkAttendance = () => {
               <Input
                 type="date"
                 className="border-gray-300 w-36"
-                {...register("attendance_date", { required: "Date is required" })}
+                {...register("attendance_date", {
+                  required: "Date is required",
+                })}
               />
               <p className="text-red-500">{errors.attendance_date?.message}</p>
             </div>
@@ -298,33 +335,41 @@ const MarkAttendance = () => {
               <Select
                 label="Class Time"
                 options={classTimeList}
-                {...register("attendance_time", { required: "Time is required" })}
+                {...register("attendance_time_id", {
+                  required: "Time is required",
+                })}
                 DisplayItem="title"
                 className="w-full"
               />
-              <p className="text-red-500">{errors.attendance_time?.message}</p>
+              <p className="text-red-500">
+                {errors.attendance_time_id?.message}
+              </p>
             </div>
 
             <div className="py-2 w-36">
               <Select
                 label="Class Name"
                 options={classNameList}
-                {...register("attendance_class", { required: "Class is required" })}
+                {...register("class_name_id", {
+                  required: "Class is required",
+                })}
                 DisplayItem="title"
                 className="w-full"
               />
-              <p className="text-red-500">{errors.attendance_class?.message}</p>
+              <p className="text-red-500">{errors.class_name_id?.message}</p>
             </div>
 
             <div className="py-2 w-36">
               <Select
                 label="Teacher Name"
                 options={teacherNameList}
-                {...register("attendance_teacher", { required: "Teacher is required" })}
+                {...register("teacher_name_id", {
+                  required: "Teacher is required",
+                })}
                 DisplayItem="title"
                 className="w-full"
               />
-              <p className="text-red-500">{errors.attendance_teacher?.message}</p>
+              <p className="text-red-500">{errors.teacher_name_id?.message}</p>
             </div>
 
             <Button

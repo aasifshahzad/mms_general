@@ -1,23 +1,71 @@
-'use client';
-import type React from "react"
-import { useState } from "react"
-import { format } from "date-fns"
-import { CalendarIcon } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { Calendar } from "@/components/ui/calendar"
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
-import { Input } from "@/components/ui/input"
+"use client";
+import type React from "react";
+import { useState, useEffect } from "react";
+import { format } from "date-fns";
+import { CalendarIcon } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Calendar } from "@/components/ui/calendar";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { Input } from "@/components/ui/input";
+import { Select, SelectOption as SelectComponentOption } from "../Select";
+import { useForm } from "react-hook-form";
+import { AttendanceAPI as API } from "@/api/Attendance/AttendanceAPI";
+import { ClassNameAPI as API2 } from "@/api/Classname/ClassNameAPI";
+import { AttendanceTimeAPI as API13 } from "@/api/AttendaceTime/attendanceTimeAPI";
+import { TeacherNameAPI as API4 } from "@/api/Teacher/TeachetAPI";
 
 // Define the AttendanceRecord interface
 interface AttendanceRecord {
-  attendance_id: number
-  attendance_date: string
-  attendance_time: string
-  attendance_class: string
-  attendance_teacher: string
-  attendance_student: string
-  attendance_std_fname: string
-  attendance_value: string
+  attendance_id: number;
+  attendance_date: string;
+  attendance_time: string;
+  attendance_class: string;
+  attendance_teacher: string;
+  attendance_student: string;
+  attendance_std_fname: string;
+  attendance_value: string;
+}
+
+interface StudentResponse {
+  student_id: number;
+  student_name: string;
+}
+
+interface FilteredAttendance {
+  class_name: string;
+  teacher_name: string;
+  student_name: string;
+  attendance_date: string;
+  attendance_time: string;
+}
+
+interface ClassNameResponse {
+  class_name_id: number;
+  class_name: string;
+}
+
+interface AttendanceTimeResponse {
+  attendance_time_id: number;
+  attendance_time: string;
+}
+
+interface TeacherResponse {
+  teacher_name_id: number;
+  teacher_name: string;
+}
+
+interface StudentResponse {
+  student_id: number;
+  student_name: string;
+}
+
+// type for the API function
+interface AttendanceAPI {
+  GetbyFilter: (filter: FilteredAttendance) => Promise<any>;
 }
 
 // Sample data (in a real application, you would fetch this from an API)
@@ -52,50 +100,203 @@ export const attendanceData: AttendanceRecord[] = [
     attendance_std_fname: "Halla Yates",
     attendance_value: "leave",
   },
-]
+];
 
 const AttendanceTable: React.FC<{ data: AttendanceRecord[] }> = ({ data }) => {
-  const [searchTerm, setSearchTerm] = useState("")
-  const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined)
+  const {
+    register,
+    formState: { errors },
+    handleSubmit,
+  } = useForm();
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
+  const [isLoading, setIsLoading] = useState(false);
+  const [studentByFilter, setStudentByFilter] = useState<
+    Array<{ id: number; title: string }>
+  >([]);
+  const [classTimeList, setClassTimeList] = useState<SelectComponentOption[]>(
+    []
+  );
+  const [classNameList, setClassNameList] = useState<SelectComponentOption[]>(
+    []
+  );
+  const [teacherNameList, setTeacherNameList] = useState<
+    SelectComponentOption[]
+  >([]);
+
+  useEffect(() => {
+    // Load dropdown data here
+    GetClassName();
+    GetClassTime();
+    GetTeacherName();
+  }, []);
+
+  const GetClassName = async () => {
+    try {
+      setIsLoading(true);
+      const response = (await API2.Get()) as { data: ClassNameResponse[] };
+      if (response.data && Array.isArray(response.data)) {
+        setClassNameList(
+          response.data.map((item: ClassNameResponse) => ({
+            id: item.class_name_id,
+            title: item.class_name,
+          }))
+        );
+      }
+    } catch (error) {
+      console.error("Error fetching class names:", error);
+    }
+    setIsLoading(false);
+  };
+
+  const GetClassTime = async () => {
+    try {
+      setIsLoading(true);
+      const response = (await API13.Get()) as {
+        data: AttendanceTimeResponse[];
+      };
+      if (response.data && Array.isArray(response.data)) {
+        setClassTimeList(
+          response.data.map((item: AttendanceTimeResponse) => ({
+            id: item.attendance_time_id,
+            title: item.attendance_time,
+          }))
+        );
+      }
+    } catch (error) {
+      console.error("Error fetching class times:", error);
+    }
+    setIsLoading(false);
+  };
+
+  const GetTeacherName = async () => {
+    try {
+      setIsLoading(true);
+      const response = (await API4.Get()) as unknown as {
+        data: TeacherResponse[];
+      };
+      if (response.data && Array.isArray(response.data)) {
+        setTeacherNameList(
+          response.data.map((item: TeacherResponse) => ({
+            id: item.teacher_name_id,
+            title: item.teacher_name,
+          }))
+        );
+      }
+    } catch (error) {
+      console.error("Error fetching teachers:", error);
+    }
+
+    setIsLoading(false);
+  };
 
   const filteredData = data.filter((record) => {
     const matchesSearch = Object.values(record).some((value) =>
-      value.toString().toLowerCase().includes(searchTerm.toLowerCase()),
-    )
+      value.toString().toLowerCase().includes(searchTerm.toLowerCase())
+    );
     const matchesDate = selectedDate
-      ? new Date(record.attendance_date).toDateString() === selectedDate.toDateString()
-      : true
-    return matchesSearch && matchesDate
-  })
+      ? new Date(record.attendance_date).toDateString() ===
+        selectedDate.toDateString()
+      : true;
+    return matchesSearch && matchesDate;
+  });
+
+  const HandleSubmitForStudentGet = async (formData: any) => {
+    try {
+      setIsLoading(true);
+      const filter: FilteredAttendance = {
+        class_name: formData.class_name,
+        teacher_name: formData.teacher_name,
+        student_name: "",
+        attendance_date: formData.attendance_date,
+        attendance_time: formData.attendance_time
+      };
+      
+      const response = await (API as any).GetbyFilter(filter);
+      if (response.data && Array.isArray(response.data)) {
+        setStudentByFilter(
+          response.data.map((item: StudentResponse) => ({
+            id: item.student_id,
+            title: item.student_name,
+          }))
+        );
+      }
+    } catch (error) {
+      console.error("Error fetching student data:", error);
+    }
+    setIsLoading(false);
+  };
 
   return (
     <div className="container mx-auto p-4">
       <h1 className="text-2xl font-bold mb-4">Attendance Records</h1>
-      <div className="flex flex-col md:flex-row justify-between mb-4">
-        <Input
-          type="text"
-          placeholder="Search..."
-          className="mb-2 md:mb-0 md:mr-2"
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-        />
-        <Popover>
-          <PopoverTrigger asChild>
-            <Button
-              variant={"outline"}
-              className={`w-full md:w-[280px] justify-start text-left font-normal ${
-                !selectedDate && "text-muted-foreground"
-              }`}
-            >
-              <CalendarIcon className="mr-2 h-4 w-4" />
-              {selectedDate ? format(selectedDate, "PPP") : <span>Pick a date</span>}
-            </Button>
-          </PopoverTrigger>
-          <PopoverContent className="w-auto p-0">
-            <Calendar mode="single" selected={selectedDate} onSelect={setSelectedDate} initialFocus />
-          </PopoverContent>
-        </Popover>
-      </div>
+      <form onSubmit={handleSubmit(HandleSubmitForStudentGet)}>
+        <div className="flex gap-32 ml-8">
+          <div className="py-2">
+            <label className="text-gray-700 font-bold dark:text-gray-400">
+              Date
+            </label>
+            <Input
+              type="date"
+              className="border-gray-300 w-36"
+              {...register("attendance_date", {
+              })}
+            />
+            <p className="text-red-500">
+              {errors.attendance_date?.message?.toString()}
+            </p>
+          </div>
+
+          <div className="py-2 w-36">
+            <Select
+              label="Class Time"
+              options={classTimeList}
+              {...register("attendance_time", {
+                required: "Time is required",
+              })}
+              DisplayItem="title"
+              selectOption={false} 
+              className="w-full"
+            />
+            <p className="text-red-500">
+              {errors.attendance_time_id?.message?.toString()}
+            </p>
+          </div>
+
+          <div className="py-2 w-36">
+            <Select
+              label="Class Name"
+              options={classNameList}
+              {...register("class_name", {
+                required: "Class is required",
+              })}
+              DisplayItem="title"
+              className="w-full"
+            />
+            <p className="text-red-500">
+              {errors.class_name_id?.message?.toString()}
+            </p>
+          </div>
+
+          <div className="py-2 w-36">
+            <Select
+              label="Teacher Name"
+              options={teacherNameList}
+              {...register("teacher_name", {
+                required: "Teacher is required",
+              })}
+              DisplayItem="title"
+              className="w-full"
+            />
+            <p className="text-red-500">
+              {errors.teacher_name_id?.message?.toString()}
+            </p>
+          </div>
+        </div>
+        <Button type="submit" disabled={isLoading}>
+          {isLoading ? "Loading..." : "Search"}
+        </Button>
+      </form>
       <div className="overflow-x-auto">
         <table className="min-w-full bg-white border border-gray-300">
           <thead>
@@ -106,41 +307,70 @@ const AttendanceTable: React.FC<{ data: AttendanceRecord[] }> = ({ data }) => {
               <th className="py-2 px-4 text-center border-b">Class</th>
               <th className="py-2 px-4 text-center border-b">Teacher</th>
               <th className="py-2 px-4 text-center border-b">Student</th>
-              <th className="py-2 px-4 text-center border-b">Student&apos;s Father</th>
+              <th className="py-2 px-4 text-center border-b">
+                Student&apos;s Father
+              </th>
               <th className="py-2 px-4 text-center border-b">Status</th>
             </tr>
           </thead>
           <tbody>
-            {filteredData.map((record) => (
-              <tr key={record.attendance_id} className="hover:bg-gray-50">
-                <td className="py-2 px-4 text-center border-b">{record.attendance_id}</td>
-                <td className="py-2 px-4 text-center border-b">{new Date(record.attendance_date).toLocaleDateString()}</td>
-                <td className="py-2 px-4 text-center border-b">{record.attendance_time}</td>
-                <td className="py-2 px-4 text-center border-b">{record.attendance_class}</td>
-                <td className="py-2 px-4 text-center border-b">{record.attendance_teacher}</td>
-                <td className="py-2 px-4 text-center border-b">{record.attendance_student}</td>
-                <td className="py-2 px-4 text-center border-b">{record.attendance_std_fname}</td>
-                <td className="py-2 px-4 text-center border-b">
-                  <span
-                    className={`px-2 py-1 rounded-full text-xs font-semibold ${
-                      record.attendance_value === "present"
-                        ? "bg-green-200 text-green-800"
-                        : record.attendance_value === "absent"
-                          ? "bg-red-200 text-red-800"
-                          : "bg-yellow-200 text-yellow-800"
-                    }`}
-                  >
-                    {record.attendance_value}
-                  </span>
+            {isLoading ? (
+              <tr>
+                <td colSpan={8} className="text-center py-4">
+                  Loading...
                 </td>
               </tr>
-            ))}
+            ) : filteredData.length === 0 ? (
+              <tr>
+                <td colSpan={8} className="text-center py-4">
+                  No records found
+                </td>
+              </tr>
+            ) : (
+              filteredData.map((record) => (
+                <tr key={record.attendance_id} className="hover:bg-gray-50">
+                  <td className="py-2 px-4 text-center border-b">
+                    {record.attendance_id}
+                  </td>
+                  <td className="py-2 px-4 text-center border-b">
+                    {new Date(record.attendance_date).toLocaleDateString()}
+                  </td>
+                  <td className="py-2 px-4 text-center border-b">
+                    {record.attendance_time}
+                  </td>
+                  <td className="py-2 px-4 text-center border-b">
+                    {record.attendance_class}
+                  </td>
+                  <td className="py-2 px-4 text-center border-b">
+                    {record.attendance_teacher}
+                  </td>
+                  <td className="py-2 px-4 text-center border-b">
+                    {record.attendance_student}
+                  </td>
+                  <td className="py-2 px-4 text-center border-b">
+                    {record.attendance_std_fname}
+                  </td>
+                  <td className="py-2 px-4 text-center border-b">
+                    <span
+                      className={`px-2 py-1 rounded-full text-xs font-semibold ${
+                        record.attendance_value === "present"
+                          ? "bg-green-200 text-green-800"
+                          : record.attendance_value === "absent"
+                          ? "bg-red-200 text-red-800"
+                          : "bg-yellow-200 text-yellow-800"
+                      }`}
+                    >
+                      {record.attendance_value}
+                    </span>
+                  </td>
+                </tr>
+              ))
+            )}
           </tbody>
         </table>
       </div>
     </div>
-  )
-}
+  );
+};
 
 export default AttendanceTable;
-

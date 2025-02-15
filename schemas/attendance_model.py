@@ -54,6 +54,16 @@ class AttendanceCreate(SQLModel):
     student_id: int
     attendance_value_id: int
 
+class AttendanceUpdate(SQLModel):
+    attendance_date: Optional[datetime] = Field(
+        default=None, sa_column=Column(DateTime))
+    attendance_time_id: Optional[int] = None
+    class_name_id: Optional[int] = None
+    teacher_name_id: Optional[int] = None
+    student_id: Optional[int] = None
+    attendance_value_id: Optional[int] = None
+    updated_at: datetime = Field(default=datetime.now(), nullable=False)
+
 
 class FilteredAttendanceResponse(SQLModel):
     attendance_id: int
