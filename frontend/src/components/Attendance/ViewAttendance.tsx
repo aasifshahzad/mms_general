@@ -233,7 +233,10 @@ const AttendanceTable: React.FC<{ data: AttendanceRecord[] }> = ({ data }) => {
       const response = await (API as any).GetbyFilter(filter);
       
       if (response.status === 200) {
-        toast.success("Data fetched successfully");
+        toast.success("Data fetched successfully",{
+          position: "bottom-center",
+          duration: 3000,
+        });
         if (response.data && Array.isArray(response.data)) {
           setStudentByFilter(
             response.data.map((item: StudentResponse) => ({
@@ -246,7 +249,10 @@ const AttendanceTable: React.FC<{ data: AttendanceRecord[] }> = ({ data }) => {
         toast.error(`Error: ${response.status} - ${response.statusText}`);
       }
     } catch (error: any) {
-      toast.error(error.response?.data?.message || "Error fetching data");
+      toast.error(error.response?.data?.message || "Error fetching data", {
+        position: "bottom-center",
+        duration: 3000,
+      });
     } finally {
       setIsLoading(false);
     }
