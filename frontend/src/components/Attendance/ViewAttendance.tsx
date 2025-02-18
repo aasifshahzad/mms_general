@@ -2,7 +2,7 @@
 import type React from "react";
 import { useState, useEffect } from "react";
 import { format } from "date-fns";
-import { CalendarIcon } from "lucide-react";
+import { AlertCircle, Check, CalendarIcon, Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import {
@@ -19,16 +19,15 @@ import { AttendanceTimeAPI as API13 } from "@/api/AttendaceTime/attendanceTimeAP
 import { TeacherNameAPI as API4 } from "@/api/Teacher/TeachetAPI";
 import { toast } from "sonner";
 
-
 // Define the AttendanceRecord interface
 interface AttendanceRecord {
   attendance_id: number;
   attendance_date: string;
   attendance_time: string;
-  attendance_class: string;
-  attendance_teacher: string;
-  attendance_student: string;
-  attendance_std_fname: string;
+  class_name: string;
+  teacher_name: string;
+  student_name: string;
+  father_name: string;
   attendance_value: string;
 }
 
@@ -72,41 +71,7 @@ interface AttendanceAPI {
   GetbyFilter: (filter: FilteredAttendance) => Promise<any>;
 }
 
-// Sample data (in a real application, you would fetch this from an API)
-export const attendanceData: AttendanceRecord[] = [
-  {
-    attendance_id: 14,
-    attendance_date: "2025-01-21T18:39:55.222000",
-    attendance_time: "Afternoon",
-    attendance_class: "Class 8",
-    attendance_teacher: "Teacher 1",
-    attendance_student: "Ben Carter",
-    attendance_std_fname: "James Carter",
-    attendance_value: "leave",
-  },
-  {
-    attendance_id: 15,
-    attendance_date: "2025-01-21T19:09:25.330000",
-    attendance_time: "Afternoon",
-    attendance_class: "Class 8",
-    attendance_teacher: "Teacher 1",
-    attendance_student: "Shelly Nelson",
-    attendance_std_fname: "Halla Yates",
-    attendance_value: "leave",
-  },
-  {
-    attendance_id: 16,
-    attendance_date: "2025-01-21T19:09:25.330000",
-    attendance_time: "Afternoon",
-    attendance_class: "Class 8",
-    attendance_teacher: "Teacher 1",
-    attendance_student: "Shelly Nelson",
-    attendance_std_fname: "Halla Yates",
-    attendance_value: "leave",
-  },
-];
-
-const AttendanceTable: React.FC<{ data: AttendanceRecord[] }> = ({ data }) => {
+const AttendanceTable: React.FC = () => {
   const {
     register,
     formState: { errors },
@@ -126,6 +91,9 @@ const AttendanceTable: React.FC<{ data: AttendanceRecord[] }> = ({ data }) => {
   );
   const [teacherNameList, setTeacherNameList] = useState<
     SelectComponentOption[]
+  >([]);
+  const [attendanceRecords, setAttendanceRecords] = useState<
+    AttendanceRecord[]
   >([]);
 
   useEffect(() => {
@@ -206,45 +174,27 @@ const AttendanceTable: React.FC<{ data: AttendanceRecord[] }> = ({ data }) => {
     setIsLoading(false);
   };
 
-  const filteredData = data.filter((record) => {
-    const matchesSearch = Object.values(record).some((value) =>
-      value.toString().toLowerCase().includes(searchTerm.toLowerCase())
-    );
-    const matchesDate = selectedDate
-      ? new Date(record.attendance_date).toDateString() ===
-        selectedDate.toDateString()
-      : true;
-    return matchesSearch && matchesDate;
-  });
-
   const HandleSubmitForStudentGet = async (formData: any) => {
     try {
       setIsLoading(true);
       const filter: FilteredAttendance = {
-        attendance_date: formData.attendance_date || '',
+        attendance_date: formData.attendance_date || "",
         attendance_time_id: Number(formData.attendance_time_id) || 0,
         class_name_id: Number(formData.class_name_id) || 0,
         teacher_name_id: Number(formData.teacher_name_id) || 0,
         student_id: Number(formData.student_id) || 0,
-        father_name: formData.father_name || '',
-        attendance_value_id: Number(formData.attendance_value_id) || 0
+        father_name: formData.father_name || "",
+        attendance_value_id: Number(formData.attendance_value_id) || 0,
       };
-  
+
       const response = await (API as any).GetbyFilter(filter);
-      
+
       if (response.status === 200) {
-        toast.success("Data fetched successfully",{
+        toast.success("Data fetched successfully", {
           position: "bottom-center",
           duration: 3000,
         });
-        if (response.data && Array.isArray(response.data)) {
-          setStudentByFilter(
-            response.data.map((item: StudentResponse) => ({
-              id: item.student_id,
-              title: item.student_name,
-            }))
-          );
-        }
+        setAttendanceRecords(response.data);
       } else {
         toast.error(`Error: ${response.status} - ${response.statusText}`);
       }
@@ -330,77 +280,100 @@ const AttendanceTable: React.FC<{ data: AttendanceRecord[] }> = ({ data }) => {
           {isLoading ? "Loading..." : "Search"}
         </Button>
       </form>
-      <div className="overflow-x-auto">
-        <table className="min-w-full bg-white border border-gray-300">
-          <thead>
-            <tr className="bg-gray-100">
-              <th className="py-2 px-4 text-center border-b">ID</th>
-              <th className="py-2 px-4 text-center border-b">Date</th>
-              <th className="py-2 px-4 text-center border-b">Time</th>
-              <th className="py-2 px-4 text-center border-b">Class</th>
-              <th className="py-2 px-4 text-center border-b">Teacher</th>
-              <th className="py-2 px-4 text-center border-b">Student</th>
-              <th className="py-2 px-4 text-center border-b">
-                Student&apos;s Father
-              </th>
-              <th className="py-2 px-4 text-center border-b">Status</th>
-            </tr>
-          </thead>
-          <tbody>
-            {isLoading ? (
-              <tr>
-                <td colSpan={8} className="text-center py-4">
-                  Loading...
-                </td>
+      <div className="w-full bg-white rounded-lg shadow-sm border border-gray-200">
+        <div className="overflow-x-auto h-[38rem]">
+          <table className="w-full">
+            <thead>
+              <tr className="bg-gray-50 text-gray-600 text-sm border-b border-gray-200">
+                <th className="py-3 px-4 font-medium text-left">ID</th>
+                <th className="py-3 px-4 font-medium text-left">Date</th>
+                <th className="py-3 px-4 font-medium text-left">Time</th>
+                <th className="py-3 px-4 font-medium text-left">Class</th>
+                <th className="py-3 px-4 font-medium text-left">Teacher</th>
+                <th className="py-3 px-4 font-medium text-left">Student</th>
+                <th className="py-3 px-4 font-medium text-left">Father Name</th>
+                <th className="py-3 px-4 font-medium text-left">Status</th>
               </tr>
-            ) : filteredData.length === 0 ? (
-              <tr>
-                <td colSpan={8} className="text-center py-4">
-                  No records found
-                </td>
-              </tr>
-            ) : (
-              filteredData.map((record) => (
-                <tr key={record.attendance_id} className="hover:bg-gray-50">
-                  <td className="py-2 px-4 text-center border-b">
-                    {record.attendance_id}
-                  </td>
-                  <td className="py-2 px-4 text-center border-b">
-                    {new Date(record.attendance_date).toLocaleDateString()}
-                  </td>
-                  <td className="py-2 px-4 text-center border-b">
-                    {record.attendance_time}
-                  </td>
-                  <td className="py-2 px-4 text-center border-b">
-                    {record.attendance_class}
-                  </td>
-                  <td className="py-2 px-4 text-center border-b">
-                    {record.attendance_teacher}
-                  </td>
-                  <td className="py-2 px-4 text-center border-b">
-                    {record.attendance_student}
-                  </td>
-                  <td className="py-2 px-4 text-center border-b">
-                    {record.attendance_std_fname}
-                  </td>
-                  <td className="py-2 px-4 text-center border-b">
-                    <span
-                      className={`px-2 py-1 rounded-full text-xs font-semibold ${
-                        record.attendance_value === "present"
-                          ? "bg-green-200 text-green-800"
-                          : record.attendance_value === "absent"
-                          ? "bg-red-200 text-red-800"
-                          : "bg-yellow-200 text-yellow-800"
-                      }`}
-                    >
-                      {record.attendance_value}
-                    </span>
+            </thead>
+            <tbody className="divide-y divide-gray-100">
+              {isLoading ? (
+                <tr>
+                  <td colSpan={8} className="text-center py-8 text-gray-500">
+                    <div className="flex justify-center items-center space-x-2">
+                      <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-gray-500"></div>
+                      <span>Loading records...</span>
+                    </div>
                   </td>
                 </tr>
-              ))
-            )}
-          </tbody>
-        </table>
+              ) : attendanceRecords.length === 0 ? (
+                <tr>
+                  <td colSpan={8} className="text-center py-8 text-gray-500">
+                    <div className="flex flex-col items-center justify-center">
+                      <AlertCircle className="h-10 w-10 text-gray-400 mb-2" />
+                      <p>No attendance records found</p>
+                    </div>
+                  </td>
+                </tr>
+              ) : (
+                attendanceRecords.map((record) => (
+                  <tr
+                    key={record.attendance_id}
+                    className="hover:bg-gray-50 transition-colors"
+                  >
+                    <td className="py-3 px-4 text-sm text-gray-800">
+                      #{record.attendance_id.toString().padStart(4, "0")}
+                    </td>
+                    <td className="py-3 px-4 text-sm text-gray-800">
+                      {new Date(record.attendance_date).toLocaleDateString(
+                        "en-US",
+                        {
+                          year: "numeric",
+                          month: "short",
+                          day: "numeric",
+                        }
+                      )}
+                    </td>
+                    <td className="py-3 px-4 text-sm text-gray-800">
+                      {record.attendance_time}
+                    </td>
+                    <td className="py-3 px-4 text-sm text-gray-800">
+                      {record.class_name}
+                    </td>
+                    <td className="py-3 px-4 text-sm text-gray-800">
+                      {record.teacher_name}
+                    </td>
+                    <td className="py-3 px-4 text-sm font-medium text-gray-900">
+                      {record.student_name}
+                    </td>
+                    <td className="py-3 px-4 text-sm text-gray-800">
+                      {record.father_name}
+                    </td>
+                    <td className="py-3 px-4">
+                      <div className="flex items-center">
+                        {record.attendance_value === "present" ? (
+                          <div className="flex items-center text-green-600 bg-green-50 px-2.5 py-0.5 rounded-full text-xs font-medium">
+                            <Check className="w-3.5 h-3.5 mr-1" />
+                            Present
+                          </div>
+                        ) : record.attendance_value === "absent" ? (
+                          <div className="flex items-center text-red-600 bg-red-50 px-2.5 py-0.5 rounded-full text-xs font-medium">
+                            <AlertCircle className="w-3.5 h-3.5 mr-1" />
+                            Absent
+                          </div>
+                        ) : (
+                          <div className="flex items-center text-amber-600 bg-amber-50 px-2.5 py-0.5 rounded-full text-xs font-medium">
+                            <Clock className="w-3.5 h-3.5 mr-1" />
+                            Late
+                          </div>
+                        )}
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   );
