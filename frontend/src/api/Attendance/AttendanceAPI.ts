@@ -1,6 +1,7 @@
 import { MarkAttInput } from "@/models/markattendace/markattendance";
 import { GetActionDetail } from "@/utils/GetActionDetail";
 import AxiosInstance from "@/api/axiosInterceptorInstance";
+import { toast } from "sonner";
 
 interface FilteredAttendance {
   attendance_date: string;
@@ -35,9 +36,8 @@ export const Create = async (Attendances: MarkAttInput) => {
   export const GetbyFilter = async (FilteredAttendance: FilteredAttendance) => {
     try {
       const response = await AxiosInstance.get<FilteredAttendance>(
-        `/mark_attendance/filtered_attendance?attendance_date=${FilteredAttendance.attendance_date}&attendance_time_id=${FilteredAttendance.attendance_time_id}&class_name_id=${FilteredAttendance.class_name_id}&teacher_name_id=${FilteredAttendance.teacher_name_id}&student_id=${FilteredAttendance.student_id}&father_name=${FilteredAttendance.father_name}&attendance_value_id=${FilteredAttendance.attendance_value_id}`,
+        `/mark_attendance/filter_attendance_by_ids?attendance_date=${FilteredAttendance.attendance_date}&attendance_time_id=${FilteredAttendance.attendance_time_id}&class_name_id=${FilteredAttendance.class_name_id}&teacher_name_id=${FilteredAttendance.teacher_name_id}&student_id=${FilteredAttendance.student_id}&father_name=${FilteredAttendance.father_name}&attendance_value_id=${FilteredAttendance.attendance_value_id}`,
       );
-      console.log("API Response:", response);
       return response;
     }
     catch (error) {

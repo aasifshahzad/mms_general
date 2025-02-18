@@ -17,6 +17,8 @@ import { AttendanceAPI as API } from "@/api/Attendance/AttendanceAPI";
 import { ClassNameAPI as API2 } from "@/api/Classname/ClassNameAPI";
 import { AttendanceTimeAPI as API13 } from "@/api/AttendaceTime/attendanceTimeAPI";
 import { TeacherNameAPI as API4 } from "@/api/Teacher/TeachetAPI";
+import { toast } from "sonner";
+
 
 // Define the AttendanceRecord interface
 interface AttendanceRecord {
@@ -218,8 +220,6 @@ const AttendanceTable: React.FC<{ data: AttendanceRecord[] }> = ({ data }) => {
   const HandleSubmitForStudentGet = async (formData: any) => {
     try {
       setIsLoading(true);
-      
-      // Create filter object only with valid values
       const filter: FilteredAttendance = {
         attendance_date: formData.attendance_date || '',
         attendance_time_id: Number(formData.attendance_time_id) || 0,
@@ -230,21 +230,26 @@ const AttendanceTable: React.FC<{ data: AttendanceRecord[] }> = ({ data }) => {
         attendance_value_id: Number(formData.attendance_value_id) || 0
       };
   
-      console.log('Filtered payload:', filter);
-      
       const response = await (API as any).GetbyFilter(filter);
-      if (response.data && Array.isArray(response.data)) {
-        setStudentByFilter(
-          response.data.map((item: StudentResponse) => ({
-            id: item.student_id,
-            title: item.student_name,
-          }))
-        );
+      
+      if (response.status === 200) {
+        toast.success("Data fetched successfully");
+        if (response.data && Array.isArray(response.data)) {
+          setStudentByFilter(
+            response.data.map((item: StudentResponse) => ({
+              id: item.student_id,
+              title: item.student_name,
+            }))
+          );
+        }
+      } else {
+        toast.error(`Error: ${response.status} - ${response.statusText}`);
       }
-    } catch (error) {
-      console.error("Error fetching student data:", error);
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || "Error fetching data");
+    } finally {
+      setIsLoading(false);
     }
-    setIsLoading(false);
   };
 
   return (
