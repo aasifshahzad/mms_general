@@ -3,15 +3,15 @@ import { GetActionDetail } from "@/utils/GetActionDetail";
 import AxiosInstance from "@/api/axiosInterceptorInstance";
 
 interface FilteredAttendance {
-  class_name: string;
-  teacher_name: string;
-  Teacher: string;
-  student_name: string;
-  attendance_value: string;
   attendance_date: string;
-  attendance_time: string;
-  attendance_id: number;
+  attendance_time_id: number;
+  class_name_id: number;
+  teacher_name_id: number;
+  student_id: number;
+  father_name: string;
+  attendance_value_id: number;
 }
+
 // eslint-disable-next-line @typescript-eslint/no-namespace
 export namespace AttendanceAPI {
 export const Create = async (Attendances: MarkAttInput) => {
@@ -35,7 +35,7 @@ export const Create = async (Attendances: MarkAttInput) => {
   export const GetbyFilter = async (FilteredAttendance: FilteredAttendance) => {
     try {
       const response = await AxiosInstance.get<FilteredAttendance>(
-        `/mark_attendance/filtered_attendance?class_name=${FilteredAttendance.class_name}&teacher_name=${FilteredAttendance.teacher_name}&student_name=${FilteredAttendance.student_name}&attendance_date=${FilteredAttendance.attendance_date}&attendance_time=${FilteredAttendance.attendance_time}`,
+        `/mark_attendance/filtered_attendance?attendance_date=${FilteredAttendance.attendance_date}&attendance_time_id=${FilteredAttendance.attendance_time_id}&class_name_id=${FilteredAttendance.class_name_id}&teacher_name_id=${FilteredAttendance.teacher_name_id}&student_id=${FilteredAttendance.student_id}&father_name=${FilteredAttendance.father_name}&attendance_value_id=${FilteredAttendance.attendance_value_id}`,
       );
       console.log("API Response:", response);
       return response;

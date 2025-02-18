@@ -42,15 +42,15 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(function Select
       )}
 
       <div className={`relative bg-${parentStyle} rounded-md`}>
-        <select
+      <select
           {...props}
           id={id}
           ref={ref}
           className={`w-full px-3 py-2 dark:bg-neutral-950 dark:border-gray-300 border border-black bg-${background} rounded-md outline-none`}
           onClick={toggleDropdown}
+          defaultValue="" // Add this line to make "Select..." the default option
         >
-          {!selectOption && <option disabled value="">Select...</option>}
-
+          <option disabled value="">Select...</option>
           {options.map((option, index) => (
             <option key={index} value={option.id}>
               {option[DisplayCode]

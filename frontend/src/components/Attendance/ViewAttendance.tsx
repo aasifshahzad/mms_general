@@ -36,11 +36,13 @@ interface StudentResponse {
 }
 
 interface FilteredAttendance {
-  class_name: string;
-  teacher_name: string;
-  student_name: string;
   attendance_date: string;
-  attendance_time: string;
+  attendance_time_id: number;
+  class_name_id: number;
+  teacher_name_id: number;
+  student_id: number;
+  father_name: string;
+  attendance_value_id: number;
 }
 
 interface ClassNameResponse {
@@ -135,6 +137,10 @@ const AttendanceTable: React.FC<{ data: AttendanceRecord[] }> = ({ data }) => {
     try {
       setIsLoading(true);
       const response = (await API2.Get()) as { data: ClassNameResponse[] };
+      response.data.unshift({
+        class_name_id: 0,
+        class_name: "All",
+      });
       if (response.data && Array.isArray(response.data)) {
         setClassNameList(
           response.data.map((item: ClassNameResponse) => ({
@@ -155,6 +161,10 @@ const AttendanceTable: React.FC<{ data: AttendanceRecord[] }> = ({ data }) => {
       const response = (await API13.Get()) as {
         data: AttendanceTimeResponse[];
       };
+      response.data.unshift({
+        attendance_time_id: 0,
+        attendance_time: "All",
+      });
       if (response.data && Array.isArray(response.data)) {
         setClassTimeList(
           response.data.map((item: AttendanceTimeResponse) => ({
@@ -175,6 +185,10 @@ const AttendanceTable: React.FC<{ data: AttendanceRecord[] }> = ({ data }) => {
       const response = (await API4.Get()) as unknown as {
         data: TeacherResponse[];
       };
+      response.data.unshift({
+        teacher_name_id: 0,
+        teacher_name: "All",
+      });
       if (response.data && Array.isArray(response.data)) {
         setTeacherNameList(
           response.data.map((item: TeacherResponse) => ({
@@ -204,13 +218,19 @@ const AttendanceTable: React.FC<{ data: AttendanceRecord[] }> = ({ data }) => {
   const HandleSubmitForStudentGet = async (formData: any) => {
     try {
       setIsLoading(true);
+      
+      // Create filter object only with valid values
       const filter: FilteredAttendance = {
-        class_name: formData.class_name,
-        teacher_name: formData.teacher_name,
-        student_name: "",
-        attendance_date: formData.attendance_date,
-        attendance_time: formData.attendance_time
+        attendance_date: formData.attendance_date || '',
+        attendance_time_id: Number(formData.attendance_time_id) || 0,
+        class_name_id: Number(formData.class_name_id) || 0,
+        teacher_name_id: Number(formData.teacher_name_id) || 0,
+        student_id: Number(formData.student_id) || 0,
+        father_name: formData.father_name || '',
+        attendance_value_id: Number(formData.attendance_value_id) || 0
       };
+  
+      console.log('Filtered payload:', filter);
       
       const response = await (API as any).GetbyFilter(filter);
       if (response.data && Array.isArray(response.data)) {
@@ -239,8 +259,7 @@ const AttendanceTable: React.FC<{ data: AttendanceRecord[] }> = ({ data }) => {
             <Input
               type="date"
               className="border-gray-300 w-36"
-              {...register("attendance_date", {
-              })}
+              {...register("attendance_date", {})}
             />
             <p className="text-red-500">
               {errors.attendance_date?.message?.toString()}
@@ -251,24 +270,27 @@ const AttendanceTable: React.FC<{ data: AttendanceRecord[] }> = ({ data }) => {
             <Select
               label="Class Time"
               options={classTimeList}
-              {...register("attendance_time", {
-                required: "Time is required",
+              {...register("attendance_time_id", {
+                valueAsNumber: true,
               })}
               DisplayItem="title"
-              selectOption={false} 
               className="w-full"
-            />
+              defaultValue="" // Add this line
+            >
+              <option value="" disabled>
+                Select Class Time...
+              </option>
+            </Select>
             <p className="text-red-500">
               {errors.attendance_time_id?.message?.toString()}
             </p>
           </div>
-
           <div className="py-2 w-36">
             <Select
               label="Class Name"
               options={classNameList}
-              {...register("class_name", {
-                required: "Class is required",
+              {...register("class_name_id", {
+                valueAsNumber: true,
               })}
               DisplayItem="title"
               className="w-full"
@@ -282,8 +304,8 @@ const AttendanceTable: React.FC<{ data: AttendanceRecord[] }> = ({ data }) => {
             <Select
               label="Teacher Name"
               options={teacherNameList}
-              {...register("teacher_name", {
-                required: "Teacher is required",
+              {...register("teacher_name_id", {
+                valueAsNumber: true,
               })}
               DisplayItem="title"
               className="w-full"
