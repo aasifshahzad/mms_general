@@ -1,7 +1,13 @@
 "use client";
 import type React from "react";
 import { useState, useEffect } from "react";
-import { AlertCircle, Check, Clock, ChevronLeft, ChevronRight } from "lucide-react";
+import {
+  AlertCircle,
+  Check,
+  Clock,
+  ChevronLeft,
+  ChevronRight,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectOption as SelectComponentOption } from "../Select";
@@ -11,6 +17,8 @@ import { ClassNameAPI as API2 } from "@/api/Classname/ClassNameAPI";
 import { AttendanceTimeAPI as API13 } from "@/api/AttendaceTime/attendanceTimeAPI";
 import { TeacherNameAPI as API4 } from "@/api/Teacher/TeachetAPI";
 import { toast } from "sonner";
+import { FaRegEdit } from "react-icons/fa";
+
 
 // Define the AttendanceRecord interface
 interface AttendanceRecord {
@@ -47,6 +55,14 @@ interface AttendanceTimeResponse {
 interface TeacherResponse {
   teacher_name_id: number;
   teacher_name: string;
+}
+
+interface APIError {
+  response: {
+    data: {
+      message: string;
+    };
+  };
 }
 
 const AttendanceTable: React.FC = () => {
@@ -162,22 +178,27 @@ const AttendanceTable: React.FC = () => {
         attendance_value_id: Number(formData.attendance_value_id) || 0,
       };
 
-      const response = await (API).GetbyFilter(filter);
+      const response = await API.GetbyFilter(filter);
 
       if (response.status === 200) {
         toast.success("Data fetched successfully", {
           position: "bottom-center",
           duration: 3000,
         });
-        setAttendanceRecords(response.data);
+        setAttendanceRecords(response.data as unknown as AttendanceRecord[]);
       } else {
         toast.error(`Error: ${response.status} - ${response.statusText}`);
       }
-    } catch (error: any) {
-      toast.error(error.response?.data?.message || "Error fetching data", {
-        position: "bottom-center",
-        duration: 3000,
-      });
+    } catch (error: unknown) {
+      if (error && typeof error === "object" && "response" in error) {
+        toast.error(
+          (error as APIError).response?.data?.message || "Error fetching data",
+          {
+            position: "bottom-center",
+            duration: 3000,
+          }
+        );
+      }
     } finally {
       setIsLoading(false);
     }
@@ -185,7 +206,10 @@ const AttendanceTable: React.FC = () => {
 
   const indexOfLastRecord = currentPage * recordsPerPage;
   const indexOfFirstRecord = indexOfLastRecord - recordsPerPage;
-  const currentRecords = attendanceRecords.slice(indexOfFirstRecord, indexOfLastRecord);
+  const currentRecords = attendanceRecords.slice(
+    indexOfFirstRecord,
+    indexOfLastRecord
+  );
   const totalPages = Math.ceil(attendanceRecords.length / recordsPerPage);
 
   const PaginationControls = () => (
@@ -194,7 +218,7 @@ const AttendanceTable: React.FC = () => {
         <Button
           variant="outline"
           size="sm"
-          onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+          onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
           disabled={currentPage === 1}
         >
           Previous
@@ -202,7 +226,9 @@ const AttendanceTable: React.FC = () => {
         <Button
           variant="outline"
           size="sm"
-          onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+          onClick={() =>
+            setCurrentPage((prev) => Math.min(prev + 1, totalPages))
+          }
           disabled={currentPage === totalPages}
         >
           Next
@@ -211,24 +237,25 @@ const AttendanceTable: React.FC = () => {
       <div className="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
         <div>
           <p className="text-sm text-gray-700">
-            Showing{' '}
-            <span className="font-medium">{indexOfFirstRecord + 1}</span>{' '}
-            to{' '}
+            Showing{" "}
+            <span className="font-medium">{indexOfFirstRecord + 1}</span> to{" "}
             <span className="font-medium">
               {Math.min(indexOfLastRecord, attendanceRecords.length)}
-            </span>{' '}
-            of{' '}
-            <span className="font-medium">{attendanceRecords.length}</span>{' '}
+            </span>{" "}
+            of <span className="font-medium">{attendanceRecords.length}</span>{" "}
             results
           </p>
         </div>
         <div>
-          <nav className="isolate inline-flex -space-x-px rounded-md shadow-sm" aria-label="Pagination">
+          <nav
+            className="isolate inline-flex -space-x-px rounded-md shadow-sm"
+            aria-label="Pagination"
+          >
             <Button
               variant="outline"
               size="sm"
               className="rounded-l-md"
-              onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+              onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
               disabled={currentPage === 1}
             >
               <ChevronLeft className="h-4 w-4" />
@@ -247,7 +274,9 @@ const AttendanceTable: React.FC = () => {
               variant="outline"
               size="sm"
               className="rounded-r-md"
-              onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+              onClick={() =>
+                setCurrentPage((prev) => Math.min(prev + 1, totalPages))
+              }
               disabled={currentPage === totalPages}
             >
               <ChevronRight className="h-4 w-4" />
@@ -260,9 +289,12 @@ const AttendanceTable: React.FC = () => {
 
   return (
     <div className="container mx-auto p-4">
-      <h1 className="text-2xl font-bold mb-4">Attendance Records</h1>
-      <form onSubmit={handleSubmit((data) => HandleSubmitForStudentGet(data as FilteredAttendance))}>
-        <div className="flex gap-32 ml-8">
+      <form
+        onSubmit={handleSubmit((data) =>
+          HandleSubmitForStudentGet(data as FilteredAttendance)
+        )}
+      >
+        <div className="flex gap-12 p-4 mt-6 bg-white">
           <div className="py-2">
             <label className="text-gray-700 font-bold dark:text-gray-400">
               Date
@@ -325,10 +357,10 @@ const AttendanceTable: React.FC = () => {
               {errors.teacher_name_id?.message?.toString()}
             </p>
           </div>
+          <Button type="submit" className="mt-8" disabled={isLoading}>
+            {isLoading ? "Loading..." : "Search"}
+          </Button>
         </div>
-        <Button type="submit" disabled={isLoading}>
-          {isLoading ? "Loading..." : "Search"}
-        </Button>
       </form>
       <div className="w-full bg-white rounded-lg shadow-sm border border-gray-200">
         <div className="overflow-x-auto h-[34rem]">
@@ -343,6 +375,7 @@ const AttendanceTable: React.FC = () => {
                 <th className="py-2 px-4 font-medium text-left">Student</th>
                 <th className="py-2 px-4 font-medium text-left">Father Name</th>
                 <th className="py-2 px-4 font-medium text-left">Status</th>
+                <th className="py-2 px-4 font-medium text-left">Edit</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">
@@ -370,10 +403,10 @@ const AttendanceTable: React.FC = () => {
                     key={record.attendance_id}
                     className="hover:bg-gray-50 transition-colors"
                   >
-                    <td className="py-1.5 px-4 text-sm text-gray-800">
+                    <td className=" px-4 text-sm text-gray-800">
                       #{record.attendance_id.toString().padStart(4, "0")}
                     </td>
-                    <td className="py-1.5 px-4 text-sm text-gray-800">
+                    <td className=" px-4 text-sm text-gray-800">
                       {new Date(record.attendance_date).toLocaleDateString(
                         "en-US",
                         {
@@ -383,34 +416,36 @@ const AttendanceTable: React.FC = () => {
                         }
                       )}
                     </td>
-                    <td className="py-1.5 px-4 text-sm text-gray-800">
+                    <td className=" px-4 text-sm text-gray-800">
                       {record.attendance_time}
                     </td>
-                    <td className="py-1.5 px-4 text-sm text-gray-800">
+                    <td className=" px-4 text-sm text-gray-800">
                       {record.attendance_class}
                     </td>
-                    <td className="py-1.5 px-4 text-sm text-gray-800">
+                    <td className=" px-4 text-sm text-gray-800">
                       {record.attendance_teacher}
                     </td>
-                    <td className="py-1.5 px-4 text-sm font-medium text-gray-900">
+                    <td className=" px-4 text-sm font-medium text-gray-900">
                       {record.attendance_student}
                     </td>
-                    <td className="py-1.5 px-4 text-sm text-gray-800">
+                    <td className=" px-4 text-sm text-gray-800">
                       {record.attendance_std_fname}
                     </td>
-                    <td className="py-1.5 px-4">
+                    <td className=" px-4">
                       <div className="flex items-center">
                         {record.attendance_value.toLowerCase() === "present" ? (
                           <div className="flex items-center text-green-600 bg-green-50 px-2 py-0.5 rounded-full text-xs font-medium">
                             <Check className="w-3.5 h-3.5 mr-1" />
                             Present
                           </div>
-                        ) : record.attendance_value.toLowerCase() === "absent" ? (
+                        ) : record.attendance_value.toLowerCase() ===
+                          "absent" ? (
                           <div className="flex items-center text-red-600 bg-red-50 px-2 py-0.5 rounded-full text-xs font-medium">
                             <AlertCircle className="w-3.5 h-3.5 mr-1" />
                             Absent
                           </div>
-                        ) : record.attendance_value.toLowerCase() === "leave" ? (
+                        ) : record.attendance_value.toLowerCase() ===
+                          "leave" ? (
                           <div className="flex items-center text-amber-600 bg-amber-50 px-2 py-0.5 rounded-full text-xs font-medium">
                             <Clock className="w-3.5 h-3.5 mr-1" />
                             Leave
@@ -427,6 +462,11 @@ const AttendanceTable: React.FC = () => {
                           </div>
                         )}
                       </div>
+                    </td>
+                    <td className=" px-4">
+                      <Button variant="outline" size="xs">
+                        <FaRegEdit />
+                      </Button>
                     </td>
                   </tr>
                 ))

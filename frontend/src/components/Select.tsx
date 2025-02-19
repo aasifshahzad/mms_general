@@ -23,7 +23,6 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(function Select
     background = "transparent",
     DisplayItem = "title",
     DisplayCode = "code",
-    isSelectable = false,
     ...props
   },
   ref
@@ -32,8 +31,6 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(function Select
   const [isOpen, setIsOpen] = useState(false);
 
   const toggleDropdown = () => setIsOpen(!isOpen);
-
-  const selectedOption = options.find((option) => option.id === props.value);
 
   return (
     <div className="w-full flex flex-col gap-1">
