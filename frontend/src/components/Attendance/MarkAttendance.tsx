@@ -108,7 +108,7 @@ const MarkAttendance = () => {
           }))
         );
       }
-    } catch (error) {
+    } catch (error: unknown) {
       console.error("Error fetching class names:", error);
     }
     setIsLoading(false);
@@ -126,7 +126,7 @@ const MarkAttendance = () => {
           }))
         );
       }
-    } catch (error) {
+    } catch (error: unknown) {
       console.error("Error fetching class times:", error);
     }
     setIsLoading(false);
@@ -146,7 +146,7 @@ const MarkAttendance = () => {
           }))
         );
       }
-    } catch (error) {
+    } catch (error: unknown) {
       console.error("Error fetching teachers:", error);
     }
 
@@ -285,8 +285,8 @@ const MarkAttendance = () => {
       } else {
         console.error("Error submitting attendance:", response.statusText);
       }
-    } catch (error) {
-      console.error("error");
+    } catch (error: unknown) {
+      console.error(error);
     }
     setIsLoading(false);
   };

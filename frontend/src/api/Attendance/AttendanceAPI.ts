@@ -1,7 +1,5 @@
 import { MarkAttInput } from "@/models/markattendace/markattendance";
-import { GetActionDetail } from "@/utils/GetActionDetail";
 import AxiosInstance from "@/api/axiosInterceptorInstance";
-import { toast } from "sonner";
 
 interface FilteredAttendance {
   attendance_date: string;

@@ -1,4 +1,3 @@
-import { EntityBase } from "../EntityBase";
 
 export interface MarkAttInput {
   attendance_date: string;

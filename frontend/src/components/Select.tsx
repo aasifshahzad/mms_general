@@ -12,7 +12,7 @@ interface SelectProps extends React.SelectHTMLAttributes<HTMLSelectElement> {
   background?: string;
   DisplayItem?: string;
   DisplayCode?: string;
-  selectOption?: boolean;
+  isSelectable?: boolean;
 }
 
 export const Select = forwardRef<HTMLSelectElement, SelectProps>(function Select(
@@ -23,7 +23,7 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(function Select
     background = "transparent",
     DisplayItem = "title",
     DisplayCode = "code",
-    selectOption = false,
+    isSelectable = false,
     ...props
   },
   ref
@@ -32,6 +32,8 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(function Select
   const [isOpen, setIsOpen] = useState(false);
 
   const toggleDropdown = () => setIsOpen(!isOpen);
+
+  const selectedOption = options.find((option) => option.id === props.value);
 
   return (
     <div className="w-full flex flex-col gap-1">
