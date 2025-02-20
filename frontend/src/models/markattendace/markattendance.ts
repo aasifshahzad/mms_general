@@ -1,4 +1,3 @@
-
 export interface MarkAttInput {
   attendance_date: string;
   attendance_time_id: number;
@@ -12,4 +11,8 @@ export interface MarkAttInput {
     student_id: string;
     attendance_value_id: string;
   }[];
+}
+export interface MarkAttUpdate {
+  attendance_id: number;
+  attendance_value_id: number;
 }

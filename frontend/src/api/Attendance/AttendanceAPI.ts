@@ -1,5 +1,6 @@
-import { MarkAttInput } from "@/models/markattendace/markattendance";
+import { MarkAttInput, MarkAttUpdate } from "@/models/markattendace/markattendance";
 import AxiosInstance from "@/api/axiosInterceptorInstance";
+import { GetActionDetail } from "@/models/EntityBase";
 
 interface FilteredAttendance {
   attendance_date: string;
@@ -41,6 +42,25 @@ export const Create = async (Attendances: MarkAttInput) => {
     catch (error) {
       console.error("API Error:", error);
       throw error;
+    }
+  }
+  export const Update = async (attendance_id : number, Attendances: MarkAttUpdate) => {
+    try {
+      Attendances = GetActionDetail(Attendances, "update");
+      const response = await AxiosInstance.patch<MarkAttUpdate>(
+        `/mark_attendance/update_attendance/${attendance_id}`,
+        JSON.stringify(Attendances),
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      console.log("API Response:", response);
+      return response;
+    } catch (error) {
+      console.error("API Error:", error);
+      throw error; 
     }
   }
 }

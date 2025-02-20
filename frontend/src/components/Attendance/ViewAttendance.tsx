@@ -18,7 +18,23 @@ import { AttendanceTimeAPI as API13 } from "@/api/AttendaceTime/attendanceTimeAP
 import { TeacherNameAPI as API4 } from "@/api/Teacher/TeachetAPI";
 import { toast } from "sonner";
 import { FaRegEdit } from "react-icons/fa";
+import EditAttendance from "./EditAttendance";
+import {
+  flexRender,
+  getCoreRowModel,
+  getPaginationRowModel,
+  useReactTable,
+  type ColumnDef,
+} from "@tanstack/react-table";
 
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 
 // Define the AttendanceRecord interface
 interface AttendanceRecord {
@@ -64,6 +80,95 @@ interface APIError {
     };
   };
 }
+
+
+// Add columns definition
+const columns: ColumnDef<AttendanceRecord>[] = [
+  {
+    accessorKey: "attendance_id",
+    header: "ID",
+    cell: ({ row }) => {
+      const id = row.getValue("attendance_id") as number;
+      return (
+        <span className="font-medium">#{id.toString().padStart(4, "0")}</span>
+      );
+    },
+  },
+  {
+    accessorKey: "attendance_date",
+    header: "Date",
+    cell: ({ row }) => {
+      const date = row.getValue("attendance_date") as string;
+      return new Date(date).toLocaleDateString();
+    },
+  },
+  {
+    accessorKey: "attendance_time",
+    header: "Time",
+  },
+  {
+    accessorKey: "attendance_class",
+    header: "Class",
+  },
+  {
+    accessorKey: "attendance_teacher",
+    header: "Teacher",
+  },
+  {
+    accessorKey: "attendance_student",
+    header: "Student",
+  },
+  {
+    accessorKey: "attendance_std_fname",
+    header: "Father Name",
+  },
+  {
+    accessorKey: "attendance_value",
+    header: "Status",
+    cell: ({ row }) => {
+      const value = (row.getValue("attendance_value") as string).toLowerCase();
+      return (
+        <div className="flex items-center">
+          {value === "present" ? (
+            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-50 text-green-700">
+              <Check className="w-3 h-3 mr-1" />
+              Present
+            </span>
+          ) : value === "absent" ? (
+            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-red-50 text-red-700">
+              <AlertCircle className="w-3 h-3 mr-1" />
+              Absent
+            </span>
+          ) : value === "leave" ? (
+            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-yellow-50 text-yellow-700">
+              <Clock className="w-3 h-3 mr-1" />
+              Leave
+            </span>
+          ) : value === "sick" ? (
+            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-purple-50 text-purple-700">
+              <AlertCircle className="w-3 h-3 mr-1" />
+              Sick
+            </span>
+          ) : (
+            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-gray-50 text-gray-700">
+              <Clock className="w-3 h-3 mr-1" />
+              Other
+            </span>
+          )}
+        </div>
+      );
+    },
+  },
+  {
+    id: "actions",
+    header: "Actions",
+    cell: ({ row }) => (
+      <EditAttendance 
+        attendanceId={row.original.attendance_id}
+      />
+    ),
+  },
+];
 
 const AttendanceTable: React.FC = () => {
   const {
@@ -212,269 +317,267 @@ const AttendanceTable: React.FC = () => {
   );
   const totalPages = Math.ceil(attendanceRecords.length / recordsPerPage);
 
-  const PaginationControls = () => (
-    <div className="flex items-center justify-between border-t border-gray-200 px-4 py-3 sm:px-6">
-      <div className="flex flex-1 justify-between sm:hidden">
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
-          disabled={currentPage === 1}
-        >
-          Previous
-        </Button>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() =>
-            setCurrentPage((prev) => Math.min(prev + 1, totalPages))
-          }
-          disabled={currentPage === totalPages}
-        >
-          Next
-        </Button>
-      </div>
-      <div className="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
-        <div>
-          <p className="text-sm text-gray-700">
-            Showing{" "}
-            <span className="font-medium">{indexOfFirstRecord + 1}</span> to{" "}
-            <span className="font-medium">
-              {Math.min(indexOfLastRecord, attendanceRecords.length)}
-            </span>{" "}
-            of <span className="font-medium">{attendanceRecords.length}</span>{" "}
-            results
-          </p>
-        </div>
-        <div>
-          <nav
-            className="isolate inline-flex -space-x-px rounded-md shadow-sm"
-            aria-label="Pagination"
+  const PaginationControls = () => {
+    const totalPages = Math.ceil(attendanceRecords.length / recordsPerPage);
+    const indexOfLastRecord = currentPage * recordsPerPage;
+    const indexOfFirstRecord = indexOfLastRecord - recordsPerPage;
+
+    return (
+      <div className="flex items-center justify-between border-t border-gray-200 px-4 py-3 sm:px-6">
+        <div className="flex flex-1 justify-between sm:hidden">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+            disabled={currentPage === 1}
           >
-            <Button
-              variant="outline"
-              size="sm"
-              className="rounded-l-md"
-              onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
-              disabled={currentPage === 1}
+            Previous
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() =>
+              setCurrentPage((prev) => Math.min(prev + 1, totalPages))
+            }
+            disabled={currentPage === totalPages}
+          >
+            Next
+          </Button>
+        </div>
+        <div className="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
+          <div>
+            <p className="text-sm text-gray-700">
+              Showing{" "}
+              <span className="font-medium">{indexOfFirstRecord + 1}</span> to{" "}
+              <span className="font-medium">
+                {Math.min(indexOfLastRecord, attendanceRecords.length)}
+              </span>{" "}
+              of <span className="font-medium">{attendanceRecords.length}</span>{" "}
+              results
+            </p>
+          </div>
+          <div>
+            <nav
+              className="isolate inline-flex -space-x-px rounded-md shadow-sm"
+              aria-label="Pagination"
             >
-              <ChevronLeft className="h-4 w-4" />
-            </Button>
-            {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
               <Button
-                key={page}
-                variant={currentPage === page ? "default" : "outline"}
+                variant="outline"
                 size="sm"
-                onClick={() => setCurrentPage(page)}
+                className="rounded-l-md"
+                onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+                disabled={currentPage === 1}
               >
-                {page}
+                <ChevronLeft className="h-4 w-4" />
               </Button>
-            ))}
-            <Button
-              variant="outline"
-              size="sm"
-              className="rounded-r-md"
-              onClick={() =>
-                setCurrentPage((prev) => Math.min(prev + 1, totalPages))
-              }
-              disabled={currentPage === totalPages}
-            >
-              <ChevronRight className="h-4 w-4" />
-            </Button>
-          </nav>
+              {Array.from({ length: totalPages }, (_, i) => i + 1).map(
+                (page) => (
+                  <Button
+                    key={page}
+                    variant={currentPage === page ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => setCurrentPage(page)}
+                  >
+                    {page}
+                  </Button>
+                )
+              )}
+              <Button
+                variant="outline"
+                size="sm"
+                className="rounded-r-md"
+                onClick={() =>
+                  setCurrentPage((prev) => Math.min(prev + 1, totalPages))
+                }
+                disabled={currentPage === totalPages}
+              >
+                <ChevronRight className="h-4 w-4" />
+              </Button>
+            </nav>
+          </div>
         </div>
       </div>
-    </div>
-  );
+    );
+  };
+
+  // Add table instance
+  const table = useReactTable({
+    data: attendanceRecords,
+    columns,
+    getCoreRowModel: getCoreRowModel(),
+    getPaginationRowModel: getPaginationRowModel(),
+    pageCount: Math.ceil(attendanceRecords.length / recordsPerPage),
+    state: {
+      pagination: {
+        pageIndex: currentPage - 1,
+        pageSize: recordsPerPage,
+      },
+    },
+  });
 
   return (
-    <div className="container mx-auto p-4">
+    <div className="container mx-auto px-4 py-6">
       <form
         onSubmit={handleSubmit((data) =>
           HandleSubmitForStudentGet(data as FilteredAttendance)
         )}
       >
-        <div className="flex gap-12 p-4 mt-6 bg-white">
-          <div className="py-2">
-            <label className="text-gray-700 font-bold dark:text-gray-400">
-              Date
-            </label>
-            <Input
-              type="date"
-              className="border-gray-300 w-36"
-              {...register("attendance_date", {})}
-            />
-            <p className="text-red-500">
-              {errors.attendance_date?.message?.toString()}
-            </p>
-          </div>
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200">
+          <div className="flex p-6 md:grid-cols-4 gap-6">
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-gray-700">Date</label>
+              <Input
+                type="date"
+                className="w-full focus:ring-primary"
+                {...register("attendance_date", {})}
+              />
+              <p className="text-red-500 text-xs">
+                {errors.attendance_date?.message}
+              </p>
+            </div>
 
-          <div className="py-2 w-36">
-            <Select
-              label="Class Time"
-              options={classTimeList}
-              {...register("attendance_time_id", {
-                valueAsNumber: true,
-              })}
-              DisplayItem="title"
-              className="w-full"
-              defaultValue="" // Add this line
-            >
-              <option value="" disabled>
-                Select Class Time...
-              </option>
-            </Select>
-            <p className="text-red-500">
-              {errors.attendance_time_id?.message?.toString()}
-            </p>
-          </div>
-          <div className="py-2 w-36">
-            <Select
-              label="Class Name"
-              options={classNameList}
-              {...register("class_name_id", {
-                valueAsNumber: true,
-              })}
-              DisplayItem="title"
-              className="w-full"
-            />
-            <p className="text-red-500">
-              {errors.class_name_id?.message?.toString()}
-            </p>
-          </div>
+            <div className="space-y-2">
+              <Select
+                label="Class Time"
+                options={classTimeList}
+                {...register("attendance_time_id", { valueAsNumber: true })}
+                DisplayItem="title"
+                className="w-full focus:ring-primary"
+              />
+              <p className="text-red-500 text-xs">
+                {errors.attendance_time_id?.message}
+              </p>
+            </div>
 
-          <div className="py-2 w-36">
-            <Select
-              label="Teacher Name"
-              options={teacherNameList}
-              {...register("teacher_name_id", {
-                valueAsNumber: true,
-              })}
-              DisplayItem="title"
-              className="w-full"
-            />
-            <p className="text-red-500">
-              {errors.teacher_name_id?.message?.toString()}
-            </p>
+            <div className="space-y-2">
+              <Select
+                label="Class Name"
+                options={classNameList}
+                {...register("class_name_id", { valueAsNumber: true })}
+                DisplayItem="title"
+                className="w-full focus:ring-primary"
+              />
+              <p className="text-red-500 text-xs">
+                {errors.class_name_id?.message}
+              </p>
+            </div>
+
+            <div className="space-y-2">
+              <Select
+                label="Teacher Name"
+                options={teacherNameList}
+                {...register("teacher_name_id", { valueAsNumber: true })}
+                DisplayItem="title"
+                className="w-full focus:ring-primary"
+              />
+              <p className="text-red-500 text-xs">
+                {errors.teacher_name_id?.message}
+              </p>
+            </div>
+            <div className="px-6 py-4 bg-gray-50 border-t border-gray-200 flex justify-end">
+              <Button
+                type="submit"
+                className="inline-flex items-center px-4 py-2"
+                disabled={isLoading}
+              >
+                {isLoading ? (
+                  <>
+                    <div className="animate-spin h-4 w-4 mr-2 border-2 border-white border-t-transparent rounded-full" />
+                    Processing...
+                  </>
+                ) : (
+                  <>
+                    <svg
+                      className="w-4 h-4 mr-2"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                      />
+                    </svg>
+                    Search Records
+                  </>
+                )}
+              </Button>
+            </div>
           </div>
-          <Button type="submit" className="mt-8" disabled={isLoading}>
-            {isLoading ? "Loading..." : "Search"}
-          </Button>
         </div>
       </form>
-      <div className="w-full bg-white rounded-lg shadow-sm border border-gray-200">
-        <div className="overflow-x-auto h-[34rem]">
-          <table className="w-full">
-            <thead>
-              <tr className="bg-gray-50 text-gray-600 text-sm border-b border-gray-200">
-                <th className="py-2 px-4 font-medium text-left">ID</th>
-                <th className="py-2 px-4 font-medium text-left">Date</th>
-                <th className="py-2 px-4 font-medium text-left">Time</th>
-                <th className="py-2 px-4 font-medium text-left">Class</th>
-                <th className="py-2 px-4 font-medium text-left">Teacher</th>
-                <th className="py-2 px-4 font-medium text-left">Student</th>
-                <th className="py-2 px-4 font-medium text-left">Father Name</th>
-                <th className="py-2 px-4 font-medium text-left">Status</th>
-                <th className="py-2 px-4 font-medium text-left">Edit</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-100">
+
+      {/* Table Section */}
+      <div className="mt-4 bg-white rounded-xl shadow-sm border border-gray-200">
+        <div className="overflow-x-auto">
+          <Table>
+            <TableHeader>
+              {table.getHeaderGroups().map((headerGroup) => (
+                <TableRow key={headerGroup.id}>
+                  {headerGroup.headers.map((header) => (
+                    <TableHead key={header.id} className="text-xs h-8 px-2">
+                      {header.isPlaceholder
+                        ? null
+                        : flexRender(
+                            header.column.columnDef.header,
+                            header.getContext()
+                          )}
+                    </TableHead>
+                  ))}
+                </TableRow>
+              ))}
+            </TableHeader>
+            <TableBody>
               {isLoading ? (
-                <tr>
-                  <td colSpan={8} className="text-center py-8 text-gray-500">
-                    <div className="flex justify-center items-center space-x-2">
+                <TableRow>
+                  <TableCell
+                    colSpan={columns.length}
+                    className="text-center py-[14rem] text-gray-500"
+                  >
+                    <div className="flex justify-center py-10 items-center space-x-2">
                       <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-gray-500"></div>
                       <span>Loading records...</span>
                     </div>
-                  </td>
-                </tr>
-              ) : attendanceRecords.length === 0 ? (
-                <tr>
-                  <td colSpan={8} className="text-center py-8 text-gray-500">
+                  </TableCell>
+                </TableRow>
+              ) : table.getRowModel().rows?.length ? (
+                table.getRowModel().rows.map((row) => (
+                  <TableRow
+                    key={row.id}
+                    data-state={row.getIsSelected() && "selected"}
+                    className="text-xs hover:bg-gray-50"
+                  >
+                    {row.getVisibleCells().map((cell) => (
+                      <TableCell key={cell.id} className="px-2 py-[0.001rem]">
+                        {flexRender(
+                          cell.column.columnDef.cell,
+                          cell.getContext()
+                        )}
+                      </TableCell>
+                    ))}
+                  </TableRow>
+                ))
+              ) : (
+                <TableRow>
+                  <TableCell
+                    colSpan={columns.length}
+                    className="text-center py-[0.001rem] text-gray-500"
+                  >
                     <div className="flex flex-col items-center justify-center">
                       <AlertCircle className="h-10 w-10 text-gray-400 mb-2" />
                       <p>No attendance records found</p>
                     </div>
-                  </td>
-                </tr>
-              ) : (
-                currentRecords.map((record) => (
-                  <tr
-                    key={record.attendance_id}
-                    className="hover:bg-gray-50 transition-colors"
-                  >
-                    <td className=" px-4 text-sm text-gray-800">
-                      #{record.attendance_id.toString().padStart(4, "0")}
-                    </td>
-                    <td className=" px-4 text-sm text-gray-800">
-                      {new Date(record.attendance_date).toLocaleDateString(
-                        "en-US",
-                        {
-                          year: "numeric",
-                          month: "short",
-                          day: "numeric",
-                        }
-                      )}
-                    </td>
-                    <td className=" px-4 text-sm text-gray-800">
-                      {record.attendance_time}
-                    </td>
-                    <td className=" px-4 text-sm text-gray-800">
-                      {record.attendance_class}
-                    </td>
-                    <td className=" px-4 text-sm text-gray-800">
-                      {record.attendance_teacher}
-                    </td>
-                    <td className=" px-4 text-sm font-medium text-gray-900">
-                      {record.attendance_student}
-                    </td>
-                    <td className=" px-4 text-sm text-gray-800">
-                      {record.attendance_std_fname}
-                    </td>
-                    <td className=" px-4">
-                      <div className="flex items-center">
-                        {record.attendance_value.toLowerCase() === "present" ? (
-                          <div className="flex items-center text-green-600 bg-green-50 px-2 py-0.5 rounded-full text-xs font-medium">
-                            <Check className="w-3.5 h-3.5 mr-1" />
-                            Present
-                          </div>
-                        ) : record.attendance_value.toLowerCase() ===
-                          "absent" ? (
-                          <div className="flex items-center text-red-600 bg-red-50 px-2 py-0.5 rounded-full text-xs font-medium">
-                            <AlertCircle className="w-3.5 h-3.5 mr-1" />
-                            Absent
-                          </div>
-                        ) : record.attendance_value.toLowerCase() ===
-                          "leave" ? (
-                          <div className="flex items-center text-amber-600 bg-amber-50 px-2 py-0.5 rounded-full text-xs font-medium">
-                            <Clock className="w-3.5 h-3.5 mr-1" />
-                            Leave
-                          </div>
-                        ) : record.attendance_value.toLowerCase() === "sick" ? (
-                          <div className="flex items-center text-purple-600 bg-purple-50 px-2 py-0.5 rounded-full text-xs font-medium">
-                            <AlertCircle className="w-3.5 h-3.5 mr-1" />
-                            Sick
-                          </div>
-                        ) : (
-                          <div className="flex items-center text-gray-600 bg-gray-50 px-2 py-0.5 rounded-full text-xs font-medium">
-                            <Clock className="w-3.5 h-3.5 mr-1" />
-                            {record.attendance_value}
-                          </div>
-                        )}
-                      </div>
-                    </td>
-                    <td className=" px-4">
-                      <Button variant="outline" size="xs">
-                        <FaRegEdit />
-                      </Button>
-                    </td>
-                  </tr>
-                ))
+                  </TableCell>
+                </TableRow>
               )}
-            </tbody>
-          </table>
+            </TableBody>
+          </Table>
         </div>
-        <PaginationControls />
+        <div className="border-t border-gray-200">
+          <PaginationControls />
+        </div>
       </div>
     </div>
   );
