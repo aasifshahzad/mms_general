@@ -167,12 +167,12 @@ const AttendanceTable: React.FC = () => {
         return (
           <div className="flex items-center">
             {value === "present" ? (
-              <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-50 text-green-700">
+              <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-700">
                 <Check className="w-3 h-3 mr-1" />
                 Present
               </span>
             ) : value === "absent" ? (
-              <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-red-50 text-red-700">
+              <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-700">
                 <AlertCircle className="w-3 h-3 mr-1" />
                 Absent
               </span>
@@ -182,7 +182,7 @@ const AttendanceTable: React.FC = () => {
                 Leave
               </span>
             ) : value === "sick" ? (
-              <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-purple-50 text-purple-700">
+              <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-700">
                 <AlertCircle className="w-3 h-3 mr-1" />
                 Sick
               </span>
@@ -439,12 +439,12 @@ const AttendanceTable: React.FC = () => {
         )}
       >
         <div className="bg-white rounded-xl shadow-sm border border-gray-200">
-          <div className="flex p-6 md:grid-cols-4 gap-6">
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-gray-700">Date</label>
+          <div className="flex p-3 md:grid-cols-4 gap-6">
+            <div className="space-y-1 ">
+              <label className="text-sm text-gray-700 font-bold">Date</label>
               <Input
                 type="date"
-                className="w-full focus:ring-primary"
+                className="w-full focus:ring-primary dark:bg-secondary dark:text-gray-100 dark:border-gray-100 border-black"
                 {...register("attendance_date", {})}
               />
               <p className="text-red-500 text-xs">
@@ -458,7 +458,7 @@ const AttendanceTable: React.FC = () => {
                 options={classTimeList}
                 {...register("attendance_time_id", { valueAsNumber: true })}
                 DisplayItem="title"
-                className="w-full focus:ring-primary"
+                className="w-full focus:ring-primary dark:bg-secondary dark:text-gray-100 dark:border-gray-100"
               />
               <p className="text-red-500 text-xs">
                 {errors.attendance_time_id?.message}
@@ -490,7 +490,7 @@ const AttendanceTable: React.FC = () => {
                 {errors.teacher_name_id?.message}
               </p>
             </div>
-            <div className="px-6 py-4 bg-gray-50 border-t border-gray-200 flex justify-end">
+            <div className="px-2 py-4 bg-gray-50 mt-[0.6rem] border-gray-200 flex justify-end">
               <Button
                 type="submit"
                 className="inline-flex items-center px-4 py-2"
@@ -533,7 +533,7 @@ const AttendanceTable: React.FC = () => {
               {table.getHeaderGroups().map((headerGroup) => (
                 <TableRow key={headerGroup.id}>
                   {headerGroup.headers.map((header) => (
-                    <TableHead key={header.id} className="text-xs h-8 px-2">
+                    <TableHead key={header.id} className="text-xs h-8 bg-primary dark:bg-secondary text-white dark:text-gray-100 px-2">
                       {header.isPlaceholder
                         ? null
                         : flexRender(

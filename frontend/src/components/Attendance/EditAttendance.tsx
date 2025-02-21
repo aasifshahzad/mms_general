@@ -90,9 +90,10 @@ const EditAttendance = ({ attendanceId, onUpdate }: EditAttendanceProps) => {
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle className="text-xl font-semibold">
+            <DialogTitle className="text-xl text-center font-semibold">
               Edit Attendance
             </DialogTitle>
+            <hr className="border-t border-gray-300" />
           </DialogHeader>
 
           <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-4">

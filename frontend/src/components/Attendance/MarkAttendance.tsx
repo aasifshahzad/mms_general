@@ -313,10 +313,10 @@ const MarkAttendance = () => {
 
   return (
     <div className="mt-2 flex flex-col gap-5">
-      <Loader isActive={isLoading} />;
-      <div className="ml-2 bg-white dark:bg-transparent border border-gray-200 rounded-lg w-[82.5rem] p-4">
+      <Loader isActive={isLoading} />
+      <div className="ml-2 bg-white dark:bg-transparent drop-shadow-sm border border-gray-200 rounded-lg w-auto p-2">
         <form onSubmit={handleSubmit(onSubmit)}>
-          <div className="flex gap-32 ml-8">
+          <div className="flex gap-32 ml-1 border p-2 rounded-lg  ">
             <div className="py-2">
               <label className="text-gray-700 font-bold dark:text-gray-400">
                 Date
@@ -382,7 +382,7 @@ const MarkAttendance = () => {
           </div>
 
           {data.length > 0 && (
-            <div className="p-4 sm:p-8 bg-background">
+            <div className="py-4 px-1 bg-background">
               <div className="rounded-md border">
                 <Table>
                   <TableHeader>
