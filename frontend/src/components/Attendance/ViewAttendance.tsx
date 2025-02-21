@@ -81,95 +81,6 @@ interface APIError {
   };
 }
 
-
-// Add columns definition
-const columns: ColumnDef<AttendanceRecord>[] = [
-  {
-    accessorKey: "attendance_id",
-    header: "ID",
-    cell: ({ row }) => {
-      const id = row.getValue("attendance_id") as number;
-      return (
-        <span className="font-medium">#{id.toString().padStart(4, "0")}</span>
-      );
-    },
-  },
-  {
-    accessorKey: "attendance_date",
-    header: "Date",
-    cell: ({ row }) => {
-      const date = row.getValue("attendance_date") as string;
-      return new Date(date).toLocaleDateString();
-    },
-  },
-  {
-    accessorKey: "attendance_time",
-    header: "Time",
-  },
-  {
-    accessorKey: "attendance_class",
-    header: "Class",
-  },
-  {
-    accessorKey: "attendance_teacher",
-    header: "Teacher",
-  },
-  {
-    accessorKey: "attendance_student",
-    header: "Student",
-  },
-  {
-    accessorKey: "attendance_std_fname",
-    header: "Father Name",
-  },
-  {
-    accessorKey: "attendance_value",
-    header: "Status",
-    cell: ({ row }) => {
-      const value = (row.getValue("attendance_value") as string).toLowerCase();
-      return (
-        <div className="flex items-center">
-          {value === "present" ? (
-            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-50 text-green-700">
-              <Check className="w-3 h-3 mr-1" />
-              Present
-            </span>
-          ) : value === "absent" ? (
-            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-red-50 text-red-700">
-              <AlertCircle className="w-3 h-3 mr-1" />
-              Absent
-            </span>
-          ) : value === "leave" ? (
-            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-yellow-50 text-yellow-700">
-              <Clock className="w-3 h-3 mr-1" />
-              Leave
-            </span>
-          ) : value === "sick" ? (
-            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-purple-50 text-purple-700">
-              <AlertCircle className="w-3 h-3 mr-1" />
-              Sick
-            </span>
-          ) : (
-            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-gray-50 text-gray-700">
-              <Clock className="w-3 h-3 mr-1" />
-              Other
-            </span>
-          )}
-        </div>
-      );
-    },
-  },
-  {
-    id: "actions",
-    header: "Actions",
-    cell: ({ row }) => (
-      <EditAttendance 
-        attendanceId={row.original.attendance_id}
-      />
-    ),
-  },
-];
-
 const AttendanceTable: React.FC = () => {
   const {
     register,
@@ -191,13 +102,118 @@ const AttendanceTable: React.FC = () => {
   >([]);
   const [currentPage, setCurrentPage] = useState(1);
   const recordsPerPage = 15;
+  const [formRefresh, setFormRefresh] = useState(true);
+
+  const handleAttendanceUpdate = async () => {
+    setFormRefresh(prev => !prev);
+    // Re-fetch attendance data with current filters
+    const formData = {
+      attendance_date: "", 
+      attendance_time_id: 0,
+      class_name_id: 0,
+      teacher_name_id: 0,
+      student_id: 0,
+      father_name: "",
+      attendance_value_id: 0
+    };
+    await HandleSubmitForStudentGet(formData);
+  };
+
+  // Move columns definition here, after handleAttendanceUpdate
+  const columns: ColumnDef<AttendanceRecord>[] = [
+    {
+      accessorKey: "attendance_id",
+      header: "ID",
+      cell: ({ row }) => {
+        const id = row.getValue("attendance_id") as number;
+        return (
+          <span className="font-medium">#{id.toString().padStart(4, "0")}</span>
+        );
+      },
+    },
+    {
+      accessorKey: "attendance_date",
+      header: "Date",
+      cell: ({ row }) => {
+        const date = row.getValue("attendance_date") as string;
+        return new Date(date).toLocaleDateString();
+      },
+    },
+    {
+      accessorKey: "attendance_time",
+      header: "Time",
+    },
+    {
+      accessorKey: "attendance_class",
+      header: "Class",
+    },
+    {
+      accessorKey: "attendance_teacher",
+      header: "Teacher",
+    },
+    {
+      accessorKey: "attendance_student",
+      header: "Student",
+    },
+    {
+      accessorKey: "attendance_std_fname",
+      header: "Father Name",
+    },
+    {
+      accessorKey: "attendance_value",
+      header: "Status",
+      cell: ({ row }) => {
+        const value = (row.getValue("attendance_value") as string).toLowerCase();
+        return (
+          <div className="flex items-center">
+            {value === "present" ? (
+              <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-50 text-green-700">
+                <Check className="w-3 h-3 mr-1" />
+                Present
+              </span>
+            ) : value === "absent" ? (
+              <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-red-50 text-red-700">
+                <AlertCircle className="w-3 h-3 mr-1" />
+                Absent
+              </span>
+            ) : value === "leave" ? (
+              <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-yellow-50 text-yellow-700">
+                <Clock className="w-3 h-3 mr-1" />
+                Leave
+              </span>
+            ) : value === "sick" ? (
+              <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-purple-50 text-purple-700">
+                <AlertCircle className="w-3 h-3 mr-1" />
+                Sick
+              </span>
+            ) : (
+              <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-gray-50 text-gray-700">
+                <Clock className="w-3 h-3 mr-1" />
+                Other
+              </span>
+            )}
+          </div>
+        );
+      },
+    },
+    {
+      id: "actions",
+      header: "Actions",
+      cell: ({ row }) => (
+        <EditAttendance 
+          attendanceId={row.original.attendance_id}
+          onUpdate={handleAttendanceUpdate}
+        />
+      ),
+    },
+  ];
 
   useEffect(() => {
     // Load dropdown data here
     GetClassName();
     GetClassTime();
     GetTeacherName();
-  }, []);
+  }, [formRefresh]); // Add formRefresh dependency
 
   const GetClassName = async () => {
     try {
@@ -550,7 +566,7 @@ const AttendanceTable: React.FC = () => {
                     className="text-xs hover:bg-gray-50"
                   >
                     {row.getVisibleCells().map((cell) => (
-                      <TableCell key={cell.id} className="px-2 py-[0.001rem]">
+                      <TableCell key={cell.id} className="px-2 py-[0.4rem]">
                         {flexRender(
                           cell.column.columnDef.cell,
                           cell.getContext()
@@ -563,7 +579,7 @@ const AttendanceTable: React.FC = () => {
                 <TableRow>
                   <TableCell
                     colSpan={columns.length}
-                    className="text-center py-[0.001rem] text-gray-500"
+                    className="text-center py-[0.4rem] text-gray-500"
                   >
                     <div className="flex flex-col items-center justify-center">
                       <AlertCircle className="h-10 w-10 text-gray-400 mb-2" />
