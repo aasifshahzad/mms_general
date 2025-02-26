@@ -17,7 +17,6 @@ import { ClassNameAPI as API2 } from "@/api/Classname/ClassNameAPI";
 import { AttendanceTimeAPI as API13 } from "@/api/AttendaceTime/attendanceTimeAPI";
 import { TeacherNameAPI as API4 } from "@/api/Teacher/TeachetAPI";
 import { toast } from "sonner";
-import { FaRegEdit } from "react-icons/fa";
 import EditAttendance from "./EditAttendance";
 import {
   flexRender,
@@ -325,13 +324,13 @@ const AttendanceTable: React.FC = () => {
     }
   };
 
-  const indexOfLastRecord = currentPage * recordsPerPage;
-  const indexOfFirstRecord = indexOfLastRecord - recordsPerPage;
-  const currentRecords = attendanceRecords.slice(
-    indexOfFirstRecord,
-    indexOfLastRecord
-  );
-  const totalPages = Math.ceil(attendanceRecords.length / recordsPerPage);
+  // const indexOfLastRecord = currentPage * recordsPerPage;
+  // const indexOfFirstRecord = indexOfLastRecord - recordsPerPage;
+  // const currentRecords = attendanceRecords.slice(
+  //   indexOfFirstRecord,
+  //   indexOfLastRecord
+  // );
+  // const totalPages = Math.ceil(attendanceRecords.length / recordsPerPage);
 
   const PaginationControls = () => {
     const totalPages = Math.ceil(attendanceRecords.length / recordsPerPage);

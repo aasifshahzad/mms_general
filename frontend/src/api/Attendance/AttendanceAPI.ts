@@ -44,12 +44,14 @@ export const Create = async (Attendances: MarkAttInput) => {
       throw error;
     }
   }
-  export const Update = async (attendance_id : number, Attendances: MarkAttUpdate) => {
+  export const Update = async (attendance_id: number, Attendances: MarkAttUpdate) => {
     try {
-      Attendances = GetActionDetail(Attendances, "update");
+      const updatedAttendance = GetActionDetail(Attendances, "update");
+      if (!updatedAttendance) throw new Error("Failed to update attendance");
+      
       const response = await AxiosInstance.patch<MarkAttUpdate>(
         `/mark_attendance/update_attendance/${attendance_id}`,
-        JSON.stringify(Attendances),
+        JSON.stringify(updatedAttendance),
         {
           headers: {
             "Content-Type": "application/json",

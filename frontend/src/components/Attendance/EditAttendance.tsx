@@ -27,27 +27,31 @@ interface APIResponse {
 }
 
 const EditAttendance = ({ attendanceId, onUpdate }: EditAttendanceProps) => {
-  const {
-    handleSubmit,
-    reset,
-    formState: { errors },
-  } = useForm<MarkAttUpdate>();
+  const { handleSubmit, reset } = useForm<MarkAttUpdate>();
 
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
 
   const handleFormSubmit = async (data: MarkAttUpdate) => {
     setLoading(true);
+    console.log(data);
     try {
-      const attendanceValue = document.querySelector('input[name="attendanceStatus"]:checked') as HTMLInputElement;
-      
+      const attendanceValue = document.querySelector(
+        'input[name="attendanceStatus"]:checked'
+      ) as HTMLInputElement;
+
       const updateData: MarkAttUpdate = {
         attendance_id: attendanceId,
-        attendance_value_id: getAttendanceValueId(attendanceValue.value)
+        attendance_value_id: getAttendanceValueId(attendanceValue.value),
+        created_at: new Date(),
+        updated_at: new Date(),
       };
 
-      const response = await API.Update(updateData.attendance_id, updateData) as APIResponse;
-      
+      const response = (await API.Update(
+        updateData.attendance_id,
+        updateData
+      )) as APIResponse;
+
       if (response.status === 200) {
         setOpen(false);
         reset();
@@ -59,9 +63,9 @@ const EditAttendance = ({ attendanceId, onUpdate }: EditAttendanceProps) => {
       } else {
         throw new Error(response.data.message || "Failed to update attendance");
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Error updating attendance:", error);
-      toast.error(error.message || "Failed to update attendance", {
+      toast.error((error as Error).message || "Failed to update attendance", {
         position: "bottom-center",
         duration: 3000,
       });
@@ -71,12 +75,17 @@ const EditAttendance = ({ attendanceId, onUpdate }: EditAttendanceProps) => {
   };
 
   const getAttendanceValueId = (value: string): number => {
-    switch(value) {
-      case 'present': return 1;
-      case 'absent': return 2;
-      case 'late': return 3;
-      case 'sick': return 4;
-      default: return 1;
+    switch (value) {
+      case "present":
+        return 1;
+      case "absent":
+        return 2;
+      case "late":
+        return 3;
+      case "sick":
+        return 4;
+      default:
+        return 1;
     }
   };
 

@@ -9,20 +9,21 @@ export interface EntityBase {
 
 //   rowVersion: string;
 }
-export function GetActionDetail(Data: any, DataType: string) {
-    try {
-      switch (DataType) {
-        case "create":
-          Data.createdDate = new Date().toISOString();
-          Data.modifiedDate = new Date().toISOString();
-          break;
-        case "update":
-          Data.modifiedDate = new Date().toISOString();
-          break;
-      }
-  
-      return Data;
-    } catch (error) {
-      console.log(error);
+
+export function GetActionDetail(Data: EntityBase, DataType: string) {
+  try {
+    switch (DataType) {
+      case "create":
+        Data.created_at = new Date();
+        Data.updated_at = new Date();
+        break;
+      case "update":
+        Data.updated_at = new Date();
+        break;
     }
+
+    return Data;
+  } catch (error) {
+    console.log(error);
   }
+}
