@@ -1,6 +1,5 @@
 import AttendanceTable from "@/components/Attendance/ViewAttendance";
 import React from "react";
-import { attendanceData } from "@/components/Attendance/ViewAttendance";
 import { Header } from "@/components/dashboard/Header";
 
 const page = () => {
@@ -9,7 +8,7 @@ const page = () => {
       <div className="pt-2 pl-2 pr-2">
         <Header value="View Attendance" />
       </div>
-      <AttendanceTable data={attendanceData} />
+      <AttendanceTable />
     </div>
   );
 };

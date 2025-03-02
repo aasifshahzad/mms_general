@@ -13,6 +13,7 @@ import {
   Moon,
   Sun,
   UserCog2,
+  LogOut,
 } from "lucide-react";
 
 type MenuItem = {
@@ -89,6 +90,12 @@ const menuList: MenuItem[] = [
         path: "/dashboard/setup/teacher",
       },
     ],
+  },
+  {
+    id: 5,
+    name: "Logout",
+    icon: LogOut,
+    path: "/login",
   },
 ];
 
@@ -206,7 +213,7 @@ const Sidebar: React.FC = () => {
                           : "text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-neutral-800"
                       }`}
                     >
-                        <subItem.icon className="w-4 h-4 mt-0.5 mr-2" />
+                      <subItem.icon className="w-4 h-4 mt-0.5 mr-2" />
                       {subItem.name}
                     </Link>
                   ))}

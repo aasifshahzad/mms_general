@@ -1,15 +1,14 @@
 "use client";
 import type React from "react";
 import { useState, useEffect } from "react";
-import { format } from "date-fns";
-import { CalendarIcon } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Calendar } from "@/components/ui/calendar";
 import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
+  AlertCircle,
+  Check,
+  Clock,
+  ChevronLeft,
+  ChevronRight,
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectOption as SelectComponentOption } from "../Select";
 import { useForm } from "react-hook-form";
@@ -17,6 +16,24 @@ import { AttendanceAPI as API } from "@/api/Attendance/AttendanceAPI";
 import { ClassNameAPI as API2 } from "@/api/Classname/ClassNameAPI";
 import { AttendanceTimeAPI as API13 } from "@/api/AttendaceTime/attendanceTimeAPI";
 import { TeacherNameAPI as API4 } from "@/api/Teacher/TeachetAPI";
+import { toast } from "sonner";
+import EditAttendance from "./EditAttendance";
+import {
+  flexRender,
+  getCoreRowModel,
+  getPaginationRowModel,
+  useReactTable,
+  type ColumnDef,
+} from "@tanstack/react-table";
+
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 
 // Define the AttendanceRecord interface
 interface AttendanceRecord {
@@ -30,17 +47,14 @@ interface AttendanceRecord {
   attendance_value: string;
 }
 
-interface StudentResponse {
-  student_id: number;
-  student_name: string;
-}
-
 interface FilteredAttendance {
-  class_name: string;
-  teacher_name: string;
-  student_name: string;
   attendance_date: string;
-  attendance_time: string;
+  attendance_time_id: number;
+  class_name_id: number;
+  teacher_name_id: number;
+  student_id: number;
+  father_name: string;
+  attendance_value_id: number;
 }
 
 interface ClassNameResponse {
@@ -58,62 +72,21 @@ interface TeacherResponse {
   teacher_name: string;
 }
 
-interface StudentResponse {
-  student_id: number;
-  student_name: string;
+interface APIError {
+  response: {
+    data: {
+      message: string;
+    };
+  };
 }
 
-// type for the API function
-interface AttendanceAPI {
-  GetbyFilter: (filter: FilteredAttendance) => Promise<any>;
-}
-
-// Sample data (in a real application, you would fetch this from an API)
-export const attendanceData: AttendanceRecord[] = [
-  {
-    attendance_id: 14,
-    attendance_date: "2025-01-21T18:39:55.222000",
-    attendance_time: "Afternoon",
-    attendance_class: "Class 8",
-    attendance_teacher: "Teacher 1",
-    attendance_student: "Ben Carter",
-    attendance_std_fname: "James Carter",
-    attendance_value: "leave",
-  },
-  {
-    attendance_id: 15,
-    attendance_date: "2025-01-21T19:09:25.330000",
-    attendance_time: "Afternoon",
-    attendance_class: "Class 8",
-    attendance_teacher: "Teacher 1",
-    attendance_student: "Shelly Nelson",
-    attendance_std_fname: "Halla Yates",
-    attendance_value: "leave",
-  },
-  {
-    attendance_id: 16,
-    attendance_date: "2025-01-21T19:09:25.330000",
-    attendance_time: "Afternoon",
-    attendance_class: "Class 8",
-    attendance_teacher: "Teacher 1",
-    attendance_student: "Shelly Nelson",
-    attendance_std_fname: "Halla Yates",
-    attendance_value: "leave",
-  },
-];
-
-const AttendanceTable: React.FC<{ data: AttendanceRecord[] }> = ({ data }) => {
+const AttendanceTable: React.FC = () => {
   const {
     register,
     formState: { errors },
     handleSubmit,
-  } = useForm();
-  const [searchTerm, setSearchTerm] = useState("");
-  const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
+  } = useForm<FilteredAttendance>();
   const [isLoading, setIsLoading] = useState(false);
-  const [studentByFilter, setStudentByFilter] = useState<
-    Array<{ id: number; title: string }>
-  >([]);
   const [classTimeList, setClassTimeList] = useState<SelectComponentOption[]>(
     []
   );
@@ -123,18 +96,132 @@ const AttendanceTable: React.FC<{ data: AttendanceRecord[] }> = ({ data }) => {
   const [teacherNameList, setTeacherNameList] = useState<
     SelectComponentOption[]
   >([]);
+  const [attendanceRecords, setAttendanceRecords] = useState<
+    AttendanceRecord[]
+  >([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const recordsPerPage = 15;
+  const [formRefresh, setFormRefresh] = useState(true);
+
+  const handleAttendanceUpdate = async () => {
+    setFormRefresh(prev => !prev);
+    // Re-fetch attendance data with current filters
+    const formData = {
+      attendance_date: "", 
+      attendance_time_id: 0,
+      class_name_id: 0,
+      teacher_name_id: 0,
+      student_id: 0,
+      father_name: "",
+      attendance_value_id: 0
+    };
+    await HandleSubmitForStudentGet(formData);
+  };
+
+  // Move columns definition here, after handleAttendanceUpdate
+  const columns: ColumnDef<AttendanceRecord>[] = [
+    {
+      accessorKey: "attendance_id",
+      header: "ID",
+      cell: ({ row }) => {
+        const id = row.getValue("attendance_id") as number;
+        return (
+          <span className="font-medium">#{id.toString().padStart(4, "0")}</span>
+        );
+      },
+    },
+    {
+      accessorKey: "attendance_date",
+      header: "Date",
+      cell: ({ row }) => {
+        const date = row.getValue("attendance_date") as string;
+        return new Date(date).toLocaleDateString();
+      },
+    },
+    {
+      accessorKey: "attendance_time",
+      header: "Time",
+    },
+    {
+      accessorKey: "attendance_class",
+      header: "Class",
+    },
+    {
+      accessorKey: "attendance_teacher",
+      header: "Teacher",
+    },
+    {
+      accessorKey: "attendance_student",
+      header: "Student",
+    },
+    {
+      accessorKey: "attendance_std_fname",
+      header: "Father Name",
+    },
+    {
+      accessorKey: "attendance_value",
+      header: "Status",
+      cell: ({ row }) => {
+        const value = (row.getValue("attendance_value") as string).toLowerCase();
+        return (
+          <div className="flex items-center">
+            {value === "present" ? (
+              <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-700">
+                <Check className="w-3 h-3 mr-1" />
+                Present
+              </span>
+            ) : value === "absent" ? (
+              <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-700">
+                <AlertCircle className="w-3 h-3 mr-1" />
+                Absent
+              </span>
+            ) : value === "leave" ? (
+              <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-yellow-50 text-yellow-700">
+                <Clock className="w-3 h-3 mr-1" />
+                Leave
+              </span>
+            ) : value === "sick" ? (
+              <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-700">
+                <AlertCircle className="w-3 h-3 mr-1" />
+                Sick
+              </span>
+            ) : (
+              <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-gray-50 text-gray-700">
+                <Clock className="w-3 h-3 mr-1" />
+                Other
+              </span>
+            )}
+          </div>
+        );
+      },
+    },
+    {
+      id: "actions",
+      header: "Actions",
+      cell: ({ row }) => (
+        <EditAttendance 
+          attendanceId={row.original.attendance_id}
+          onUpdate={handleAttendanceUpdate}
+        />
+      ),
+    },
+  ];
 
   useEffect(() => {
     // Load dropdown data here
     GetClassName();
     GetClassTime();
     GetTeacherName();
-  }, []);
+  }, [formRefresh]); // Add formRefresh dependency
 
   const GetClassName = async () => {
     try {
       setIsLoading(true);
       const response = (await API2.Get()) as { data: ClassNameResponse[] };
+      response.data.unshift({
+        class_name_id: 0,
+        class_name: "All",
+      });
       if (response.data && Array.isArray(response.data)) {
         setClassNameList(
           response.data.map((item: ClassNameResponse) => ({
@@ -155,6 +242,10 @@ const AttendanceTable: React.FC<{ data: AttendanceRecord[] }> = ({ data }) => {
       const response = (await API13.Get()) as {
         data: AttendanceTimeResponse[];
       };
+      response.data.unshift({
+        attendance_time_id: 0,
+        attendance_time: "All",
+      });
       if (response.data && Array.isArray(response.data)) {
         setClassTimeList(
           response.data.map((item: AttendanceTimeResponse) => ({
@@ -175,6 +266,10 @@ const AttendanceTable: React.FC<{ data: AttendanceRecord[] }> = ({ data }) => {
       const response = (await API4.Get()) as unknown as {
         data: TeacherResponse[];
       };
+      response.data.unshift({
+        teacher_name_id: 0,
+        teacher_name: "All",
+      });
       if (response.data && Array.isArray(response.data)) {
         setTeacherNameList(
           response.data.map((item: TeacherResponse) => ({
@@ -190,184 +285,314 @@ const AttendanceTable: React.FC<{ data: AttendanceRecord[] }> = ({ data }) => {
     setIsLoading(false);
   };
 
-  const filteredData = data.filter((record) => {
-    const matchesSearch = Object.values(record).some((value) =>
-      value.toString().toLowerCase().includes(searchTerm.toLowerCase())
-    );
-    const matchesDate = selectedDate
-      ? new Date(record.attendance_date).toDateString() ===
-        selectedDate.toDateString()
-      : true;
-    return matchesSearch && matchesDate;
-  });
-
-  const HandleSubmitForStudentGet = async (formData: any) => {
+  const HandleSubmitForStudentGet = async (formData: FilteredAttendance) => {
     try {
       setIsLoading(true);
       const filter: FilteredAttendance = {
-        class_name: formData.class_name,
-        teacher_name: formData.teacher_name,
-        student_name: "",
-        attendance_date: formData.attendance_date,
-        attendance_time: formData.attendance_time
+        attendance_date: formData.attendance_date || "",
+        attendance_time_id: Number(formData.attendance_time_id) || 0,
+        class_name_id: Number(formData.class_name_id) || 0,
+        teacher_name_id: Number(formData.teacher_name_id) || 0,
+        student_id: Number(formData.student_id) || 0,
+        father_name: formData.father_name || "",
+        attendance_value_id: Number(formData.attendance_value_id) || 0,
       };
-      
-      const response = await (API as any).GetbyFilter(filter);
-      if (response.data && Array.isArray(response.data)) {
-        setStudentByFilter(
-          response.data.map((item: StudentResponse) => ({
-            id: item.student_id,
-            title: item.student_name,
-          }))
+
+      const response = await API.GetbyFilter(filter);
+
+      if (response.status === 200) {
+        toast.success("Data fetched successfully", {
+          position: "bottom-center",
+          duration: 3000,
+        });
+        setAttendanceRecords(response.data as unknown as AttendanceRecord[]);
+      } else {
+        toast.error(`Error: ${response.status} - ${response.statusText}`);
+      }
+    } catch (error: unknown) {
+      if (error && typeof error === "object" && "response" in error) {
+        toast.error(
+          (error as APIError).response?.data?.message || "Error fetching data",
+          {
+            position: "bottom-center",
+            duration: 3000,
+          }
         );
       }
-    } catch (error) {
-      console.error("Error fetching student data:", error);
+    } finally {
+      setIsLoading(false);
     }
-    setIsLoading(false);
   };
 
-  return (
-    <div className="container mx-auto p-4">
-      <h1 className="text-2xl font-bold mb-4">Attendance Records</h1>
-      <form onSubmit={handleSubmit(HandleSubmitForStudentGet)}>
-        <div className="flex gap-32 ml-8">
-          <div className="py-2">
-            <label className="text-gray-700 font-bold dark:text-gray-400">
-              Date
-            </label>
-            <Input
-              type="date"
-              className="border-gray-300 w-36"
-              {...register("attendance_date", {
-              })}
-            />
-            <p className="text-red-500">
-              {errors.attendance_date?.message?.toString()}
+  // const indexOfLastRecord = currentPage * recordsPerPage;
+  // const indexOfFirstRecord = indexOfLastRecord - recordsPerPage;
+  // const currentRecords = attendanceRecords.slice(
+  //   indexOfFirstRecord,
+  //   indexOfLastRecord
+  // );
+  // const totalPages = Math.ceil(attendanceRecords.length / recordsPerPage);
+
+  const PaginationControls = () => {
+    const totalPages = Math.ceil(attendanceRecords.length / recordsPerPage);
+    const indexOfLastRecord = currentPage * recordsPerPage;
+    const indexOfFirstRecord = indexOfLastRecord - recordsPerPage;
+
+    return (
+      <div className="flex items-center justify-between border-t border-gray-200 px-4 py-3 sm:px-6">
+        <div className="flex flex-1 justify-between sm:hidden">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+            disabled={currentPage === 1}
+          >
+            Previous
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() =>
+              setCurrentPage((prev) => Math.min(prev + 1, totalPages))
+            }
+            disabled={currentPage === totalPages}
+          >
+            Next
+          </Button>
+        </div>
+        <div className="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
+          <div>
+            <p className="text-sm text-gray-700">
+              Showing{" "}
+              <span className="font-medium">{indexOfFirstRecord + 1}</span> to{" "}
+              <span className="font-medium">
+                {Math.min(indexOfLastRecord, attendanceRecords.length)}
+              </span>{" "}
+              of <span className="font-medium">{attendanceRecords.length}</span>{" "}
+              results
             </p>
           </div>
-
-          <div className="py-2 w-36">
-            <Select
-              label="Class Time"
-              options={classTimeList}
-              {...register("attendance_time", {
-                required: "Time is required",
-              })}
-              DisplayItem="title"
-              selectOption={false} 
-              className="w-full"
-            />
-            <p className="text-red-500">
-              {errors.attendance_time_id?.message?.toString()}
-            </p>
-          </div>
-
-          <div className="py-2 w-36">
-            <Select
-              label="Class Name"
-              options={classNameList}
-              {...register("class_name", {
-                required: "Class is required",
-              })}
-              DisplayItem="title"
-              className="w-full"
-            />
-            <p className="text-red-500">
-              {errors.class_name_id?.message?.toString()}
-            </p>
-          </div>
-
-          <div className="py-2 w-36">
-            <Select
-              label="Teacher Name"
-              options={teacherNameList}
-              {...register("teacher_name", {
-                required: "Teacher is required",
-              })}
-              DisplayItem="title"
-              className="w-full"
-            />
-            <p className="text-red-500">
-              {errors.teacher_name_id?.message?.toString()}
-            </p>
+          <div>
+            <nav
+              className="isolate inline-flex -space-x-px rounded-md shadow-sm"
+              aria-label="Pagination"
+            >
+              <Button
+                variant="outline"
+                size="sm"
+                className="rounded-l-md"
+                onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+                disabled={currentPage === 1}
+              >
+                <ChevronLeft className="h-4 w-4" />
+              </Button>
+              {Array.from({ length: totalPages }, (_, i) => i + 1).map(
+                (page) => (
+                  <Button
+                    key={page}
+                    variant={currentPage === page ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => setCurrentPage(page)}
+                  >
+                    {page}
+                  </Button>
+                )
+              )}
+              <Button
+                variant="outline"
+                size="sm"
+                className="rounded-r-md"
+                onClick={() =>
+                  setCurrentPage((prev) => Math.min(prev + 1, totalPages))
+                }
+                disabled={currentPage === totalPages}
+              >
+                <ChevronRight className="h-4 w-4" />
+              </Button>
+            </nav>
           </div>
         </div>
-        <Button type="submit" disabled={isLoading}>
-          {isLoading ? "Loading..." : "Search"}
-        </Button>
-      </form>
-      <div className="overflow-x-auto">
-        <table className="min-w-full bg-white border border-gray-300">
-          <thead>
-            <tr className="bg-gray-100">
-              <th className="py-2 px-4 text-center border-b">ID</th>
-              <th className="py-2 px-4 text-center border-b">Date</th>
-              <th className="py-2 px-4 text-center border-b">Time</th>
-              <th className="py-2 px-4 text-center border-b">Class</th>
-              <th className="py-2 px-4 text-center border-b">Teacher</th>
-              <th className="py-2 px-4 text-center border-b">Student</th>
-              <th className="py-2 px-4 text-center border-b">
-                Student&apos;s Father
-              </th>
-              <th className="py-2 px-4 text-center border-b">Status</th>
-            </tr>
-          </thead>
-          <tbody>
-            {isLoading ? (
-              <tr>
-                <td colSpan={8} className="text-center py-4">
-                  Loading...
-                </td>
-              </tr>
-            ) : filteredData.length === 0 ? (
-              <tr>
-                <td colSpan={8} className="text-center py-4">
-                  No records found
-                </td>
-              </tr>
-            ) : (
-              filteredData.map((record) => (
-                <tr key={record.attendance_id} className="hover:bg-gray-50">
-                  <td className="py-2 px-4 text-center border-b">
-                    {record.attendance_id}
-                  </td>
-                  <td className="py-2 px-4 text-center border-b">
-                    {new Date(record.attendance_date).toLocaleDateString()}
-                  </td>
-                  <td className="py-2 px-4 text-center border-b">
-                    {record.attendance_time}
-                  </td>
-                  <td className="py-2 px-4 text-center border-b">
-                    {record.attendance_class}
-                  </td>
-                  <td className="py-2 px-4 text-center border-b">
-                    {record.attendance_teacher}
-                  </td>
-                  <td className="py-2 px-4 text-center border-b">
-                    {record.attendance_student}
-                  </td>
-                  <td className="py-2 px-4 text-center border-b">
-                    {record.attendance_std_fname}
-                  </td>
-                  <td className="py-2 px-4 text-center border-b">
-                    <span
-                      className={`px-2 py-1 rounded-full text-xs font-semibold ${
-                        record.attendance_value === "present"
-                          ? "bg-green-200 text-green-800"
-                          : record.attendance_value === "absent"
-                          ? "bg-red-200 text-red-800"
-                          : "bg-yellow-200 text-yellow-800"
-                      }`}
+      </div>
+    );
+  };
+
+  // Add table instance
+  const table = useReactTable({
+    data: attendanceRecords,
+    columns,
+    getCoreRowModel: getCoreRowModel(),
+    getPaginationRowModel: getPaginationRowModel(),
+    pageCount: Math.ceil(attendanceRecords.length / recordsPerPage),
+    state: {
+      pagination: {
+        pageIndex: currentPage - 1,
+        pageSize: recordsPerPage,
+      },
+    },
+  });
+
+  return (
+    <div className="container mx-auto px-4 py-6">
+      <form
+        onSubmit={handleSubmit((data) =>
+          HandleSubmitForStudentGet(data as FilteredAttendance)
+        )}
+      >
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200">
+          <div className="flex p-3 md:grid-cols-4 gap-6">
+            <div className="space-y-1 ">
+              <label className="text-sm text-gray-700 font-bold">Date</label>
+              <Input
+                type="date"
+                className="w-full focus:ring-primary dark:bg-secondary dark:text-gray-100 dark:border-gray-100 border-black"
+                {...register("attendance_date", {})}
+              />
+              <p className="text-red-500 text-xs">
+                {errors.attendance_date?.message}
+              </p>
+            </div>
+
+            <div className="space-y-2">
+              <Select
+                label="Class Time"
+                options={classTimeList}
+                {...register("attendance_time_id", { valueAsNumber: true })}
+                DisplayItem="title"
+                className="w-full focus:ring-primary dark:bg-secondary dark:text-gray-100 dark:border-gray-100"
+              />
+              <p className="text-red-500 text-xs">
+                {errors.attendance_time_id?.message}
+              </p>
+            </div>
+
+            <div className="space-y-2">
+              <Select
+                label="Class Name"
+                options={classNameList}
+                {...register("class_name_id", { valueAsNumber: true })}
+                DisplayItem="title"
+                className="w-full focus:ring-primary"
+              />
+              <p className="text-red-500 text-xs">
+                {errors.class_name_id?.message}
+              </p>
+            </div>
+
+            <div className="space-y-2">
+              <Select
+                label="Teacher Name"
+                options={teacherNameList}
+                {...register("teacher_name_id", { valueAsNumber: true })}
+                DisplayItem="title"
+                className="w-full focus:ring-primary"
+              />
+              <p className="text-red-500 text-xs">
+                {errors.teacher_name_id?.message}
+              </p>
+            </div>
+            <div className="px-2 py-4 bg-gray-50 mt-[0.6rem] border-gray-200 flex justify-end">
+              <Button
+                type="submit"
+                className="inline-flex items-center px-4 py-2"
+                disabled={isLoading}
+              >
+                {isLoading ? (
+                  <>
+                    <div className="animate-spin h-4 w-4 mr-2 border-2 border-white border-t-transparent rounded-full" />
+                    Processing...
+                  </>
+                ) : (
+                  <>
+                    <svg
+                      className="w-4 h-4 mr-2"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
                     >
-                      {record.attendance_value}
-                    </span>
-                  </td>
-                </tr>
-              ))
-            )}
-          </tbody>
-        </table>
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                      />
+                    </svg>
+                    Search Records
+                  </>
+                )}
+              </Button>
+            </div>
+          </div>
+        </div>
+      </form>
+
+      {/* Table Section */}
+      <div className="mt-4 bg-white rounded-xl shadow-sm border border-gray-200">
+        <div className="overflow-x-auto">
+          <Table>
+            <TableHeader>
+              {table.getHeaderGroups().map((headerGroup) => (
+                <TableRow key={headerGroup.id}>
+                  {headerGroup.headers.map((header) => (
+                    <TableHead key={header.id} className="text-xs h-8 bg-primary dark:bg-secondary text-white dark:text-gray-100 px-2">
+                      {header.isPlaceholder
+                        ? null
+                        : flexRender(
+                            header.column.columnDef.header,
+                            header.getContext()
+                          )}
+                    </TableHead>
+                  ))}
+                </TableRow>
+              ))}
+            </TableHeader>
+            <TableBody>
+              {isLoading ? (
+                <TableRow>
+                  <TableCell
+                    colSpan={columns.length}
+                    className="text-center py-[14rem] text-gray-500"
+                  >
+                    <div className="flex justify-center py-10 items-center space-x-2">
+                      <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-gray-500"></div>
+                      <span>Loading records...</span>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ) : table.getRowModel().rows?.length ? (
+                table.getRowModel().rows.map((row) => (
+                  <TableRow
+                    key={row.id}
+                    data-state={row.getIsSelected() && "selected"}
+                    className="text-xs hover:bg-gray-50"
+                  >
+                    {row.getVisibleCells().map((cell) => (
+                      <TableCell key={cell.id} className="px-2 py-[0.4rem]">
+                        {flexRender(
+                          cell.column.columnDef.cell,
+                          cell.getContext()
+                        )}
+                      </TableCell>
+                    ))}
+                  </TableRow>
+                ))
+              ) : (
+                <TableRow>
+                  <TableCell
+                    colSpan={columns.length}
+                    className="text-center py-[0.4rem] text-gray-500"
+                  >
+                    <div className="flex flex-col items-center justify-center">
+                      <AlertCircle className="h-10 w-10 text-gray-400 mb-2" />
+                      <p>No attendance records found</p>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
+        </div>
+        <div className="border-t border-gray-200">
+          <PaginationControls />
+        </div>
       </div>
     </div>
   );

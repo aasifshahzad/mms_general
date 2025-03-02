@@ -14,3 +14,8 @@ export interface MarkAttInput {
     attendance_value_id: string;
   }[];
 }
+
+export interface MarkAttUpdate extends EntityBase {
+  attendance_id: number;
+  attendance_value_id: number;
+}
