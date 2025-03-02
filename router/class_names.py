@@ -1,10 +1,12 @@
 from asyncio.log import logger
-from typing import List
+from typing import Annotated, List
 from fastapi import APIRouter, Depends, HTTPException
 from sqlmodel import Session, select
 
 from db import get_session
 from schemas.class_names_model import ClassNames, ClassNamesCreate, ClassNamesResponse
+from user.user_crud import check_admin
+from user.user_models import User
 
 classnames_router = APIRouter(
     prefix="/class_name",
@@ -19,7 +21,7 @@ async def root():
 
 
 @classnames_router.post("/add_class_name/", response_model=ClassNamesResponse)
-def create_classnames(classnames: ClassNamesCreate, session: Session = Depends(get_session)):
+def create_classnames(user: Annotated[User, Depends(check_admin)],classnames: ClassNamesCreate, session: Session = Depends(get_session)):
     db_classnames = ClassNames(**classnames.model_dump())
     session.add(db_classnames)
 
@@ -57,7 +59,7 @@ def read_classname(class_name_id: int, session: Session = Depends(get_session)):
 
 
 @classnames_router.delete("/del/{class_name}", response_model=dict)
-def delete_classnames(class_name: str, session: Session = Depends(get_session)):
+def delete_classnames(user: Annotated[User, Depends(check_admin)],class_name: str, session: Session = Depends(get_session)):
     classnames = session.exec(select(ClassNames).where(
         ClassNames.class_name == class_name)).first()
     print(classnames)

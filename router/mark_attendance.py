@@ -12,9 +12,11 @@ from schemas.attendance_model import (
 )
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlmodel import Session, select
-from typing import List, Optional
+from typing import Annotated, List, Optional
 
 from db import get_session
+from user.user_crud import check_teacher
+from user.user_models import User
 
 mark_attendance_router = APIRouter(
     prefix="/mark_attendance",
@@ -23,7 +25,8 @@ mark_attendance_router = APIRouter(
 )
 
 @mark_attendance_router.get("/show_all_attendance", response_model=List[FilteredAttendanceResponse])
-def get_filtered_attendance(session: Session = Depends(get_session)):
+def get_filtered_attendance(
+    current_user: Annotated[User, Depends(check_teacher)],session: Session = Depends(get_session)):
     stmt = (
         select(
             Attendance.attendance_id,
@@ -62,7 +65,7 @@ def get_filtered_attendance(session: Session = Depends(get_session)):
     ]
 
 @mark_attendance_router.post("/add_attendance/", response_model=FilteredAttendanceResponse)
-def add_attendance(create_attendance: AttendanceCreate, session: Session = Depends(get_session)):
+def add_attendance(current_user: Annotated[User, Depends(check_teacher)],create_attendance: AttendanceCreate, session: Session = Depends(get_session)):
     student = session.get(Students, create_attendance.student_id)
     if not student:
         raise HTTPException(status_code=404, detail=f"Student with ID {create_attendance.student_id} not found")
@@ -87,6 +90,7 @@ def add_attendance(create_attendance: AttendanceCreate, session: Session = Depen
 
 @mark_attendance_router.post("/add_bulk_attendance/", response_model=List[FilteredAttendanceResponse])
 def add_bulk_attendance(
+    current_user: Annotated[User, Depends(check_teacher)],
     bulk_attendance: BulkAttendanceCreate,
     session: Session = Depends(get_session)
 ):
@@ -114,7 +118,7 @@ def add_bulk_attendance(
     return filtered_responses
 
 @mark_attendance_router.delete("/delete_attendance/{attendance_id}", response_model=str)
-def delete_attendance(attendance_id: int, session: Session = Depends(get_session)):
+def delete_attendance(current_user: Annotated[User, Depends(check_teacher)],attendance_id: int, session: Session = Depends(get_session)):
     attendance = session.get(Attendance, attendance_id)
     if not attendance:
         raise HTTPException(status_code=404, detail="Attendance record not found")
@@ -125,6 +129,7 @@ def delete_attendance(attendance_id: int, session: Session = Depends(get_session
 
 @mark_attendance_router.patch("/update_attendance/{attendance_id}", response_model=FilteredAttendanceResponse)
 def update_attendance(
+    current_user: Annotated[User, Depends(check_teacher)],
     attendance_id: int,
     attendance_update: AttendanceUpdate,
     session: Session = Depends(get_session)
@@ -154,6 +159,7 @@ def update_attendance(
 
 @mark_attendance_router.get("/filter_attendance_by_ids", response_model=List[FilteredAttendanceResponse])
 def filter_attendance_by_ids(
+    current_user: Annotated[User, Depends(check_teacher)],
     session: Session = Depends(get_session),
     attendance_date: Optional[str] = Query(None, description="Filter by Attendance date"),
     attendance_time_id: Optional[int] = Query(None, description="Filter by Attendance Time ID"),
@@ -202,6 +208,7 @@ def filter_attendance_by_ids(
 
 @mark_attendance_router.get("/filtered_attendance_by_name", response_model=List[FilteredAttendanceResponse])
 def get_filtered_attendance(
+    current_user: Annotated[User, Depends(check_teacher)],
     session: Session = Depends(get_session),
     class_name: Optional[str] = Query(None, description="Filter by Class name"),
     teacher_name: Optional[str] = Query(None, description="Filter by Teacher name"),
@@ -211,7 +218,7 @@ def get_filtered_attendance(
     attendance_time: Optional[str] = Query(None, description="Filter by Attendance time"),
     attendance_id: Optional[int] = Query(None, description="Filter by Attendance ID"),
 ):
-    query = session.query(Attendance)
+    query = session.exec(Attendance)
 
     if class_name:
         query = query.filter(Attendance.attendance_class.has(class_name=class_name))

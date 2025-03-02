@@ -1,11 +1,13 @@
 from sqlalchemy import text
 from asyncio.log import logger
-from typing import List
+from typing import Annotated, List
 from fastapi import APIRouter, Depends, HTTPException
 from sqlmodel import Session, select
 
 from db import get_session
 from schemas.attendance_value_model import AttendanceValue, AttendanceValueCreate, AttendanceValueResponse
+from user.user_crud import check_admin
+from user.user_models import User
 attendancevalue_router = APIRouter(
     prefix="/attendance_value",
     tags=["Attendance Value"],
@@ -19,7 +21,7 @@ async def root():
 
 
 @attendancevalue_router.post("/add_attendance_value/", response_model=AttendanceValueResponse)
-def create_attendancevalue(attendancevalue: AttendanceValueCreate, session: Session = Depends(get_session)):
+def create_attendancevalue(user: Annotated[User, Depends(check_admin)],attendancevalue: AttendanceValueCreate, session: Session = Depends(get_session)):
     db_attendancevalue = AttendanceValue(**attendancevalue.model_dump())
     session.add(db_attendancevalue)
 
@@ -57,7 +59,7 @@ def read_attendancevalue(attendancevalue_id: int, session: Session = Depends(get
 
 
 @attendancevalue_router.delete("/del/{attend_value_name}", response_model=dict)
-def delete_attendancevalue(attend_value_name: str, session: Session = Depends(get_session)):
+def delete_attendancevalue(user: Annotated[User, Depends(check_admin)],attend_value_name: str, session: Session = Depends(get_session)):
     attendancevalue = session.exec(select(AttendanceValue).where(
         AttendanceValue.attendance_value == attend_value_name)).first()
     print(attendancevalue)

@@ -8,6 +8,8 @@ from typing import Annotated
 
 from db import get_session
 from schemas.students_model import Students, StudentsCreate, StudentsResponse, StudentsUpdate
+from user.user_crud import check_admin
+from user.user_models import User
 
 students_router = APIRouter(
     prefix="/students",
@@ -17,7 +19,7 @@ students_router = APIRouter(
 
 
 @students_router.post("/add/", response_model=StudentsResponse)
-def create_student(student: StudentsCreate, session: Annotated[Session, Depends(get_session)]):
+def create_student(user: Annotated[User, Depends(check_admin)],student: StudentsCreate, session: Annotated[Session, Depends(get_session)]):
     db_student = Students(**student.model_dump())
     session.add(db_student)
 
@@ -32,7 +34,7 @@ def create_student(student: StudentsCreate, session: Annotated[Session, Depends(
 
 
 @students_router.post("/add_bulk/", response_model=List[StudentsResponse])
-def create_bulk_students(students: List[StudentsCreate], session: Annotated[Session, Depends(get_session)]):
+def create_bulk_students(user: Annotated[User, Depends(check_admin)],students: List[StudentsCreate], session: Annotated[Session, Depends(get_session)]):
     db_students = [Students(**student.model_dump()) for student in students]
     session.add_all(db_students)
 
@@ -48,7 +50,7 @@ def create_bulk_students(students: List[StudentsCreate], session: Annotated[Sess
 
 
 @students_router.patch("/{student_id}", response_model=StudentsResponse)
-def update_student(student_id: int, student: StudentsUpdate, session: Annotated[Session, Depends(get_session)]):
+def update_student(user: Annotated[User, Depends(check_admin)],student_id: int, student: StudentsUpdate, session: Annotated[Session, Depends(get_session)]):
     db_student = session.exec(select(Students).where(
         Students.student_id == student_id)).first()
     if not db_student:
@@ -66,7 +68,7 @@ def update_student(student_id: int, student: StudentsUpdate, session: Annotated[
 
 
 @students_router.delete("/{student_id}", response_model=dict)
-def delete_student(student_id: int, session: Annotated[Session, Depends(get_session)]):
+def delete_student(user: Annotated[User, Depends(check_admin)],student_id: int, session: Annotated[Session, Depends(get_session)]):
     db_student = session.get(Students, student_id)
     if not db_student:
         raise HTTPException(status_code=404, detail="Student not found")

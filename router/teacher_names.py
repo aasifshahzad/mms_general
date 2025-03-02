@@ -1,10 +1,12 @@
 from asyncio.log import logger
-from typing import List
+from typing import Annotated, List
 from fastapi import APIRouter, Depends, HTTPException
 from sqlmodel import Session, select
 
 from db import get_session
 from schemas.teacher_names_model import TeacherNames, TeacherNamesCreate, TeacherNamesResponse
+from user.user_crud import check_admin
+from user.user_models import User
 
 teachernames_router = APIRouter(
     prefix="/teacher_name",
@@ -19,7 +21,7 @@ async def root():
 
 
 @teachernames_router.post("/add_teacher_name/", response_model=TeacherNamesResponse)
-def create_teachernames(teachernames: TeacherNamesCreate, session: Session = Depends(get_session)):
+def create_teachernames( user: Annotated[User, Depends(check_admin)],teachernames: TeacherNamesCreate, session: Session = Depends(get_session),):
     db_teachernames = TeacherNames(**teachernames.model_dump())
     session.add(db_teachernames)
 
@@ -57,7 +59,7 @@ def read_teachernames(teacher_name_id: int, session: Session = Depends(get_sessi
 
 
 @teachernames_router.delete("/del/{teacher_name}", response_model=dict)
-def delete_teachernames(teacher_name: str, session: Session = Depends(get_session)):
+def delete_teachernames(user: Annotated[User, Depends(check_admin)],teacher_name: str, session: Session = Depends(get_session)):
     teachernames = session.exec(select(TeacherNames).where(
         TeacherNames.teacher_name == teacher_name)).first()
     print(teachernames)
