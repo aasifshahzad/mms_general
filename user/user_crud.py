@@ -46,7 +46,7 @@ def user_login(db: Session, form_data: OAuth2PasswordRequestForm):
     }
 
 
-def user_login(db: Session, form_data: OAuth2PasswordRequestForm):
+#def user_login(db: Session, form_data: OAuth2PasswordRequestForm):
     user: Userlogin = get_user_by_username(db, form_data.username)
     if not verify_password(form_data.password, user.password):
         raise HTTPException(
