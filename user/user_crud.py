@@ -10,6 +10,40 @@ from user.services import create_access_token, get_password_hash, get_user_by_us
 from user.user_models import TokenData, User, UserCreate, UserUpdate, Userlogin
 from typing import Annotated
 
+  # Assuming security functions exist
+
+def user_login(db: Session, form_data: OAuth2PasswordRequestForm):
+    user: Userlogin = get_user_by_username(db, form_data.username)
+    
+    if not user or not verify_password(form_data.password, user.password):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Incorrect username or password",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    
+    access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+    access_token = create_access_token(
+        data={"sub": user.username}, expires_delta=access_token_expires
+    )
+    
+    refresh_token_expires = timedelta(minutes=REFRESH_TOKEN_EXPIRE_MINUTES)
+    refresh_token = create_access_token(
+        data={"sub": user.username}, expires_delta=refresh_token_expires
+    )
+
+    return {
+        "access_token": access_token,
+        "refresh_token": refresh_token,
+        "expires_in": access_token_expires.total_seconds() + refresh_token_expires.total_seconds(),
+        "token_type": "bearer",
+        "user": {
+            "id": user.id,
+            "username": user.username,
+            "email": user.email if hasattr(user, "email") else None,
+            "role": user.role if hasattr(user, "role") else None,
+        }
+    }
 
 
 def user_login(db: Session, form_data: OAuth2PasswordRequestForm):
