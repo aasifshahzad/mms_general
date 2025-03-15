@@ -20,7 +20,7 @@ origins = [
 
 
 
-from fastapi import FastAPI, Depends, HTTPException
+from fastapi import FastAPI, Depends, HTTPException, logger
 from sqlmodel import select, Session
 from typing import Annotated
 from fastapi.security import OAuth2PasswordRequestForm
@@ -81,17 +81,26 @@ async def root():
 def read_root():
     return {"service": "User Service"}
 
-@app.post("/login", response_model=Token, tags=["User"])
-async def login_for_access_token(form_data: Annotated[OAuth2PasswordRequestForm, Depends()], db: Annotated[Session, Depends(get_session)]) -> Token:
-    user = user_login(db, form_data)
-    return user
+@app.post("/login", response_model=LoginResponse, tags=["User"])
+async def login_for_access_token(
+    form_data: Annotated[OAuth2PasswordRequestForm, Depends()],
+    db: Annotated[Session, Depends(get_session)]
+) -> LoginResponse:
+    return user_login(db, form_data)
 
 @app.post("/signup", response_model=User, tags=["User"])
 async def signup(db: Annotated[Session, Depends(get_session)], user: UserCreate):
     try:
         return await signup_user(user, db)
+    except HTTPException as e:
+        # Re-raise HTTPException as is
+        raise e
     except Exception as e:
-        raise HTTPException(status_code=400,detail=str(e))
+        # Print the unexpected error instead of logging
+        print(f"Unexpected signup error: {e}")
+        raise HTTPException(status_code=500, detail="Internal server error during signup")
+
+      
 
 @app.get("/users/me", response_model=User, tags=["User"])
 async def read_users_me(token: Annotated[str, Depends(oauth2_scheme)], db: Annotated[Session, Depends(get_session)]) -> User:

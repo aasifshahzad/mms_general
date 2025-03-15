@@ -40,3 +40,15 @@ class User(UserBase, table=True):
 class UserCreate(UserBase):
     email: str
     role: UserRole = Field(default=UserRole.user, sa_column=Column("role", Enum(UserRole)))
+
+class UserResponse(SQLModel):
+    username: str
+    email: str
+    role: UserRole
+
+class LoginResponse(SQLModel):
+    access_token: str
+    refresh_token: str
+    token_type: str
+    expires_in: int  # Token expiration time in seconds
+    user: UserResponse
