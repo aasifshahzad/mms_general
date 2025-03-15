@@ -103,9 +103,17 @@ def authenticate_user(db, username: str, password: str) -> User:
     """
     user = get_user_by_username(db, username)
     if not user:
-        return False
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid username or password",
+            headers={"WWW-Authenticate": "Bearer"}
+        )
     if not verify_password(password, user.password):
-        return False
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid username or password",
+            headers={"WWW-Authenticate": "Bearer"}
+        )
     return user
 
 def create_access_token(data: dict, expires_delta: timedelta | None = None) -> str:

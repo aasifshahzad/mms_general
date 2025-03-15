@@ -7,14 +7,14 @@ from sqlmodel import Session, select
 from db import get_session
 from user.settings import ACCESS_TOKEN_EXPIRE_MINUTES, ALGORITHM, REFRESH_TOKEN_EXPIRE_MINUTES, SECRET_KEY
 from user.services import create_access_token, get_password_hash, get_user_by_username, verify_password, pwd_context, oauth2_scheme
-from user.user_models import LoginResponse, TokenData, User, UserCreate, UserResponse, UserUpdate, Userlogin
+from user.user_models import LoginResponse, TokenData, User, UserCreate, UserResponse, UserUpdate, UserRole
 from typing import Annotated
 
 
 
-def user_login(db: Session, form_data: OAuth2PasswordRequestForm):
-    user: Userlogin = get_user_by_username(db, form_data.username)
-    if not verify_password(form_data.password, user.password):
+def user_login(db: Session, form_data: OAuth2PasswordRequestForm) -> LoginResponse:
+    user = get_user_by_username(db, form_data.username)
+    if not user or not verify_password(form_data.password, user.password):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Incorrect username or password",
@@ -30,7 +30,21 @@ def user_login(db: Session, form_data: OAuth2PasswordRequestForm):
     refresh_token = create_access_token(
         data={"sub": user.username}, expires_delta=refresh_token_expires
     )
-    return {"access_token": access_token, "refresh_token": refresh_token, "expires_in": access_token_expires+refresh_token_expires, "token_type": "bearer"}
+
+    user_response = UserResponse(
+        username=user.username,
+        email=user.email,
+        role=user.role,
+        id=user.id
+    )
+    
+    return LoginResponse(
+        access_token=access_token,
+        refresh_token=refresh_token,
+        expires_in=int(access_token_expires.total_seconds()),
+        token_type="bearer",
+        user=user_response
+    )
 
 # def publish_user_signup(user_data: User):
 #     with DaprClient() as d:
@@ -58,13 +72,16 @@ async def signup_user(user: UserCreate, db: Session) -> User:
     """
     search_user_by_email = db.exec(select(User).where(User.email == user.email)).first()
     if search_user_by_email:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,detail="Email id already registered")
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,  # Changed from 404 to 409
+            detail="Email already registered"
+        )
     
     search_user_by_username = db.exec(select(User).where(User.username == user.username)).first()
     if search_user_by_username:
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Username already exists")
        
-    
+        
     hashed_password = get_password_hash(user.password)
 
     new_user = User(id = uuid4(), username=user.username, email=user.email, password=hashed_password, role=user.role)
@@ -80,8 +97,8 @@ async def signup_user(user: UserCreate, db: Session) -> User:
     db.refresh(new_user)
 
     return new_user
-1
-def update_user(user: UserUpdate, session: Session, current_user: User) -> Userlogin:
+
+def update_user(user: UserUpdate, session: Session, current_user: User) -> User:
     updated_user = session.exec(select(User).where(User.id == current_user.id)).first()
     if not updated_user:
         raise HTTPException(status_code=404, detail="User not found")
@@ -93,7 +110,7 @@ def update_user(user: UserUpdate, session: Session, current_user: User) -> Userl
     session.refresh(updated_user)
     return updated_user
 
-def delete_user(session: Session, username: str) -> User:
+def delete_user(session: Session, username: str) -> dict[str, str]:
     user = session.exec(select(User).where(User.username == username)).first()
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
@@ -101,15 +118,10 @@ def delete_user(session: Session, username: str) -> User:
     session.commit()
     return {"message": f"User {username} deleted successfully"}
 
-async def get_current_user(token: Annotated[str, Depends(oauth2_scheme)], db: Annotated[Session, Depends(get_session)]) -> User:
-    """
-    Get the current user.
-    Args:
-        token (str): The access token.
-        db (Session): The database session.
-    Returns:
-        User: The user object.
-    """
+async def get_current_user(
+    token: Annotated[str, Depends(oauth2_scheme)], 
+    db: Annotated[Session, Depends(get_session)]
+) -> User:
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Could not validate credentials",
@@ -123,27 +135,24 @@ async def get_current_user(token: Annotated[str, Depends(oauth2_scheme)], db: An
         token_data = TokenData(username=username)
     except JWTError:
         raise credentials_exception
+        
     user = get_user_by_username(db, username=token_data.username)
     if user is None:
         raise credentials_exception
     return user
 
 async def check_admin(user: Annotated[User, Depends(get_current_user)]) -> User:
-    """
-    Check if the user is an admin.
-    Args:
-        user (User): The user object.
-    Returns:
-        User: The user object.
-    """
-    if user.role != 'admin':
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,detail="User not authorized to perform this action")
+    if user.role != UserRole.admin:  # Compare with enum value
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,  # Use 403 for authorization failures
+            detail="Only administrators can perform this action"
+        )
     return user
 
-def check_teacher(current_user: User):
-    if current_user.role not in ["teacher", "admin"]:
+def check_teacher(current_user: User) -> User:
+    if current_user.role not in [UserRole.teacher, UserRole.admin]:
         raise HTTPException(
-            status_code=403, 
+            status_code=status.HTTP_403_FORBIDDEN,
             detail="Only teachers and administrators can access this resource"
         )
     return current_user

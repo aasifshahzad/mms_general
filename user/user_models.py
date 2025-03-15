@@ -12,43 +12,53 @@ class UserRole(str, enum.Enum):
 class Token(SQLModel):
     access_token: str
     refresh_token: str
-    token_type: str
+    token_type: str = "bearer"
     expires_in: timedelta
 
 class TokenData(SQLModel):
     username: str
+    exp: Optional[int] = None
 
 class UserBase(SQLModel):
     username: str = Field(nullable=False)
+    email: str = Field(index=True, unique=True, nullable=False)
     password: str = Field(nullable=False)
 
-class Userlogin(UserBase):
-    pass
+class UserLogin(SQLModel):
+    username: str
+    password: str
 
 class UserUpdate(SQLModel):
-    username: str
+    username: Optional[str] = None
+    email: Optional[str] = None
 
 class AdminUserUpdate(SQLModel):
-    username: str
-    role: UserRole
+    username: Optional[str] = None
+    email: Optional[str] = None
+    role: Optional[UserRole] = None
 
 class User(UserBase, table=True):
-    id: Optional[UUID] = Field(primary_key=True, index=True)
-    email: str = Field(index=True, unique=True, nullable=False)
-    role: UserRole = Field(default=UserRole.user, sa_column=Column("role", Enum(UserRole)))
+    id: UUID = Field(default=None, primary_key=True, index=True)
+    role: UserRole = Field(
+        default=UserRole.user,
+        sa_column=Column("role", Enum(UserRole, native_enum=True))
+    )
 
-class UserCreate(UserBase):
+class UserCreate(SQLModel):
+    username: str
     email: str
-    role: UserRole = Field(default=UserRole.user, sa_column=Column("role", Enum(UserRole)))
+    password: str
+    role: UserRole = UserRole.user
 
 class UserResponse(SQLModel):
     username: str
     email: str
     role: UserRole
+    id: UUID
 
 class LoginResponse(SQLModel):
     access_token: str
     refresh_token: str
-    token_type: str
-    expires_in: int  # Token expiration time in seconds
+    token_type: str = "bearer"
+    expires_in: int
     user: UserResponse
