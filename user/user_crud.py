@@ -10,12 +10,11 @@ from user.services import create_access_token, get_password_hash, get_user_by_us
 from user.user_models import LoginResponse, TokenData, User, UserCreate, UserResponse, UserUpdate, Userlogin
 from typing import Annotated
 
-from datetime import timedelta
 
-def user_login(db: Session, form_data: OAuth2PasswordRequestForm) -> LoginResponse:
-    user: User = get_user_by_username(db, form_data.username)
-    
-    if not user or not verify_password(form_data.password, user.password):
+
+def user_login(db: Session, form_data: OAuth2PasswordRequestForm):
+    user: Userlogin = get_user_by_username(db, form_data.username)
+    if not verify_password(form_data.password, user.password):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Incorrect username or password",
@@ -31,38 +30,7 @@ def user_login(db: Session, form_data: OAuth2PasswordRequestForm) -> LoginRespon
     refresh_token = create_access_token(
         data={"sub": user.username}, expires_delta=refresh_token_expires
     )
-
-    user_response = UserResponse(
-        username=user.username,
-        email=user.email,
-        role=user.role
-    )
-
-    return LoginResponse(
-        access_token=access_token,
-        refresh_token=refresh_token,
-        token_type="bearer",
-        expires_in=int(access_token_expires.total_seconds()),
-        user=user_response
-    )
-
-# def user_login(db: Session, form_data: OAuth2PasswordRequestForm):
-#     user: Userlogin = get_user_by_username(db, form_data.username)
-#     if not verify_password(form_data.password, user.password):
-#         raise HTTPException(
-#             status_code=status.HTTP_401_UNAUTHORIZED,
-#             detail="Incorrect username or password",
-#             headers={"WWW-Authenticate": "Bearer"},
-#         )
-#     access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
-#     access_token = create_access_token(
-#         data={"sub": user.username}, expires_delta=access_token_expires
-#     )
-#     refresh_token_expires = timedelta(minutes=REFRESH_TOKEN_EXPIRE_MINUTES)
-#     refresh_token = create_access_token(
-#         data={"sub": user.username}, expires_delta=refresh_token_expires
-#     )
-#     return {"access_token": access_token, "refresh_token": refresh_token, "expires_in": access_token_expires+refresh_token_expires, "token_type": "bearer"}
+    return {"access_token": access_token, "refresh_token": refresh_token, "expires_in": access_token_expires+refresh_token_expires, "token_type": "bearer"}
 
 # def publish_user_signup(user_data: User):
 #     with DaprClient() as d:
@@ -90,8 +58,8 @@ async def signup_user(user: UserCreate, db: Session) -> User:
     """
     search_user_by_email = db.exec(select(User).where(User.email == user.email)).first()
     if search_user_by_email:
-        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Email already registered")
-
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,detail="Email id already registered")
+    
     search_user_by_username = db.exec(select(User).where(User.username == user.username)).first()
     if search_user_by_username:
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Username already exists")
