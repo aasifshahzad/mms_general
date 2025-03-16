@@ -86,3 +86,9 @@ ENV/
 *.pyc
 *.pyo
 *.pyd
+
+# Python packaging artifacts
+*.whl
+dist/
+build/
+*.egg-info/
