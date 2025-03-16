@@ -1,9 +1,12 @@
 from fastapi import FastAPI, Depends, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import OAuth2PasswordRequestForm, OAuth2PasswordBearer
-from sqlmodel import select, Session
+from sqlmodel import select, Session, SQLModel
 from typing import Annotated
 from contextlib import asynccontextmanager
+from utils.logging import logger, cleanup_old_logs
+from db import engine, SessionLocal, lifespan
+import asyncio
 
 # Router imports
 from router.attendance_value import attendancevalue_router
@@ -48,6 +51,8 @@ app = FastAPI(
     root_path="/auth",
     responses={404: {"Description": "MMS-GENERAL page not found :-("}},
 )
+
+logger.info("Starting application...")
 
 app.add_middleware(
     CORSMiddleware,
@@ -147,3 +152,34 @@ def update_user_roll(username: str, user: AdminUserUpdate, session: Session = De
     session.refresh(db_user)
     
     return db_user
+
+@app.on_event("startup")
+async def startup_event():
+    logger.info("Starting application...")
+    try:
+        cleanup_old_logs()
+        logger.info("Log cleanup process completed")
+    except Exception as e:
+        logger.error(f"Failed to clean up logs: {str(e)}")
+    # ...rest of startup code...
+
+@app.on_event("shutdown")
+async def shutdown_event():
+    logger.info("Application shutting down...")
+    logger.info("Executing shutdown tasks...")
+    try:
+        # Close database connections
+        await engine.dispose()
+        
+        # Cancel background tasks
+        for task in asyncio.all_tasks():
+            if not task.done():
+                task.cancel()
+                
+        # Clear cache if needed
+        # Close other connections
+        
+        logger.info("Shutdown completed successfully")
+    except Exception as e:
+        logger.error(f"Shutdown error: {str(e)}")
+        raise

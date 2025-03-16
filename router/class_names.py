@@ -5,7 +5,7 @@ from sqlmodel import Session, select
 
 from db import get_session
 from schemas.class_names_model import ClassNames, ClassNamesCreate, ClassNamesResponse
-from user.user_crud import check_admin
+from user.user_crud import check_admin, check_authenticated_user
 from user.user_models import User
 
 classnames_router = APIRouter(
@@ -42,7 +42,7 @@ def create_classnames(user: Annotated[User, Depends(check_admin)],classnames: Cl
 
 
 @classnames_router.get("/class-names-all/", response_model=List[ClassNamesResponse])
-def read_classnames(session: Session = Depends(get_session)):
+def read_classnames(current_user: Annotated[User, Depends(check_authenticated_user)],session: Session = Depends(get_session)):
     classnames = session.exec(select(ClassNames)).all()
     return classnames
 
@@ -50,7 +50,7 @@ def read_classnames(session: Session = Depends(get_session)):
 
 
 @classnames_router.get("/{class_name_id}", response_model=ClassNamesResponse)
-def read_classname(class_name_id: int, session: Session = Depends(get_session)):
+def read_classname(current_user: Annotated[User, Depends(check_authenticated_user)],class_name_id: int, session: Session = Depends(get_session)):
     classnames = session.get(ClassNames, class_name_id)
     if not classnames:
         raise HTTPException(

@@ -6,7 +6,7 @@ from sqlmodel import Session, select
 
 from db import get_session
 from schemas.attendance_value_model import AttendanceValue, AttendanceValueCreate, AttendanceValueResponse
-from user.user_crud import check_admin
+from user.user_crud import check_admin, check_authenticated_user
 from user.user_models import User
 attendancevalue_router = APIRouter(
     prefix="/attendance_value",
@@ -42,7 +42,7 @@ def create_attendancevalue(user: Annotated[User, Depends(check_admin)],attendanc
 
 
 @attendancevalue_router.get("/attendance-values-all/", response_model=List[AttendanceValueResponse])
-def read_attendancevalues(session: Session = Depends(get_session)):
+def read_attendancevalues(current_user: Annotated[User, Depends(check_authenticated_user)],session: Session = Depends(get_session)):
     attendancevalues = session.exec(select(AttendanceValue)).all()
     return attendancevalues
 
@@ -50,7 +50,7 @@ def read_attendancevalues(session: Session = Depends(get_session)):
 
 
 @attendancevalue_router.get("/{attendancevalue_id}", response_model=AttendanceValueResponse)
-def read_attendancevalue(attendancevalue_id: int, session: Session = Depends(get_session)):
+def read_attendancevalue(current_user: Annotated[User, Depends(check_authenticated_user)],attendancevalue_id: int, session: Session = Depends(get_session)):
     attendancevalue = session.get(AttendanceValue, attendancevalue_id)
     if not attendancevalue:
         raise HTTPException(
@@ -72,7 +72,7 @@ def delete_attendancevalue(user: Annotated[User, Depends(check_admin)],attend_va
 
 
 @attendancevalue_router.post("/reset_attendance_id", response_model=str)
-def reset_attendance_id(session: Session = Depends(get_session)):
+def reset_attendance_id(current_user: Annotated[User, Depends(check_authenticated_user)],session: Session = Depends(get_session)):
     # Delete all attendance records
     session.exec(select(AttendanceValue)).all()  # Fetch all records
     # Adjust the table name as necessary

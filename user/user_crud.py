@@ -7,7 +7,16 @@ from sqlmodel import Session, select
 from db import get_session
 from user.settings import ACCESS_TOKEN_EXPIRE_MINUTES, ALGORITHM, REFRESH_TOKEN_EXPIRE_MINUTES, SECRET_KEY
 from user.services import create_access_token, get_password_hash, get_user_by_username, verify_password, pwd_context, oauth2_scheme
-from user.user_models import LoginResponse, TokenData, User, UserCreate, UserResponse, UserUpdate, UserRole
+from user.user_models import (
+    LoginResponse, 
+    TokenData, 
+    User, 
+    UserCreate, 
+    UserResponse, 
+    UserUpdate,
+    UserRole,
+    AdminUserUpdate
+)
 from typing import Annotated
 
 
@@ -62,41 +71,54 @@ def user_login(db: Session, form_data: OAuth2PasswordRequestForm) -> LoginRespon
 #     print(f"Published user signup event for {user_data.username}")
 
 async def signup_user(user: UserCreate, db: Session) -> User:
-    """
-    Create a new user.
-    Args:
-        user (UserCreate): The user data.
-        db (Session): The database session.
-    Returns:
-        User: The user object.
-    """
-    search_user_by_email = db.exec(select(User).where(User.email == user.email)).first()
-    if search_user_by_email:
-        raise HTTPException(
-            status_code=status.HTTP_409_CONFLICT,  # Changed from 404 to 409
-            detail="Email already registered"
-        )
-    
-    search_user_by_username = db.exec(select(User).where(User.username == user.username)).first()
-    if search_user_by_username:
-        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Username already exists")
-       
+    """Create a new user with proper transaction handling."""
+    try:
+        # Convert role to uppercase and validate
+        try:
+            if isinstance(user.role, str):
+                normalized_role = UserRole(user.role.upper())
+            else:
+                normalized_role = user.role
+        except ValueError:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"Invalid role: {user.role}. Must be one of: {[r.value for r in UserRole]}"
+            )
         
-    hashed_password = get_password_hash(user.password)
-
-    new_user = User(id = uuid4(), username=user.username, email=user.email, password=hashed_password, role=user.role)
-    # user = user_pb2.User(
-    #     username=new_user.username,
-    #     email=new_user.email,
-    # )
-    # serialized_user = user.SerializeToString()
-    # await producer.send_and_wait(settings.KAFKA_PRODUCER_TOPIC, serialized_user)
-    # # publish_user_signup(new_user)
-    db.add(new_user)
-    db.commit()
-    db.refresh(new_user)
-
-    return new_user
+        # Check existing email/username
+        if db.exec(select(User).where(User.email == user.email)).first():
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail="Email already registered"
+            )
+        
+        if db.exec(select(User).where(User.username == user.username)).first():
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail="Username already exists"
+            )
+           
+        # Create new user    
+        new_user = User(
+            id=uuid4(),
+            username=user.username,
+            email=user.email,
+            password=get_password_hash(user.password),
+            role=normalized_role
+        )
+        
+        db.add(new_user)
+        db.commit()
+        db.refresh(new_user)
+        return new_user
+        
+    except Exception as e:
+        db.rollback()
+        print(f"Error during signup: {str(e)}")  # For debugging
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error creating user: {str(e)}"
+        )
 
 def update_user(user: UserUpdate, session: Session, current_user: User) -> User:
     updated_user = session.exec(select(User).where(User.id == current_user.id)).first()
@@ -141,20 +163,82 @@ async def get_current_user(
         raise credentials_exception
     return user
 
-async def check_admin(user: Annotated[User, Depends(get_current_user)]) -> User:
-    if user.role != UserRole.admin:  # Compare with enum value
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,  # Use 403 for authorization failures
-            detail="Only administrators can perform this action"
-        )
-    return user
 
-def check_teacher(current_user: User) -> User:
-    if current_user.role not in [UserRole.teacher, UserRole.admin]:
+async def check_admin_or_teacher(
+    current_user: Annotated[User, Depends(get_current_user)]
+) -> User:
+    """Check if user is either admin or teacher"""
+    if current_user.role not in [UserRole.ADMIN, UserRole.TEACHER]:
         raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Only teachers and administrators can access this resource"
+            status_code=403,
+            detail="Only administrators and teachers can access this resource"
         )
     return current_user
 
+# async def check_admin(user: Annotated[User, Depends(get_current_user)]) -> User:
+#     if user.role != UserRole.ADMIN:  # Compare with enum value
+#         raise HTTPException(
+#             status_code=status.HTTP_403_FORBIDDEN,  # Use 403 for authorization failures
+#             detail="Only administrators can perform this action"
+#         )
+#     return user
+async def check_admin(
+    current_user: Annotated[User, Depends(get_current_user)]
+) -> User:
+    """Check if user is admin"""
+    if current_user.role != UserRole.ADMIN:
+        raise HTTPException(
+            status_code=403,
+            detail="Only administrators can access this resource"
+        )
+    return current_user
 
+async def check_authenticated_user(
+    current_user: Annotated[User, Depends(get_current_user)]
+) -> User:
+    """Check if user is authenticated"""
+    return current_user
+
+async def admin_update_user(
+    username: str,
+    user_update: AdminUserUpdate, 
+    db: Session,
+    current_user: Annotated[User, Depends(check_admin)]
+) -> User:
+    """Update user role as admin"""
+    
+    # Find the user to update
+    user_to_update = db.exec(select(User).where(User.username == username)).first()
+    if not user_to_update:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, 
+            detail=f"User {username} not found"
+        )
+    
+    # Prevent admin from changing their own role
+    if user_to_update.username == current_user.username:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Admin cannot change their own role"
+        )
+    
+    try:
+        # Convert role to enum (ensure it's uppercase)
+        if isinstance(user_update.role, str):
+            new_role = UserRole(user_update.role.upper())
+        else:
+            new_role = user_update.role
+
+        # Update the user's role
+        user_to_update.role = new_role
+        db.commit()
+        db.refresh(user_to_update)
+        return user_to_update
+        
+    except Exception as e:
+        db.rollback()
+        print(f"Error updating role: {str(e)}")  # Debugging info
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error updating user role: {str(e)}"
+        )

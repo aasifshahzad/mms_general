@@ -5,9 +5,9 @@ from datetime import timedelta
 import enum
 
 class UserRole(str, enum.Enum):
-    admin = "admin"
-    teacher = "teacher"
-    user = "user"
+    ADMIN = "ADMIN"
+    TEACHER = "TEACHER"
+    USER = "USER"
 
 class Token(SQLModel):
     access_token: str
@@ -23,6 +23,7 @@ class UserBase(SQLModel):
     username: str = Field(nullable=False)
     email: str = Field(index=True, unique=True, nullable=False)
     password: str = Field(nullable=False)
+    role: UserRole = Field(default=UserRole.USER)
 
 class UserLogin(SQLModel):
     username: str
@@ -33,22 +34,16 @@ class UserUpdate(SQLModel):
     email: Optional[str] = None
 
 class AdminUserUpdate(SQLModel):
-    username: Optional[str] = None
-    email: Optional[str] = None
-    role: Optional[UserRole] = None
+    role: UserRole = Field(description="Must be one of: ADMIN, TEACHER, USER")
 
 class User(UserBase, table=True):
     id: UUID = Field(default=None, primary_key=True, index=True)
-    role: UserRole = Field(
-        default=UserRole.user,
-        sa_column=Column("role", Enum(UserRole, native_enum=True))
-    )
 
 class UserCreate(SQLModel):
     username: str
     email: str
     password: str
-    role: UserRole = UserRole.user
+    role: UserRole = UserRole.USER
 
 class UserResponse(SQLModel):
     username: str

@@ -5,7 +5,10 @@ from setting import *
 from user.user_models import *
 from datetime import datetime, timedelta, timezone
 from sqlmodel import Session, select
-from fastapi import HTTPException, status
+from fastapi import HTTPException, status, Depends
+from db import get_session
+from typing import Annotated
+
 from pydantic import EmailStr
 from typing import Union, Any
 # from main import oauth2_scheme
@@ -72,7 +75,29 @@ def get_user_by_id(db: Session, userid: int) -> User:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,detail="User not found")
     
     return user
-    
+
+async def get_current_user(
+    token: Annotated[str, Depends(oauth2_scheme)], 
+    db: Annotated[Session, Depends(get_session)]
+) -> User:
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        username: str = payload.get("sub")
+        exp = payload.get("exp")
+        
+        if username is None:
+            raise credentials_exception
+            
+        # Check token expiration
+        if datetime.utcnow().timestamp() > exp:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Token has expired",
+                headers={"WWW-Authenticate": "Bearer"},
+            )
+    except JWTError:
+        raise credentials_exception
+
 def get_user_by_email(db:Session,user_email: EmailStr) -> User:
     """
     Get the user by email.
@@ -153,3 +178,29 @@ def create_refresh_token(data: Union[str, Any], expires_delta: int = None) -> st
     encoded_jwt = jwt.encode(to_encode, JWT_REFRESH_SECRET_KEY, ALGORITHM)
     return encoded_jwt
 
+# def create_refresh_token(data: dict) -> str:
+#     to_encode = data.copy()
+#     expire = datetime.utcnow() + timedelta(days=7)
+#     to_encode.update({"exp": expire})
+#     return jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
+
+# @auth_router.post("/refresh")
+# async def refresh_token(
+#     refresh_token: str,
+#     db: Session = Depends(get_session)
+# ) -> Token:
+#     try:
+#         payload = jwt.decode(refresh_token, SECRET_KEY, algorithms=[ALGORITHM])
+#         username: str = payload.get("sub")
+#         if username is None:
+#             raise credentials_exception
+#         user = get_user_by_username(db, username=username)
+#         if user is None:
+#             raise credentials_exception
+#         access_token = create_access_token(data={"sub": user.username})
+#         return Token(
+#             access_token=access_token,
+#             refresh_token=refresh_token
+#         )
+#     except JWTError:
+#         raise credentials_exception

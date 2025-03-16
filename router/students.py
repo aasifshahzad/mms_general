@@ -4,7 +4,8 @@ from schemas.class_names_model import ClassNames
 from sqlmodel import Session, select
 from typing import List, Optional
 from typing import Annotated
-
+from user.user_models import User, UserRole
+from user.user_crud import get_current_user
 
 from db import get_session
 from schemas.students_model import Students, StudentsCreate, StudentsResponse, StudentsUpdate
@@ -80,22 +81,51 @@ def delete_student(user: Annotated[User, Depends(check_admin)],student_id: int, 
 
 
 @students_router.get("/all_students/", response_model=List[StudentsResponse])
-def all_students(session: Annotated[Session, Depends(get_session)]):
+def all_students(
+    current_user: Annotated[User, Depends(get_current_user)],
+    session: Annotated[Session, Depends(get_session)]
+):
+    if current_user.role == UserRole.USER:
+        raise HTTPException(
+            status_code=403,
+            detail="Only teachers and administrators can view student records"
+        )
     students = session.exec(select(Students)).all()
     return students
 
 
 @students_router.get("/by_class_name/", response_model=List[StudentsResponse])
-def get_students_by_class(class_name: str, session: Annotated[Session, Depends(get_session)]):
+def get_students_by_class(
+    current_user: Annotated[User, Depends(get_current_user)],
+    class_name: str, 
+    session: Annotated[Session, Depends(get_session)]
+):
+    if current_user.role == UserRole.USER:
+        raise HTTPException(
+            status_code=403,
+            detail="Only teachers and administrators can view student records"
+        )
     query = select(Students).where(Students.class_name == class_name)
     students = session.exec(query).all()
     if not students:
         raise HTTPException(
-            status_code=404, detail="No students found for the specified class")
+            status_code=404, 
+            detail="No students found for the specified class"
+        )
     return students
 
+
 @students_router.get("/by_class_id/", response_model=List[StudentsResponse])
-def get_students_by_class(class_id: int, session: Annotated[Session, Depends(get_session)]):
+def get_students_by_class(
+    current_user: Annotated[User, Depends(get_current_user)],
+    class_id: int, 
+    session: Annotated[Session, Depends(get_session)]
+):
+    if current_user.role == UserRole.USER:
+        raise HTTPException(
+            status_code=403,
+            detail="Only teachers and administrators can view student records"
+        )
     class_name = read_classname(class_id, session=session)
     if not class_name:
         raise HTTPException(status_code=404, detail="Class not found")
@@ -103,54 +133,80 @@ def get_students_by_class(class_id: int, session: Annotated[Session, Depends(get
     students = session.exec(query).all()
     if not students:
         raise HTTPException(
-            status_code=404, detail="No students found for the specified class")
+            status_code=404, 
+            detail="No students found for the specified class"
+        )
     return students
 
+
 @students_router.get("/by_gender", response_model=List[StudentsResponse])
-def get_student_by_gender(gender: str, session: Annotated[Session, Depends(get_session)]):
+def get_student_by_gender(
+    current_user: Annotated[User, Depends(get_current_user)],
+    gender: str, 
+    session: Annotated[Session, Depends(get_session)]
+):
+    if current_user.role == UserRole.USER:
+        raise HTTPException(
+            status_code=403,
+            detail="Only teachers and administrators can view student records"
+        )
     query = select(Students).where(Students.student_gender == gender)
     student = session.exec(query).all()
     if not student:
         raise HTTPException(
-            status_code=404, detail="No Student found of this gender"
+            status_code=404, 
+            detail="No Student found of this gender"
         )
     return student
 
 
 @students_router.get("/by_city", response_model=List[StudentsResponse])
-def get_student_by_gender(city: str, session: Annotated[Session, Depends(get_session)]):
+def get_student_by_city(
+    current_user: Annotated[User, Depends(get_current_user)],
+    city: str, 
+    session: Annotated[Session, Depends(get_session)]
+):
+    if current_user.role == UserRole.USER:
+        raise HTTPException(
+            status_code=403,
+            detail="Only teachers and administrators can view student records"
+        )
     query = select(Students).where(Students.student_city == city)
     student = session.exec(query).all()
     if not student:
         raise HTTPException(
-            status_code=404, detail="No Student found of this City"
+            status_code=404, 
+            detail="No Student found of this City"
         )
     return student
 
 
 @students_router.get("/filter", response_model=List[StudentsResponse])
 def filter_students(
+    current_user: Annotated[User, Depends(get_current_user)],
     session: Annotated[Session, Depends(get_session)],
-    class_name: Optional[str] = Query(
-        None, description="Filter by class name"),
+    class_name: Optional[str] = Query(None, description="Filter by class name"),
     gender: Optional[str] = Query(None, description="Filter by gender"),
     city: Optional[str] = Query(None, description="Filter by city"),
-
 ):
+    if current_user.role == UserRole.USER:
+        raise HTTPException(
+            status_code=403,
+            detail="Only teachers and administrators can view student records"
+        )
     query = select(Students)
 
-    # Build the query dynamically based on the filters provided
     if class_name:
-        query = query.where(Students.student_class_name == class_name)
+        query = query.where(Students.class_name == class_name)
     if gender:
         query = query.where(Students.student_gender == gender)
     if city:
         query = query.where(Students.student_city == city)
 
-    # Execute the query
     students = session.exec(query).all()
     if not students:
         raise HTTPException(
-            status_code=404, detail="No students found matching the criteria")
-
+            status_code=404, 
+            detail="No students found matching the criteria"
+        )
     return students

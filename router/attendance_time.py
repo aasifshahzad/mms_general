@@ -6,7 +6,7 @@ from sqlmodel import Session, select
 
 from db import get_session
 from schemas.attendance_time_model import AttendanceTime, AttendanceTimeCreate, AttendanceTimeResponse
-from user.user_crud import check_admin
+from user.user_crud import check_admin, check_authenticated_user
 from user.user_models import User
 attendance_time_router = APIRouter(
     prefix="/attendance_time",
@@ -42,7 +42,7 @@ def create_attendance_time(user: Annotated[User, Depends(check_admin)],attendanc
 
 
 @attendance_time_router.get("/attendance-values-all/", response_model=List[AttendanceTimeResponse])
-def read_attendance_times(session: Session = Depends(get_session)):
+def read_attendance_times(current_user: Annotated[User, Depends(check_authenticated_user)],session: Session = Depends(get_session)):
     attendance_times = session.exec(select(AttendanceTime)).all()
     return attendance_times
 
@@ -50,7 +50,7 @@ def read_attendance_times(session: Session = Depends(get_session)):
 
 
 @attendance_time_router.get("/{attendance_time_id}", response_model=AttendanceTimeResponse)
-def read_attendance_time(attendance_time_id: int, session: Session = Depends(get_session)):
+def read_attendance_time(current_user: Annotated[User, Depends(check_authenticated_user)],attendance_time_id: int, session: Session = Depends(get_session)):
     attendance_time = session.get(AttendanceTime, attendance_time_id)
     if not attendance_time:
         raise HTTPException(

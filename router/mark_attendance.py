@@ -13,9 +13,10 @@ from schemas.attendance_model import (
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlmodel import Session, select
 from typing import Annotated, List, Optional
+from user.user_models import User, UserRole
+from user.user_crud import get_current_user
 
 from db import get_session
-from user.user_crud import check_teacher
 from user.user_models import User
 
 mark_attendance_router = APIRouter(
@@ -26,7 +27,10 @@ mark_attendance_router = APIRouter(
 
 @mark_attendance_router.get("/show_all_attendance", response_model=List[FilteredAttendanceResponse])
 def get_filtered_attendance(
-    session: Session = Depends(get_session)):
+    current_user: Annotated[User, Depends(get_current_user)],
+    session: Session = Depends(get_session)
+):
+    """View attendance with role-based access"""
     stmt = (
         select(
             Attendance.attendance_id,
@@ -45,8 +49,14 @@ def get_filtered_attendance(
         .join(Attendance.attendance_value)
     )
 
-    result = session.exec(stmt).all()
+    # Only check if user is USER, both TEACHER and ADMIN can view all
+    if current_user.role == UserRole.USER:
+        raise HTTPException(
+            status_code=403,
+            detail="Users cannot view attendance records"
+        )
 
+    result = session.exec(stmt).all()
     if not result:
         raise HTTPException(status_code=404, detail="No attendance records found")
 
@@ -65,17 +75,24 @@ def get_filtered_attendance(
     ]
 
 @mark_attendance_router.post("/add_attendance/", response_model=FilteredAttendanceResponse)
-def add_attendance(create_attendance: AttendanceCreate, session: Session = Depends(get_session)):
-    student = session.get(Students, create_attendance.student_id)
-    if not student:
-        raise HTTPException(status_code=404, detail=f"Student with ID {create_attendance.student_id} not found")
+def add_attendance(
+    create_attendance: AttendanceCreate,
+    current_user: Annotated[User, Depends(get_current_user)],
+    session: Session = Depends(get_session)
+):
+    """Add attendance with role-based permissions"""
+    if current_user.role == UserRole.USER:
+        raise HTTPException(
+            status_code=403,
+            detail="Users cannot add attendance records"
+        )
 
     db_attendance = Attendance(**create_attendance.model_dump())
     session.add(db_attendance)
     session.commit()
     session.refresh(db_attendance)
 
-    filtered_response = FilteredAttendanceResponse(
+    return FilteredAttendanceResponse(
         attendance_id=db_attendance.attendance_id,
         attendance_date=db_attendance.attendance_date,
         attendance_time=db_attendance.attendance_time.attendance_time,
@@ -86,39 +103,62 @@ def add_attendance(create_attendance: AttendanceCreate, session: Session = Depen
         attendance_value=db_attendance.attendance_value.attendance_value,
     )
 
-    return filtered_response
-
 @mark_attendance_router.post("/add_bulk_attendance/", response_model=List[FilteredAttendanceResponse])
 def add_bulk_attendance(
-    
     bulk_attendance: BulkAttendanceCreate,
+    current_user: Annotated[User, Depends(get_current_user)],
     session: Session = Depends(get_session)
 ):
-    filtered_responses = []
-
-    for attendance_data in bulk_attendance.attendances:
-        db_attendance = Attendance(**attendance_data.model_dump())
-        session.add(db_attendance)
-        session.commit()
-        session.refresh(db_attendance)
-
-        filtered_response = FilteredAttendanceResponse(
-            attendance_id=db_attendance.attendance_id,
-            attendance_date=db_attendance.attendance_date,
-            attendance_time=db_attendance.attendance_time.attendance_time,
-            attendance_class=db_attendance.attendance_class.class_name,
-            attendance_teacher=db_attendance.attendance_teacher.teacher_name,
-            attendance_student=db_attendance.attendance_student.student_name,
-            attendance_std_fname=db_attendance.attendance_student.father_name,
-            attendance_value=db_attendance.attendance_value.attendance_value,
+    """Add bulk attendance with admin-only permissions"""
+    # Check if user is admin
+    if current_user.role not in [UserRole.ADMIN, UserRole.TEACHER]:
+        raise HTTPException(
+            status_code=403,
+            detail="Only Administrators or Teachers can add bulk attendance records"
         )
 
-        filtered_responses.append(filtered_response)
+    filtered_responses = []
+    try:
+        for attendance_data in bulk_attendance.attendances:
+            db_attendance = Attendance(**attendance_data.model_dump())
+            session.add(db_attendance)
+            session.commit()
+            session.refresh(db_attendance)
 
-    return filtered_responses
+            filtered_response = FilteredAttendanceResponse(
+                attendance_id=db_attendance.attendance_id,
+                attendance_date=db_attendance.attendance_date,
+                attendance_time=db_attendance.attendance_time.attendance_time,
+                attendance_class=db_attendance.attendance_class.class_name,
+                attendance_teacher=db_attendance.attendance_teacher.teacher_name,
+                attendance_student=db_attendance.attendance_student.student_name,
+                attendance_std_fname=db_attendance.attendance_student.father_name,
+                attendance_value=db_attendance.attendance_value.attendance_value,
+            )
+            filtered_responses.append(filtered_response)
+
+        return filtered_responses
+
+    except Exception as e:
+        session.rollback()
+        raise HTTPException(
+            status_code=500,
+            detail=f"Error adding bulk attendance records: {str(e)}"
+        )
 
 @mark_attendance_router.delete("/delete_attendance/{attendance_id}", response_model=str)
-def delete_attendance(attendance_id: int, session: Session = Depends(get_session)):
+def delete_attendance(
+    attendance_id: int,
+    current_user: Annotated[User, Depends(get_current_user)],
+    session: Session = Depends(get_session)
+):
+    """Delete attendance with role-based permissions"""
+    if current_user.role == UserRole.USER:
+        raise HTTPException(
+            status_code=403,
+            detail="Users cannot delete attendance records"
+        )
+
     attendance = session.get(Attendance, attendance_id)
     if not attendance:
         raise HTTPException(status_code=404, detail="Attendance record not found")
@@ -129,11 +169,18 @@ def delete_attendance(attendance_id: int, session: Session = Depends(get_session
 
 @mark_attendance_router.patch("/update_attendance/{attendance_id}", response_model=FilteredAttendanceResponse)
 def update_attendance(
-    
     attendance_id: int,
     attendance_update: AttendanceUpdate,
+    current_user: Annotated[User, Depends(get_current_user)],
     session: Session = Depends(get_session)
 ):
+    """Update attendance with role-based permissions"""
+    if current_user.role == UserRole.USER:
+        raise HTTPException(
+            status_code=403,
+            detail="Users cannot update attendance records"
+        )
+
     db_attendance = session.get(Attendance, attendance_id)
     if not db_attendance:
         raise HTTPException(status_code=404, detail="Attendance record not found")
@@ -159,7 +206,7 @@ def update_attendance(
 
 @mark_attendance_router.get("/filter_attendance_by_ids", response_model=List[FilteredAttendanceResponse])
 def filter_attendance_by_ids(
-    
+    current_user: Annotated[User, Depends(get_current_user)],
     session: Session = Depends(get_session),
     attendance_date: Optional[str] = Query(None, description="Filter by Attendance date"),
     attendance_time_id: Optional[int] = Query(None, description="Filter by Attendance Time ID"),
@@ -169,8 +216,25 @@ def filter_attendance_by_ids(
     father_name: Optional[str] = Query(None, description="Filter by Father's Name"),
     attendance_value_id: Optional[int] = Query(None, description="Filter by Attendance Value ID"),
 ):
+    """Filter attendance with role-based access"""
     query = session.query(Attendance)
 
+    # Apply role-based filters first
+    if current_user.role == UserRole.USER:
+        raise HTTPException(
+            status_code=403,
+            detail="Users cannot uiew attendance records"
+        )
+    elif current_user.role == UserRole.TEACHER:
+        teacher = session.exec(
+            select(TeacherNames)
+            .where(TeacherNames.teacher_name == current_user.username)
+        ).first()
+        if not teacher:
+            raise HTTPException(status_code=404, detail="Teacher record not found")
+        query = query.filter(Attendance.teacher_name_id == teacher.teacher_name_id)
+
+    # Apply the rest of the filters
     if attendance_date:
         query = query.filter(Attendance.attendance_date == attendance_date)
     if attendance_time_id:
@@ -206,9 +270,67 @@ def filter_attendance_by_ids(
 
     return filtered_responses
 
+# @mark_attendance_router.get("/filtered_attendance_by_name", response_model=List[FilteredAttendanceResponse])
+# def get_filtered_attendance(
+#     current_user: Annotated[User, Depends(get_current_user)],
+#     session: Session = Depends(get_session),
+#     class_name: Optional[str] = Query(None, description="Filter by Class name"),
+#     teacher_name: Optional[str] = Query(None, description="Filter by Teacher name"),
+#     student_name: Optional[str] = Query(None, description="Filter by Student name"),
+#     attendance_value: Optional[str] = Query(None, description="Filter by Attendance value"),
+#     attendance_date: Optional[str] = Query(None, description="Filter by Attendance date"),
+#     attendance_time: Optional[str] = Query(None, description="Filter by Attendance time"),
+#     attendance_id: Optional[int] = Query(None, description="Filter by Attendance ID"),
+# ):
+#     # Add role check
+#     if current_user.role == UserRole.USER:
+#         raise HTTPException(
+#             status_code=403,
+#             detail="Users cannot view attendance records"
+#         )
+    
+#     query = session.exec(Attendance)
+
+#     if class_name:
+#         query = query.filter(Attendance.attendance_class.has(class_name=class_name))
+#     if teacher_name:
+#         query = query.filter(Attendance.attendance_teacher.has(teacher_name=teacher_name))
+#     if student_name:
+#         query = query.filter(Attendance.attendance_student.has(student_name=student_name))
+#     if attendance_value:
+#         query = query.filter(Attendance.attendance_value.has(attendance_value=attendance_value))
+#     if attendance_date:
+#         query = query.filter(Attendance.attendance_date == attendance_date)
+#     if attendance_time:
+#         query = query.filter(Attendance.attendance_time.has(attendance_time=attendance_time))
+#     if attendance_id:
+#         query = query.filter(Attendance.attendance_id == attendance_id)
+
+#     filtered_attendance = query.all()
+
+#     filtered_responses = []
+#     for db_attendance in filtered_attendance:
+#         filtered_response = FilteredAttendanceResponse(
+#             attendance_id=db_attendance.attendance_id,
+#             attendance_date=db_attendance.attendance_date,
+#             attendance_time=db_attendance.attendance_time.attendance_time,
+#             attendance_class=db_attendance.attendance_class.class_name,
+#             attendance_teacher=db_attendance.attendance_teacher.teacher_name,
+#             attendance_student=db_attendance.attendance_student.student_name,
+#             attendance_std_fname=db_attendance.attendance_student.father_name,
+#             attendance_value=db_attendance.attendance_value.attendance_value
+#         )
+#         filtered_responses.append(filtered_response)
+
+#     if not filtered_responses:
+#         raise HTTPException(status_code=404, detail="No attendance records found matching the criteria")
+
+#     return filtered_responses
+
+
 @mark_attendance_router.get("/filtered_attendance_by_name", response_model=List[FilteredAttendanceResponse])
 def get_filtered_attendance(
-    
+    current_user: Annotated[User, Depends(get_current_user)],
     session: Session = Depends(get_session),
     class_name: Optional[str] = Query(None, description="Filter by Class name"),
     teacher_name: Optional[str] = Query(None, description="Filter by Teacher name"),
@@ -218,28 +340,45 @@ def get_filtered_attendance(
     attendance_time: Optional[str] = Query(None, description="Filter by Attendance time"),
     attendance_id: Optional[int] = Query(None, description="Filter by Attendance ID"),
 ):
-    query = session.exec(Attendance)
+    """Filter attendance records by name fields"""
+    # Add role check
+    if current_user.role == UserRole.USER:
+        raise HTTPException(
+            status_code=403,
+            detail="Users cannot view attendance records"
+        )
+    
+    # Start with a base select statement
+    query = select(Attendance)
 
+    # Apply filters
     if class_name:
-        query = query.filter(Attendance.attendance_class.has(class_name=class_name))
+        query = query.join(Attendance.attendance_class).filter(ClassNames.class_name == class_name)
     if teacher_name:
-        query = query.filter(Attendance.attendance_teacher.has(teacher_name=teacher_name))
+        query = query.join(Attendance.attendance_teacher).filter(TeacherNames.teacher_name == teacher_name)
     if student_name:
-        query = query.filter(Attendance.attendance_student.has(student_name=student_name))
+        query = query.join(Attendance.attendance_student).filter(Students.student_name == student_name)
     if attendance_value:
-        query = query.filter(Attendance.attendance_value.has(attendance_value=attendance_value))
+        query = query.join(Attendance.attendance_value).filter(AttendanceValue.attendance_value == attendance_value)
     if attendance_date:
         query = query.filter(Attendance.attendance_date == attendance_date)
     if attendance_time:
-        query = query.filter(Attendance.attendance_time.has(attendance_time=attendance_time))
+        query = query.join(Attendance.attendance_time).filter(AttendanceTime.attendance_time == attendance_time)
     if attendance_id:
         query = query.filter(Attendance.attendance_id == attendance_id)
 
-    filtered_attendance = query.all()
+    # Execute the query
+    filtered_attendance = session.exec(query).all()
 
-    filtered_responses = []
-    for db_attendance in filtered_attendance:
-        filtered_response = FilteredAttendanceResponse(
+    if not filtered_attendance:
+        raise HTTPException(
+            status_code=404, 
+            detail="No attendance records found matching the criteria"
+        )
+
+    # Convert to response model
+    filtered_responses = [
+        FilteredAttendanceResponse(
             attendance_id=db_attendance.attendance_id,
             attendance_date=db_attendance.attendance_date,
             attendance_time=db_attendance.attendance_time.attendance_time,
@@ -248,10 +387,7 @@ def get_filtered_attendance(
             attendance_student=db_attendance.attendance_student.student_name,
             attendance_std_fname=db_attendance.attendance_student.father_name,
             attendance_value=db_attendance.attendance_value.attendance_value
-        )
-        filtered_responses.append(filtered_response)
-
-    if not filtered_responses:
-        raise HTTPException(status_code=404, detail="No attendance records found matching the criteria")
+        ) for db_attendance in filtered_attendance
+    ]
 
     return filtered_responses
