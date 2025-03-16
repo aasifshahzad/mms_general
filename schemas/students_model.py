@@ -6,6 +6,10 @@ from typing import List, Optional
 from sqlmodel import Field, SQLModel
 from datetime import datetime
 
+# from schemas.admission_model import Admission
+# from schemas.attendance_model import Attendance
+# from schemas.fee_model import Fee
+
 # ****************************************************************************************
 # Students
 
@@ -34,6 +38,7 @@ class Students(StudentsBase, table=True):
     attendances: list["Attendance"] = Relationship(
         back_populates="attendance_student")
     admissions: list["Admission"] = Relationship(back_populates="student")
+    fees: List["Fee"] = Relationship(back_populates="students")
 
 
 class StudentsCreate(SQLModel):

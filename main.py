@@ -16,6 +16,7 @@ from router.class_names import classnames_router
 from router.students import students_router
 from router.mark_attendance import mark_attendance_router
 from router.adm_del import adm_del_router
+from router.fee import fee_router
 
 # User related imports
 from user.user_crud import (
@@ -70,17 +71,12 @@ app.include_router(classnames_router)
 app.include_router(students_router)
 app.include_router(mark_attendance_router)
 app.include_router(adm_del_router)
+app.include_router(fee_router)
 
 @app.get("/", tags=["MMS Backend"])
 async def root():
     return {"Message": "MMS Backend is running :-}"}
 
-@app.get("/", tags=["Root"])
-async def root():
-    return {
-        "message": "MMS Backend is running :-}",
-        "service": "User Service"
-    }
 
 @app.post("/login", response_model=LoginResponse, tags=["User"])
 async def login_for_access_token(

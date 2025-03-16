@@ -7,7 +7,7 @@ import setting
 CONN_STRING: str = str(setting.DATABASE_URL)
 
 def get_engine(CONN_STRING):
-    engine = create_engine(CONN_STRING, echo=True, connect_args={}, pool_recycle=300)
+    engine = create_engine(CONN_STRING, echo=False, connect_args={}, pool_recycle=300)
     logger.info("Engine created successfully")
     return engine
 

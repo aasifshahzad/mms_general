@@ -210,3 +210,8 @@ def filter_students(
             detail="No students found matching the criteria"
         )
     return students
+
+
+async def get_student_by_id(db: Session, student_id: int) -> Students | None:
+    """Get a student by their ID."""
+    return db.exec(select(Students).where(Students.student_id == student_id)).first()
