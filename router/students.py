@@ -116,27 +116,57 @@ def get_students_by_class(
 
 
 @students_router.get("/by_class_id/", response_model=List[StudentsResponse])
-def get_students_by_class(
+def get_students_by_class_id(
     current_user: Annotated[User, Depends(get_current_user)],
     class_id: int, 
     session: Annotated[Session, Depends(get_session)]
 ):
-    if current_user.role == UserRole.USER:
+    try:
+        # Check user authorization
+        if current_user.role == UserRole.USER:
+            raise HTTPException(
+                status_code=403,
+                detail="Only teachers and administrators can view student records"
+            )
+        
+        # Validate class_id
+        if class_id <= 0:
+            raise HTTPException(
+                status_code=400,
+                detail="Invalid class ID"
+            )
+        
+        # Get class name from class_id using class_name_id from ClassNames model
+        class_name_obj = session.exec(
+            select(ClassNames).where(ClassNames.class_name_id == class_id)
+        ).first()
+        
+        if not class_name_obj:
+            raise HTTPException(
+                status_code=404, 
+                detail=f"Class with ID {class_id} not found"
+            )
+        
+        # Query students by class name
+        students = session.exec(
+            select(Students).where(Students.class_name == class_name_obj.class_name)
+        ).all()
+        
+        if not students:
+            raise HTTPException(
+                status_code=404, 
+                detail=f"No students found for class {class_name_obj.class_name}"
+            )
+            
+        return students
+        
+    except HTTPException as http_ex:
+        raise http_ex
+    except Exception as e:
         raise HTTPException(
-            status_code=403,
-            detail="Only teachers and administrators can view student records"
+            status_code=500,
+            detail=f"Error retrieving students: {str(e)}"
         )
-    class_name = read_classname(class_id, session=session)
-    if not class_name:
-        raise HTTPException(status_code=404, detail="Class not found")
-    query = select(Students).where(Students.class_name == class_name.class_name)
-    students = session.exec(query).all()
-    if not students:
-        raise HTTPException(
-            status_code=404, 
-            detail="No students found for the specified class"
-        )
-    return students
 
 
 @students_router.get("/by_gender", response_model=List[StudentsResponse])
