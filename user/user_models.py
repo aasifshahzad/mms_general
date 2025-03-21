@@ -54,6 +54,10 @@ class UserResponse(SQLModel):
 class LoginResponse(SQLModel):
     access_token: str
     refresh_token: str
-    token_type: str = "bearer"
     expires_in: int
+    token_type: str
     user: UserResponse
+
+class UserLogin(SQLModel):
+    username: str
+    password: str

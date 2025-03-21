@@ -17,6 +17,8 @@ from router.students import students_router
 from router.mark_attendance import mark_attendance_router
 from router.adm_del import adm_del_router
 from router.fee import fee_router
+from user.user_models import User, UserCreate, UserUpdate, AdminUserUpdate, LoginResponse
+from user.services import get_current_user
 
 # User related imports
 from user.user_crud import (
@@ -80,10 +82,10 @@ async def root():
 
 @app.post("/login", response_model=LoginResponse, tags=["User"])
 async def login_for_access_token(
-    form_data: Annotated[OAuth2PasswordRequestForm, Depends()],
+    user_credentials: UserLogin,
     db: Annotated[Session, Depends(get_session)]
 ) -> LoginResponse:
-    return user_login(db, form_data)
+    return user_login(db, user_credentials)
 
 @app.post("/signup", response_model=User, tags=["User"])
 async def signup(

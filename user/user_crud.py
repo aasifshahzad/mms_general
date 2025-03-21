@@ -6,40 +6,52 @@ from fastapi.security import OAuth2PasswordRequestForm
 from sqlmodel import Session, select
 from db import get_session
 from user.settings import ACCESS_TOKEN_EXPIRE_MINUTES, ALGORITHM, REFRESH_TOKEN_EXPIRE_MINUTES, SECRET_KEY
-from user.services import create_access_token, get_password_hash, get_user_by_username, verify_password, pwd_context, oauth2_scheme
+from user.services import authenticate_user, create_access_token, get_password_hash, get_user_by_username, verify_password, pwd_context, oauth2_scheme
 from user.user_models import (
     LoginResponse, 
     TokenData, 
     User, 
-    UserCreate, 
+    UserCreate,
+    UserLogin, 
     UserResponse, 
     UserUpdate,
     UserRole,
     AdminUserUpdate
 )
-from typing import Annotated
+from typing import Annotated, Union
 
-
-
-def user_login(db: Session, form_data: OAuth2PasswordRequestForm) -> LoginResponse:
-    user = get_user_by_username(db, form_data.username)
-    if not user or not verify_password(form_data.password, user.password):
+def user_login(db: Session, credentials: Union[OAuth2PasswordRequestForm, UserLogin]) -> LoginResponse:
+    username = getattr(credentials, "username", None)
+    password = getattr(credentials, "password", None)
+    
+    if not username or not password:
         raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Incorrect username or password",
-            headers={"WWW-Authenticate": "Bearer"},
+            status_code=400,
+            detail="Missing username or password"
+        )
+        
+    user = authenticate_user(db, username, password)
+    if not user:
+        raise HTTPException(
+            status_code=401,
+            detail="Incorrect username or password"
         )
     
+    # Create access token
     access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
     access_token = create_access_token(
-        data={"sub": user.username}, expires_delta=access_token_expires
+        data={"sub": user.username},
+        expires_delta=access_token_expires
     )
     
+    # Create refresh token
     refresh_token_expires = timedelta(minutes=REFRESH_TOKEN_EXPIRE_MINUTES)
     refresh_token = create_access_token(
-        data={"sub": user.username}, expires_delta=refresh_token_expires
+        data={"sub": user.username},
+        expires_delta=refresh_token_expires
     )
 
+    # Create user response
     user_response = UserResponse(
         username=user.username,
         email=user.email,
@@ -47,6 +59,7 @@ def user_login(db: Session, form_data: OAuth2PasswordRequestForm) -> LoginRespon
         id=user.id
     )
     
+    # Return complete login response
     return LoginResponse(
         access_token=access_token,
         refresh_token=refresh_token,
