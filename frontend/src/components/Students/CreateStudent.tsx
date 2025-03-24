@@ -125,9 +125,9 @@ const AddNewStudent = ({ onClassAdded }: { onClassAdded: () => void }) => {
                   <Select
                     label="Class Name"
                     options={classNameList}
-                    {...register("student_class_name")}
+                    {...register("class_name")}
                     onChange={(event: React.ChangeEvent<HTMLSelectElement>) => {
-                      register("student_class_name").onChange({
+                      register("class_name").onChange({
                         target: { value: event.target.value },
                       });
                     }}
@@ -135,7 +135,7 @@ const AddNewStudent = ({ onClassAdded }: { onClassAdded: () => void }) => {
                     className="w-full"
                   />
                   <p className="text-red-500">
-                    {errors.student_class_name?.message}
+                    {errors.class_name?.message}
                   </p>
                 </div>
                 {/* Student Name and Father Name Fields */}

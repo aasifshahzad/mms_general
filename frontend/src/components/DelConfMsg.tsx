@@ -1,8 +1,14 @@
 import { useState } from "react";
-import { AlertDialog, AlertDialogTrigger, AlertDialogContent, AlertDialogHeader, AlertDialogTitle, AlertDialogFooter } from "@/components/ui/alert-dialog";
+import {
+  AlertDialog,
+  AlertDialogTrigger,
+  AlertDialogContent,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogFooter,
+} from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
-import { TrashIcon } from "lucide-react"; // Adjust icons based on your needs
-
+import { RiDeleteBinLine } from "react-icons/ri";
 const DelConfirmMsg = ({
   OnDelete,
   title = "Are you sure?",
@@ -23,9 +29,7 @@ const DelConfirmMsg = ({
   return (
     <AlertDialog open={open} onOpenChange={setOpen}>
       <AlertDialogTrigger asChild>
-        <Button variant="destructive">
-          <TrashIcon className="text-red-600" />
-        </Button>
+        <RiDeleteBinLine className="text-red-600 text-lg cursor-pointer hover:text-red-700" />
       </AlertDialogTrigger>
       <AlertDialogContent>
         <AlertDialogHeader>
@@ -41,7 +45,7 @@ const DelConfirmMsg = ({
           </Button>
         </AlertDialogFooter>
       </AlertDialogContent>
-    </AlertDialog>
+    </AlertDialog>    
   );
 };
 

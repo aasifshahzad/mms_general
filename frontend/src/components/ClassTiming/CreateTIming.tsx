@@ -71,7 +71,7 @@ const AddClassTime = ({ onClassAdded }: { onClassAdded: () => void }) => {
           <DialogHeader>
             {/* Dialog Title */}
             <DialogTitle className="text-2xl font-semibold text-gray-800 dark:text-gray-100">
-              Add New Student
+              Add Class Time
             </DialogTitle>
             <hr className="bg-gray-400 dark:bg-gray-200" />
 

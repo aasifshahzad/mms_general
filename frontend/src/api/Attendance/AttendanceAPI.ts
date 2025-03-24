@@ -65,4 +65,19 @@ export const Create = async (Attendances: MarkAttInput) => {
       throw error; 
     }
   }
+  export async function Delete(attendance_id: number) {
+    try {
+      const response = await AxiosInstance.delete(
+        `mark_attendance/delete_attendance/${attendance_id}`,
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      return response;
+    } catch (error) {
+      throw error;
+    }
+  }
 }
