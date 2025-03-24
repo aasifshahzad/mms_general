@@ -70,3 +70,29 @@ def delete_teachernames(user: Annotated[User, Depends(check_admin)],teacher_name
     session.delete(teachernames)
     session.commit()
     return {"message": "Teacher Name deleted successfully"}
+
+@teachernames_router.delete("/{teacher_id}", response_model=dict)
+def delete_teacher_by_id(
+    user: Annotated[User, Depends(check_admin)],
+    teacher_id: int, 
+    session: Session = Depends(get_session)
+):
+    """Delete a teacher by their ID"""
+    teacher = session.get(TeacherNames, teacher_id)
+    if not teacher:
+        raise HTTPException(
+            status_code=404, 
+            detail=f"Teacher with ID {teacher_id} not found"
+        )
+    
+    try:
+        session.delete(teacher)
+        session.commit()
+        return {"message": f"Teacher with ID {teacher_id} deleted successfully"}
+    except Exception as e:
+        session.rollback()
+        logger.error(f"Error deleting teacher: {e}")
+        raise HTTPException(
+            status_code=500,
+            detail="Error deleting teacher"
+        )

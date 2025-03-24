@@ -30,3 +30,8 @@ class AttendanceValueCreate(SQLModel):
 
 class AttendanceValueResponse (AttendanceValueBase, SQLModel):
     attendance_value: str
+
+
+class AttendanceValueDelete(SQLModel):
+    attendance_value_id: int
+    message: str = "Attendance value deleted successfully"
