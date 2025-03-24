@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { Loader2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { LoginAPI } from '@/api/Login/Login';
+import {LoginAPI}  from '@/api/Login/Login';
 import { toast } from 'sonner';
 
 type FormData = {
@@ -11,15 +11,29 @@ type FormData = {
   password: string;
 };
 
+interface LoginResponse {
+  access_token: string;
+  user: string;
+}
+
+interface ApiErrorResponse {
+  response?: {
+    data?: {
+      detail?: string;
+    };
+  };
+}
+
 export default function LoginForm() {
   const { register, handleSubmit, formState: { errors } } = useForm<FormData>();
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
 
+
   const onSubmit = async (data: FormData) => {
     setIsLoading(true);
     try {
-      const response = await LoginAPI.Create({
+      const response: LoginResponse = await LoginAPI({
         username: data.username,
         password: data.password,
       });
@@ -37,10 +51,21 @@ export default function LoginForm() {
         console.error("Login failed: Invalid response format");
         // Show error message to user
       }
-    } catch (error: any) {
-      toast.error(error.response?.data?.detail || "Login failed. Please check your credentials.",
-        { position: "bottom-center", duration: 3000 }
-      );
+    } catch (error: unknown) {
+      if (error instanceof Error && 'response' in error) {
+        const apiError = error as Error & ApiErrorResponse;
+        if (apiError.response?.data?.detail) {
+          toast.error(apiError.response.data.detail, {
+          position: "bottom-center",
+          duration: 3000,
+          });
+        } else {
+          toast.error("Login failed. Please check your credentials.", {
+            position: "bottom-center",
+            duration: 3000,
+          });
+        }
+      }
     } finally {
       setIsLoading(false);
     }

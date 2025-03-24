@@ -7,11 +7,9 @@ interface LoginData {
 
 interface LoginResponse {
   access_token: string;
-  user: any;
+  user: string;
 }
-
-export namespace LoginAPI {
-  export async function Create(loginData: LoginData) {
+  export async function LoginAPI(loginData: LoginData) {
     try {
       const response = await axiosIntance.post<LoginResponse >(
         "/auth/frontend/login",
@@ -29,4 +27,3 @@ export namespace LoginAPI {
       throw error;
     }
   }
-}
