@@ -3,24 +3,73 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { Loader2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import {LoginAPI}  from '@/api/Login/Login';
+import { toast } from 'sonner';
+
 type FormData = {
-  emailOrPhone: string;
+  username: string;
   password: string;
 };
+
+interface LoginResponse {
+  access_token: string;
+  user: string;
+}
+
+interface ApiErrorResponse {
+  response?: {
+    data?: {
+      detail?: string;
+    };
+  };
+}
 
 export default function LoginForm() {
   const { register, handleSubmit, formState: { errors } } = useForm<FormData>();
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
 
+
   const onSubmit = async (data: FormData) => {
     setIsLoading(true);
-    // Handle login logic here
-    console.log(data);
-    setIsLoading(false);
-    router.push('/dashboard');
+    try {
+      const response: LoginResponse = await LoginAPI({
+        username: data.username,
+        password: data.password,
+      });
+  
+      if (response && response.access_token) {
+        console.log("Login successful:", response);
+        localStorage.setItem('access_token', response.access_token);
+        localStorage.setItem('user', JSON.stringify(response.user));
+        toast.success("Login Successfully!", {
+          position: "bottom-center",
+          duration: 3000,
+        });
+        router.push('/dashboard');
+      } else {
+        console.error("Login failed: Invalid response format");
+        // Show error message to user
+      }
+    } catch (error: unknown) {
+      if (error instanceof Error && 'response' in error) {
+        const apiError = error as Error & ApiErrorResponse;
+        if (apiError.response?.data?.detail) {
+          toast.error(apiError.response.data.detail, {
+          position: "bottom-center",
+          duration: 3000,
+          });
+        } else {
+          toast.error("Login failed. Please check your credentials.", {
+            position: "bottom-center",
+            duration: 3000,
+          });
+        }
+      }
+    } finally {
+      setIsLoading(false);
+    }
   };
-
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-gray-100">
@@ -37,10 +86,10 @@ export default function LoginForm() {
                 type="text"
                 placeholder="Enter your email or phone"
                 className="w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-emerald-500 focus:border-emerald-500"
-                {...register('emailOrPhone', { required: 'This field is required' })}
+                {...register('username', { required: 'This field is required' })}
               />
-              {errors.emailOrPhone && (
-                <p className="mt-1 text-sm text-red-500">{errors.emailOrPhone.message}</p>
+              {errors.username && (
+                <p className="mt-1 text-sm text-red-500">{errors.username.message}</p>
               )}
             </div>
           </div>

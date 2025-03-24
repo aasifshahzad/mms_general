@@ -16,8 +16,24 @@ import { AttendanceAPI as API } from "@/api/Attendance/AttendanceAPI";
 import { ClassNameAPI as API2 } from "@/api/Classname/ClassNameAPI";
 import { AttendanceTimeAPI as API13 } from "@/api/AttendaceTime/attendanceTimeAPI";
 import { TeacherNameAPI as API4 } from "@/api/Teacher/TeachetAPI";
+import { StudentAPI as API5 } from "@/api/Student/StudentsAPI";
 import { toast } from "sonner";
+import { ChevronsUpDown } from "lucide-react";
+import { cn } from "@/libs/utils";
 import EditAttendance from "./EditAttendance";
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import {
   flexRender,
   getCoreRowModel,
@@ -34,6 +50,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import DelConfirmMsg from "../DelConfMsg";
 
 // Define the AttendanceRecord interface
 interface AttendanceRecord {
@@ -72,6 +89,11 @@ interface TeacherResponse {
   teacher_name: string;
 }
 
+interface StudentResponse {
+  student_id: number;
+  student_name: string;
+}
+
 interface APIError {
   response: {
     data: {
@@ -83,6 +105,7 @@ interface APIError {
 const AttendanceTable: React.FC = () => {
   const {
     register,
+    setValue: setFormValue,
     formState: { errors },
     handleSubmit,
   } = useForm<FilteredAttendance>();
@@ -102,18 +125,21 @@ const AttendanceTable: React.FC = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const recordsPerPage = 15;
   const [formRefresh, setFormRefresh] = useState(true);
+  const [studentsList, setStudentsList] = useState<SelectComponentOption[]>([]);
+  const [open, setOpen] = useState(false);
+  const [value, setValue] = useState("");
 
   const handleAttendanceUpdate = async () => {
-    setFormRefresh(prev => !prev);
+    setFormRefresh((prev) => !prev);
     // Re-fetch attendance data with current filters
     const formData = {
-      attendance_date: "", 
+      attendance_date: "",
       attendance_time_id: 0,
       class_name_id: 0,
       teacher_name_id: 0,
-      student_id: 0,
+      student_id: Number(value) || 0,
       father_name: "",
-      attendance_value_id: 0
+      attendance_value_id: 0,
     };
     await HandleSubmitForStudentGet(formData);
   };
@@ -162,7 +188,9 @@ const AttendanceTable: React.FC = () => {
       accessorKey: "attendance_value",
       header: "Status",
       cell: ({ row }) => {
-        const value = (row.getValue("attendance_value") as string).toLowerCase();
+        const value = (
+          row.getValue("attendance_value") as string
+        ).toLowerCase();
         return (
           <div className="flex items-center">
             {value === "present" ? (
@@ -178,7 +206,7 @@ const AttendanceTable: React.FC = () => {
             ) : value === "leave" ? (
               <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-yellow-50 text-yellow-700">
                 <Clock className="w-3 h-3 mr-1" />
-                Leave
+                Late
               </span>
             ) : value === "sick" ? (
               <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-700">
@@ -199,10 +227,20 @@ const AttendanceTable: React.FC = () => {
       id: "actions",
       header: "Actions",
       cell: ({ row }) => (
-        <EditAttendance 
-          attendanceId={row.original.attendance_id}
-          onUpdate={handleAttendanceUpdate}
-        />
+        <div className="flex justify-center items-center gap-2">
+          <EditAttendance
+            attendanceId={row.original.attendance_id}
+            onUpdate={handleAttendanceUpdate}
+          />
+          <DelConfirmMsg
+            rowId={row.original.attendance_id}
+            OnDelete={(confirmed) => {
+              if (confirmed) {
+                handleDeleteAttendance(row.original.attendance_id);
+              }
+            }}
+          />
+        </div>
       ),
     },
   ];
@@ -212,7 +250,47 @@ const AttendanceTable: React.FC = () => {
     GetClassName();
     GetClassTime();
     GetTeacherName();
+    GetStudents();
   }, [formRefresh]); // Add formRefresh dependency
+
+  const handleDeleteAttendance = async (attendanceId: number) => {
+    try {
+      const response = await API.Delete(attendanceId);
+      if (response.status === 200) {
+        toast.success("Attendance deleted successfully", {
+          position: "bottom-center",
+          duration: 5000,
+        });
+        handleAttendanceUpdate();
+      } else {
+        toast.error("Failed to delete attendance");
+      }
+    } catch (error) {
+      console.error("Error deleting attendance:", error);
+    }
+  };
+
+  const GetStudents = async () => {
+    setIsLoading(true);
+    try {
+      const response = (await API5.Get()) as { data: StudentResponse[] };
+      // Add "All" option at the beginning
+      const allStudents = [
+        { student_id: 0, student_name: "All Students" },
+        ...response.data,
+      ];
+      setStudentsList(
+        allStudents.map((student) => ({
+          id: student.student_id,
+          title: student.student_name,
+        }))
+      );
+    } catch (error) {
+      console.error("Error fetching students:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const GetClassName = async () => {
     try {
@@ -286,6 +364,7 @@ const AttendanceTable: React.FC = () => {
   };
 
   const HandleSubmitForStudentGet = async (formData: FilteredAttendance) => {
+    setAttendanceRecords([]);
     try {
       setIsLoading(true);
       const filter: FilteredAttendance = {
@@ -312,7 +391,7 @@ const AttendanceTable: React.FC = () => {
     } catch (error: unknown) {
       if (error && typeof error === "object" && "response" in error) {
         toast.error(
-          (error as APIError).response?.data?.message || "Error fetching data",
+          (error as APIError).response?.data?.message || "No Records Found",
           {
             position: "bottom-center",
             duration: 3000,
@@ -489,7 +568,81 @@ const AttendanceTable: React.FC = () => {
                 {errors.teacher_name_id?.message}
               </p>
             </div>
-            <div className="px-2 py-4 bg-gray-50 mt-[0.6rem] border-gray-200 flex justify-end">
+
+            <div className="space-y-1">
+              <label className="text-sm text-gray-700 font-bold">Student</label>
+              <Popover open={open} onOpenChange={setOpen}>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    role="combobox"
+                    aria-expanded={open}
+                    className="w-full justify-between"
+                  >
+                    {value
+                      ? studentsList.find(
+                          (student) => student.id.toString() === value
+                        )?.title
+                      : "Select student..."}
+                    <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-full p-0">
+                  <Command>
+                    <CommandInput
+                      placeholder="Search student..."
+                      className="h-9"
+                    />
+                    <CommandList>
+                      {isLoading ? (
+                        <div className="p-2 text-center text-gray-500">
+                          Loading...
+                        </div>
+                      ) : (
+                        <>
+                          <CommandEmpty>No student found.</CommandEmpty>
+                          <CommandGroup>
+                            {studentsList.map((student) => (
+                              <CommandItem
+                                key={student.id}
+                                value={student.id.toString()}
+                                onSelect={(currentValue: string) => {
+                                  setValue(
+                                    currentValue === value ? "" : currentValue
+                                  );
+                                  setOpen(false);
+                                  const selectedStudent = studentsList.find(
+                                    (s) => s.id.toString() === currentValue
+                                  );
+                                  if (selectedStudent) {
+                                    setFormValue(
+                                      "student_id",
+                                      Number(selectedStudent.id)
+                                    );
+                                  }
+                                }}
+                              >
+                                {student.title}
+                                <Check
+                                  className={cn(
+                                    "ml-auto h-4 w-4",
+                                    value === student.id.toString()
+                                      ? "opacity-100"
+                                      : "opacity-0"
+                                  )}
+                                />
+                              </CommandItem>
+                            ))}
+                          </CommandGroup>
+                        </>
+                      )}
+                    </CommandList>
+                  </Command>
+                </PopoverContent>
+              </Popover>
+            </div>
+
+            <div className="px-2 py-4 mt-[0.6rem] border-gray-200 flex justify-end">
               <Button
                 type="submit"
                 className="inline-flex items-center px-4 py-2"
@@ -497,7 +650,7 @@ const AttendanceTable: React.FC = () => {
               >
                 {isLoading ? (
                   <>
-                    <div className="animate-spin h-4 w-4 mr-2 border-2 border-white border-t-transparent rounded-full" />
+                    <div className="animate-spin h-4 w-4 mr-2 border-2 border-t-transparent rounded-full" />
                     Processing...
                   </>
                 ) : (
@@ -532,7 +685,10 @@ const AttendanceTable: React.FC = () => {
               {table.getHeaderGroups().map((headerGroup) => (
                 <TableRow key={headerGroup.id}>
                   {headerGroup.headers.map((header) => (
-                    <TableHead key={header.id} className="text-xs h-8 bg-primary dark:bg-secondary text-white dark:text-gray-100 px-2">
+                    <TableHead
+                      key={header.id}
+                      className="text-xs h-8 bg-primary dark:bg-secondary text-white dark:text-gray-100 px-2"
+                    >
                       {header.isPlaceholder
                         ? null
                         : flexRender(

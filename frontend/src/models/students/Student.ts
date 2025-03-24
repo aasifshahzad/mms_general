@@ -1,7 +1,7 @@
 import { EntityBase } from "../EntityBase";
 
 export interface StudentModel extends EntityBase {
-  id: string;
+  student_id: string;
 
   student_name: string;
 
@@ -37,7 +37,7 @@ export interface CreateStudent {
   student_date_of_birth: string;
   student_age: string;
   student_education: string;
-  student_class_name: string;
+  class_name: string;
   student_gender: string;
   student_city: string;
   student_address: string;

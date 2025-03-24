@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { GoDotFill } from "react-icons/go";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import {
@@ -101,6 +101,7 @@ const menuList: MenuItem[] = [
 
 const Sidebar: React.FC = () => {
   const pathname = usePathname();
+  const router = useRouter();
   const [isOpen, setIsOpen] = useState(true);
   const [openSubmenu, setOpenSubmenu] = useState<number | null>(null);
   const [isDarkMode, setIsDarkMode] = useState(true);
@@ -111,6 +112,13 @@ const Sidebar: React.FC = () => {
   const toggleDarkMode = () => {
     setIsDarkMode(!isDarkMode);
     document.documentElement.classList.toggle("dark");
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem('access_token');
+    localStorage.removeItem('user');
+    localStorage.removeItem('username');
+    router.push('/login');
   };
 
   return (
@@ -187,6 +195,14 @@ const Sidebar: React.FC = () => {
                       }`}
                     />
                   )}
+                </button>
+              ) : item.name === "Logout" ? (
+                <button
+                  onClick={handleLogout}
+                  className={`flex items-center p-2 rounded-lg mb-1 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-neutral-800`}
+                >
+                  <item.icon className="w-5 h-5 mr-3" />
+                  {isOpen && <span>{item.name}</span>}
                 </button>
               ) : (
                 <Link

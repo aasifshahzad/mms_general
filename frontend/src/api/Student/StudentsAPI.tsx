@@ -7,7 +7,12 @@ export namespace StudentAPI {
   export const Get = async () => {
     try {
       const response = await AxiosInstance.get<StudentModel>(
-        "/students/all_students/"
+        "/students/all_students/",
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("access_token")}`,
+          },
+        }
       );
       return response;
     } catch (error) {
@@ -24,6 +29,7 @@ export namespace StudentAPI {
         {
           headers: {
             "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("access_token")}`,
           },
         }
       );
@@ -38,7 +44,12 @@ export namespace StudentAPI {
   export async function Delete(student_id: number) {
     try {
       const response = await AxiosInstance.delete(
-        `/students/student_id=${student_id}`,
+        `/students/${student_id}`,
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("access_token")}`,
+          },
+        }
       );
       return response;
     } catch (error) {
@@ -49,6 +60,11 @@ export namespace StudentAPI {
     try {
       const response = await AxiosInstance.get(
         `/students/by_class_id/?class_id=${class_id}`,
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("access_token")}`,
+          },
+        }
       );
       return response;
     } catch (error) {
