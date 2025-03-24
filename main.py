@@ -64,7 +64,7 @@ async def lifespan(app: FastAPI):
     except Exception as e:
         logger.error(f"Shutdown error: {str(e)}")
 
-origins = ["http://localhost:3000"]
+origins = ["http://localhost:3000","https://mzbs.vercel.app"]
 
 app = FastAPI(
     title="MMS-GENERAL", 
