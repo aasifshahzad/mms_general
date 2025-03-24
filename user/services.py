@@ -1,4 +1,4 @@
-from jose import jwt
+from jose import JWTError, jwt
 from passlib.context import CryptContext
 from fastapi.security import OAuth2PasswordBearer
 from setting import *
@@ -89,14 +89,19 @@ async def get_current_user(
             raise credentials_exception
             
         # Check token expiration
-        if datetime.utcnow().timestamp() > exp:
+        if datetime.now().timestamp() > exp:
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="Token has expired",
                 headers={"WWW-Authenticate": "Bearer"},
             )
     except JWTError:
-        raise credentials_exception
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Could not validate credentials",
+            headers={"WWW-Authenticate": "Bearer"},
+)
+
 
 def get_user_by_email(db:Session,user_email: EmailStr) -> User:
     """
@@ -178,29 +183,38 @@ def create_refresh_token(data: Union[str, Any], expires_delta: int = None) -> st
     encoded_jwt = jwt.encode(to_encode, JWT_REFRESH_SECRET_KEY, ALGORITHM)
     return encoded_jwt
 
-# def create_refresh_token(data: dict) -> str:
-#     to_encode = data.copy()
-#     expire = datetime.utcnow() + timedelta(days=7)
-#     to_encode.update({"exp": expire})
-#     return jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
+def verify_refresh_token(db: Session, token: str) -> User:
+    """
+    Validates the refresh token and returns the associated user if valid.
+    """
+    try:
+        payload = jwt.decode(token, JWT_REFRESH_SECRET_KEY, algorithms=[ALGORITHM])
+        user_id = payload.get("sub")
 
-# @auth_router.post("/refresh")
-# async def refresh_token(
-#     refresh_token: str,
-#     db: Session = Depends(get_session)
-# ) -> Token:
-#     try:
-#         payload = jwt.decode(refresh_token, SECRET_KEY, algorithms=[ALGORITHM])
-#         username: str = payload.get("sub")
-#         if username is None:
-#             raise credentials_exception
-#         user = get_user_by_username(db, username=username)
-#         if user is None:
-#             raise credentials_exception
-#         access_token = create_access_token(data={"sub": user.username})
-#         return Token(
-#             access_token=access_token,
-#             refresh_token=refresh_token
-#         )
-#     except JWTError:
-#         raise credentials_exception
+        if not user_id:
+            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token")
+
+        # Check if the token exists in the database
+        stored_token = db.exec(select(RefreshToken).where(RefreshToken.token == token)).first()
+        if not stored_token or stored_token.expires_at < datetime.now():
+            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Refresh token expired or invalid")
+
+        return get_user_by_username(db, user_id)
+
+    except JWTError:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token")
+
+def revoke_refresh_token(db: Session, token: str):
+    """
+    Revokes a refresh token (used for logout).
+    """
+    stored_token = db.exec(select(RefreshToken).where(RefreshToken.token == token)).first()
+    if stored_token:
+        db.delete(stored_token)
+        db.commit()
+
+def verify_token(token: str):
+    try:
+        return jwt.decode(token, JWT_REFRESH_SECRET_KEY, algorithms=[ALGORITHM])
+    except JWTError:
+        return None
