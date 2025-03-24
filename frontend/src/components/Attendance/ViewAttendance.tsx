@@ -19,7 +19,7 @@ import { TeacherNameAPI as API4 } from "@/api/Teacher/TeachetAPI";
 import { StudentAPI as API5 } from "@/api/Student/StudentsAPI";
 import { toast } from "sonner";
 import { ChevronsUpDown } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { cn } from "@/libs/utils";
 import EditAttendance from "./EditAttendance";
 import {
   Command,
