@@ -9,7 +9,6 @@ import {
   GraduationCap,
   Hand,
   LayoutDashboard,
-  ChevronDown,
   Moon,
   Sun,
   UserCog2,
@@ -102,17 +101,11 @@ const menuList: MenuItem[] = [
 const Sidebar: React.FC = () => {
   const pathname = usePathname();
   const router = useRouter();
-  const [isOpen, setIsOpen] = useState(true);
   const [openSubmenu, setOpenSubmenu] = useState<number | null>(null);
   const [isDarkMode, setIsDarkMode] = useState(true);
 
-  const toggleSidebar = () => setIsOpen(!isOpen);
   const toggleSubmenu = (id: number) =>
     setOpenSubmenu(openSubmenu === id ? null : id);
-  const toggleDarkMode = () => {
-    setIsDarkMode(!isDarkMode);
-    document.documentElement.classList.toggle("dark");
-  };
 
   const handleLogout = () => {
     localStorage.removeItem('access_token');
@@ -122,33 +115,15 @@ const Sidebar: React.FC = () => {
   };
 
   return (
-    <div
-      className={`${
-        isOpen ? "w-64" : "w-20"
-      } h-screen transition-all duration-300 bg-white dark:bg-neutral-950 border-r border-gray-200 dark:border-gray-700`}
-    >
+    <div className="w-64 h-screen bg-white dark:bg-neutral-950 border-r border-gray-200 dark:border-gray-700">
       <div className="flex items-center justify-between p-5 border-b border-gray-200 dark:border-gray-700">
-        {isOpen ? (
-          <Image
-            src="/logo.svg"
-            alt="Logo"
-            width={180}
-            height={50}
-            className="dark:invert"
-          />
-        ) : (
-          <div className="w-8 h-8 bg-gray-200 dark:bg-gray-700 rounded-full"></div>
-        )}
-        <button
-          onClick={toggleSidebar}
-          className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
-        >
-          <ChevronDown
-            className={`w-6 h-6 transition-transform duration-300 ${
-              isOpen ? "-rotate-90" : "rotate-90"
-            }`}
-          />
-        </button>
+        <Image
+          src="/logo.svg"
+          alt="Logo"
+          width={180}
+          height={50}
+          className="dark:invert"
+        />
       </div>
 
       <div className="p-4">
@@ -160,16 +135,14 @@ const Sidebar: React.FC = () => {
             height={40}
             className="rounded-full"
           />
-          {isOpen && (
-            <div>
-              <h2 className="text-sm font-semibold text-gray-700 dark:text-gray-200">
-                User
-              </h2>
-              <p className="text-xs text-gray-500 dark:text-gray-400">
-                sample@gmail.com
-              </p>
-            </div>
-          )}
+          <div>
+            <h2 className="text-sm font-semibold text-gray-700 dark:text-gray-200">
+              User
+            </h2>
+            <p className="text-xs text-gray-500 dark:text-gray-400">
+              sample@gmail.com
+            </p>
+          </div>
         </div>
 
         <nav>
@@ -186,15 +159,8 @@ const Sidebar: React.FC = () => {
                 >
                   <div className="flex items-center">
                     <item.icon className="w-5 h-5 mr-3" />
-                    {isOpen && <span>{item.name}</span>}
+                    <span>{item.name}</span>
                   </div>
-                  {isOpen && (
-                    <ChevronDown
-                      className={`w-4 h-4 transition-transform duration-300 ${
-                        openSubmenu === item.id ? "rotate-180" : ""
-                      }`}
-                    />
-                  )}
                 </button>
               ) : item.name === "Logout" ? (
                 <button
@@ -202,7 +168,7 @@ const Sidebar: React.FC = () => {
                   className={`flex items-center p-2 rounded-lg mb-1 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-neutral-800`}
                 >
                   <item.icon className="w-5 h-5 mr-3" />
-                  {isOpen && <span>{item.name}</span>}
+                  <span>{item.name}</span>
                 </button>
               ) : (
                 <Link
@@ -214,10 +180,10 @@ const Sidebar: React.FC = () => {
                   }`}
                 >
                   <item.icon className="w-5 h-5 mr-3" />
-                  {isOpen && <span>{item.name}</span>}
+                  <span>{item.name}</span>
                 </Link>
               )}
-              {item.hasSubmenu && openSubmenu === item.id && isOpen && (
+              {item.hasSubmenu && openSubmenu === item.id && (
                 <div className="ml-6 mt-1 space-y-1">
                   {item.submenu?.map((subItem) => (
                     <Link
@@ -242,7 +208,10 @@ const Sidebar: React.FC = () => {
 
       <div className="absolute bottom-4 left-4">
         <button
-          onClick={toggleDarkMode}
+          onClick={() => {
+            setIsDarkMode(!isDarkMode);
+            document.documentElement.classList.toggle("dark");
+          }}
           className="p-2 rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-600"
         >
           {isDarkMode ? (
