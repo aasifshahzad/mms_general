@@ -130,16 +130,16 @@ const Sidebar: React.FC = () => {
       <div className="flex items-center justify-between p-5 border-b border-gray-200 dark:border-gray-700">
         {isOpen ? (
           <Image
-            src="/logo.svg"
+            src="/logo.png"
             alt="Logo"
-            width={180}
+            width={50}
             height={50}
             className="dark:invert"
           />
         ) : (
           <div className="w-8 h-8 bg-gray-200 dark:bg-gray-700 rounded-full"></div>
         )}
-        <button
+        {/* <button
           onClick={toggleSidebar}
           className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
         >
@@ -148,7 +148,8 @@ const Sidebar: React.FC = () => {
               isOpen ? "-rotate-90" : "rotate-90"
             }`}
           />
-        </button>
+        </button> */}
+        <h2 className="text-sm font-sans font-semibold text-gray-700 dark:text-gray-200">MADRESSA ZAID BIN HARIS (R.A)</h2>
       </div>
 
       <div className="p-4">
