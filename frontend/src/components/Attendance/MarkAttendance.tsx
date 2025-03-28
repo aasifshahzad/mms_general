@@ -314,7 +314,7 @@ const MarkAttendance = () => {
   return (
     <div className="mt-2 flex flex-col gap-5">
       <Loader isActive={isLoading} />
-      <div className="ml-2 bg-white dark:bg-transparent drop-shadow-sm border border-gray-200 rounded-lg w-auto p-2">
+      <div className="ml-2 bg-white dark:bg-transparent drop-shadow-sm border border-gray-200 dark:border-secondary rounded-lg w-auto p-2">
         <form onSubmit={handleSubmit(onSubmit)}>
           <div className="flex gap-32 ml-1 border p-2 rounded-lg  ">
             <div className="py-2">
@@ -389,7 +389,7 @@ const MarkAttendance = () => {
                     {table.getHeaderGroups().map((headerGroup) => (
                       <TableRow key={headerGroup.id}>
                         {headerGroup.headers.map((header) => (
-                          <TableHead key={header.id} className="text-center bg-black text-white">
+                          <TableHead key={header.id} className="text-center bg-black dark:bg-secondary text-white">
                             {flexRender(
                               header.column.columnDef.header,
                               header.getContext()

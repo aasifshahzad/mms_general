@@ -175,7 +175,7 @@ export default function ModernStudentTable() {
   });
 
   return (
-    <Card className="ml-3 mr-3 mt-7 p-6 w-auto bg-white dark:bg-gray-800 rounded-lg shadow-lg">
+    <Card className="ml-3 mr-3 mt-7 p-6 w-auto bg-white dark:bg-background rounded-lg shadow-lg">
       <AddNewStudent onClassAdded={GetData} />
       <div className="flex items-center justify-between mb-6">
         <div className="relative">
