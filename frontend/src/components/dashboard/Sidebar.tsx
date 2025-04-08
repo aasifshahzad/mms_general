@@ -102,6 +102,7 @@ const Sidebar: React.FC = () => {
   const pathname = usePathname();
   const router = useRouter();
   const [openSubmenu, setOpenSubmenu] = useState<number | null>(null);
+  const [isOpen, setIsOpen] = useState(false);
   const [isDarkMode, setIsDarkMode] = useState(true);
 
   const toggleSubmenu = (id: number) =>
@@ -117,13 +118,13 @@ const Sidebar: React.FC = () => {
   return (
     <div className="w-64 h-screen bg-white dark:bg-neutral-950 border-r border-gray-200 dark:border-gray-700">
       <div className="flex items-center justify-between p-5 border-b border-gray-200 dark:border-gray-700">
-        <Image
+        {/* <Image
           src="/logo.svg"
           alt="Logo"
           width={180}
           height={50}
           className="dark:invert"
-        />
+        /> */}
         {isOpen ? (
           <Image
             src="/logo.png"
