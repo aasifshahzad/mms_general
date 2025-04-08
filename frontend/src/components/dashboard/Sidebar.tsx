@@ -74,7 +74,7 @@ const Sidebar: React.FC = () => {
   };
 
   return (
-    <div className="w-64 h-screen bg-white dark:bg-neutral-950 border-r border-gray-200 dark:border-gray-700">
+    <aside className="w-64 h-screen bg-white dark:bg-neutral-950 border-r border-gray-200 dark:border-gray-700">
       <div className="flex items-center justify-between p-5 border-b border-gray-200 dark:border-gray-700">
         {/* <Image
           src="/logo.svg"
