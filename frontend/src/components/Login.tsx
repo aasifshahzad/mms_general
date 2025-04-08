@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import { useForm } from "react-hook-form"
-import { Loader2, Lock, Mail } from "lucide-react"
+import { Loader2, Lock, Mail, Eye, EyeOff } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { LoginAPI } from "@/api/Login/Login"
 import { toast } from "sonner"
@@ -33,6 +33,7 @@ export default function LoginForm() {
     formState: { errors },
   } = useForm<FormData>()
   const [isLoading, setIsLoading] = useState(false)
+  const [showPassword, setShowPassword] = useState(false);
   const router = useRouter()
 
   const onSubmit = async (data: FormData) => {
@@ -54,6 +55,8 @@ export default function LoginForm() {
       setIsLoading(false)
     }
   }
+
+  const togglePasswordVisibility = () => setShowPassword(!showPassword);
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-gray-100 p-4">
