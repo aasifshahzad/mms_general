@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Button } from "../ui/button";
 import {
   Dialog,
@@ -28,9 +28,11 @@ interface APIResponse {
 
 const EditAttendance = ({ attendanceId, onUpdate }: EditAttendanceProps) => {
   const { handleSubmit, reset } = useForm<MarkAttUpdate>();
-
+  
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
+
+
 
   const handleFormSubmit = async (data: MarkAttUpdate) => {
     setLoading(true);
@@ -113,7 +115,6 @@ const EditAttendance = ({ attendanceId, onUpdate }: EditAttendanceProps) => {
                   name="attendanceStatus"
                   className="form-radio h-4 w-4 text-blue-600"
                   value="present"
-                  defaultChecked
                 />
                 <span className="ml-2">Present</span>
               </label>

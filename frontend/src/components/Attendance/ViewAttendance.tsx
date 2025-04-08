@@ -147,6 +147,13 @@ const AttendanceTable: React.FC = () => {
   // Move columns definition here, after handleAttendanceUpdate
   const columns: ColumnDef<AttendanceRecord>[] = [
     {
+      accessorKey: "sr_no",
+      header: "Sr.No",
+      cell: ({ row }) => {
+        return <span className="font-medium">{row.index + 1}</span>;
+      },
+    },
+    {
       accessorKey: "attendance_id",
       header: "ID",
       cell: ({ row }) => {
@@ -194,27 +201,27 @@ const AttendanceTable: React.FC = () => {
         return (
           <div className="flex items-center">
             {value === "present" ? (
-              <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-700">
+              <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 dark:bg-transparent text-green-700">
                 <Check className="w-3 h-3 mr-1" />
                 Present
               </span>
             ) : value === "absent" ? (
-              <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-700">
+              <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-red-100 dark:bg-transparent text-red-700">
                 <AlertCircle className="w-3 h-3 mr-1" />
                 Absent
               </span>
             ) : value === "leave" ? (
-              <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-yellow-50 text-yellow-700">
+              <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-yellow-50 dark:bg-transparent text-yellow-700">
                 <Clock className="w-3 h-3 mr-1" />
                 Late
               </span>
             ) : value === "sick" ? (
-              <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-700">
+              <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-purple-100 dark:bg-transparent text-purple-700">
                 <AlertCircle className="w-3 h-3 mr-1" />
                 Sick
               </span>
             ) : (
-              <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-gray-50 text-gray-700">
+              <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-gray-50 dark:bg-transparent text-gray-700">
                 <Clock className="w-3 h-3 mr-1" />
                 Other
               </span>
@@ -516,13 +523,13 @@ const AttendanceTable: React.FC = () => {
           HandleSubmitForStudentGet(data as FilteredAttendance)
         )}
       >
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200">
+        <div className="bg-white dark:bg-background rounded-xl shadow-sm border border-gray-200 dark:border-secondary">
           <div className="flex p-3 md:grid-cols-4 gap-6">
             <div className="space-y-1 ">
-              <label className="text-sm text-gray-700 font-bold">Date</label>
+              <label className="text-sm text-gray-700 dark:text-gray-300 font-bold">Date</label>
               <Input
                 type="date"
-                className="w-full focus:ring-primary dark:bg-secondary dark:text-gray-100 dark:border-gray-100 border-black"
+                className="w-full focus:ring-primary dark:bg-background dark:text-gray-100 dark:border-gray-100 border-black"
                 {...register("attendance_date", {})}
               />
               <p className="text-red-500 text-xs">
@@ -570,7 +577,7 @@ const AttendanceTable: React.FC = () => {
             </div>
 
             <div className="space-y-1">
-              <label className="text-sm text-gray-700 font-bold">Student</label>
+              <label className="text-sm text-gray-700 dark:text-gray-300 font-bold">Student</label>
               <Popover open={open} onOpenChange={setOpen}>
                 <PopoverTrigger asChild>
                   <Button
@@ -678,7 +685,7 @@ const AttendanceTable: React.FC = () => {
       </form>
 
       {/* Table Section */}
-      <div className="mt-4 bg-white rounded-xl shadow-sm border border-gray-200">
+      <div className="mt-4 bg-white dark:bg-background rounded-xl shadow-sm border border-gray-200 dark:border-secondary">
         <div className="overflow-x-auto">
           <Table>
             <TableHeader>
@@ -687,7 +694,7 @@ const AttendanceTable: React.FC = () => {
                   {headerGroup.headers.map((header) => (
                     <TableHead
                       key={header.id}
-                      className="text-xs h-8 bg-primary dark:bg-secondary text-white dark:text-gray-100 px-2"
+                      className="text-xs h-10 bg-primary dark:bg-secondary text-white dark:text-gray-100 px-2"
                     >
                       {header.isPlaceholder
                         ? null
@@ -718,7 +725,7 @@ const AttendanceTable: React.FC = () => {
                   <TableRow
                     key={row.id}
                     data-state={row.getIsSelected() && "selected"}
-                    className="text-xs hover:bg-gray-50"
+                    className="text-xs hover:bg-gray-50 dark:hover:bg-secondary"
                   >
                     {row.getVisibleCells().map((cell) => (
                       <TableCell key={cell.id} className="px-2 py-[0.4rem]">
