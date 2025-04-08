@@ -217,13 +217,13 @@ def filter_attendance_by_ids(
     attendance_value_id: Optional[int] = Query(None, description="Filter by Attendance Value ID"),
 ):
     """Filter attendance with role-based access"""
-    query = session.query(Attendance)
+    query = session.exec(Attendance)
 
     # Apply role-based filters first
     if current_user.role == UserRole.USER:
         raise HTTPException(
             status_code=403,
-            detail="Users cannot uiew attendance records"
+            detail="Users cannot view attendance records"
         )
     elif current_user.role == UserRole.TEACHER:
         teacher = session.exec(

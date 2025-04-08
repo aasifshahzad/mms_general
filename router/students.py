@@ -245,3 +245,14 @@ def filter_students(
 async def get_student_by_id(db: Session, student_id: int) -> Students | None:
     """Get a student by their ID."""
     return db.exec(select(Students).where(Students.student_id == student_id)).first()
+
+
+def get_student_details(session: Session, student_id: int) -> Optional[dict]:
+    """Fetch student details by student_id."""
+    student = session.exec(select(Students).where(Students.student_id == student_id)).first()
+    if student:
+        return {
+            "student_name": student.student_name,
+            "father_name": student.father_name
+        }
+    return None

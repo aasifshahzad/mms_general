@@ -1,5 +1,5 @@
 from asyncio.log import logger
-from typing import Annotated, List
+from typing import Annotated, List, Optional
 from fastapi import APIRouter, Depends, HTTPException
 from sqlmodel import Session, select
 
@@ -95,3 +95,10 @@ def delete_classnames_by_id(
             status_code=500,
             detail="Error deleting class name"
         )
+
+def get_class_name(session: Session, class_id: int) -> Optional[str]:
+    """Fetch class name by class_id."""
+    class_name_obj = session.exec(select(ClassNames).where(ClassNames.class_name_id == class_id)).first()
+    if class_name_obj:
+        return class_name_obj.class_name
+    return None
