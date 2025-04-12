@@ -5,7 +5,7 @@ import { Select } from "../Select";
 import { useForm } from "react-hook-form";
 import { StudentAPI as API1 } from "@/api/Student/StudentsAPI";
 import { ClassNameAPI as API2 } from "@/api/Classname/ClassNameAPI";
-import { GetFeebyFilter } from "@/api/Fees/AddFeeAPI"
+import { FeeAPI as API3 } from "@/api/Fees/AddFeeAPI"
 import { toast } from "sonner";
 import {
   Command,
@@ -101,10 +101,15 @@ const ViewFees: React.FC = () => {
     }
   };
 
-  const handleGetFees = (data: FilteredFees) => {
-    const response = 
-    console.log("Fetching fees with data:", data);
-    // Implement API call here
+  const handleGetFees = async (data: FilteredFees) => {
+    try {
+        const response = await API3.GetFeebyFilter();
+        console.log("Fetching fees with data:", data);
+        // Handle the response as needed
+    } catch (error) {
+        console.error("Error fetching fees:", error);
+        toast.error("Failed to fetch fees");
+    }
   };
 
   return (

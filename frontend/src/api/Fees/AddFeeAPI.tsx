@@ -2,7 +2,7 @@ import AxiosInstance from "@/api/axiosInterceptorInstance";
 import {GetActionDetail} from "@/utils/GetActionDetail";
 import {AddFeeModel, GetFeeModel} from "@/models/Fees/Fee";
 
-export namespace AddFeeAPI {
+export namespace FeeAPI {
     export const Create = async (AddFee: AddFeeModel) => {
         try {
           const response = await AxiosInstance.post<AddFeeModel>(

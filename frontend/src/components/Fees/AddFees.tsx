@@ -7,7 +7,7 @@ import { Select } from "@/components/Select";
 import { useForm } from "react-hook-form";
 import { ClassNameAPI } from "@/api/Classname/ClassNameAPI";
 import { StudentAPI } from "@/api/Student/StudentsAPI";
-import { AddFeeAPI } from "@/api/Fees/AddFeeAPI";
+import { FeeAPI } from "@/api/Fees/AddFeeAPI";
 import { Header } from "@/components/dashboard/Header";
 import { toast } from "sonner";
 import { ChevronsUpDown, Check } from "lucide-react";
