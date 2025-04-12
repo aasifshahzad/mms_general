@@ -15,6 +15,7 @@ import {
   LogOut,
   ChevronDown,
 } from "lucide-react";
+import { RiCashLine } from "react-icons/ri";
 
 type MenuItem = {
   id: number;
@@ -61,6 +62,17 @@ const menuList: MenuItem[] = [
       { id: 7, name: "Teacher", icon: GoDotFill, path: "/dashboard/setup/teacher" },
     ],
   },
+  {
+    id: 10,
+    name: "Fees",
+    icon: RiCashLine,
+    path: "/dashboard/fees",
+    hasSubmenu: true,
+    submenu: [
+      { id: 11, name: "Add Fees", icon: GoDotFill, path: "/dashboard/fees/add_fees" },
+      { id: 12, name: "View Fees", icon: GoDotFill, path: "/dashboard/fees/view_fees" },
+    ],
+  },
   { id: 5, name: "Logout", icon: LogOut, path: "/login" },
 ];
 
@@ -68,7 +80,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
   const pathname = usePathname();
   const router = useRouter();
   const [openSubmenu, setOpenSubmenu] = useState<number | null>(null);
-  const [isOpen, setIsOpen] = useState(false);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isDarkMode, setIsDarkMode] = useState(true);
 
   const toggleSubmenu = (id: number) => setOpenSubmenu(openSubmenu === id ? null : id);
