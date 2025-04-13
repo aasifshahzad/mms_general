@@ -1,6 +1,6 @@
 from datetime import datetime
 from sqlmodel import Relationship, SQLModel, Field, Column
-from sqlalchemy import String, Integer, DateTime
+from sqlalchemy import DateTime
 from typing import List, Optional
 
 from sqlmodel import Field, SQLModel
@@ -58,7 +58,7 @@ class StudentsCreate(SQLModel):
 
 
 class StudentsResponse(StudentsBase):
-    student_id: int  # Include the ID in the response model
+    student_id: int  # type: ignore # Include the ID in the response model
     student_name: str
     student_date_of_birth: datetime = Field(sa_column=Column(DateTime))
     student_gender: str

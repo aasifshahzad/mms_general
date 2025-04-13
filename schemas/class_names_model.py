@@ -1,6 +1,6 @@
 from datetime import datetime
-from sqlmodel import Relationship, SQLModel, Field
-from typing import List, Optional, TYPE_CHECKING
+from sqlmodel import Relationship, SQLModel, Field # type: ignore
+from typing import List
 # from schemas.attendance_model import Attendance
 # from schemas.fee_model import Fee
 
@@ -16,8 +16,8 @@ class ClassNames(ClassNamesBase, table=True):
     class_name: str = Field(index=True, unique=True)
 
     # Relationship back to Attendance
-    attendances: List["Attendance"] = Relationship(back_populates="attendance_class")
-    fees: List["Fee"] = Relationship(back_populates="class_names")
+    attendances: List["Attendance"] = Relationship(back_populates="attendance_class") # type: ignore
+    fees: List["Fee"] = Relationship(back_populates="class_names") # type: ignore
 
 
 class ClassNamesCreate(SQLModel):
