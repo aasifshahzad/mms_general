@@ -51,7 +51,7 @@ def create_income(
         description=income.description,
         contact=income.contact,
         amount=income.amount,
-        created_at=datetime.utcnow()  # Set created_at to current datetime
+        created_at=datetime.now()  # Set created_at to current datetime
     )
     session.add(db_income)
     session.commit()
