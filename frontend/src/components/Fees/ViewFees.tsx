@@ -6,6 +6,7 @@ import { useForm } from "react-hook-form";
 import { StudentAPI as API1 } from "@/api/Student/StudentsAPI";
 import { ClassNameAPI as API2 } from "@/api/Classname/ClassNameAPI";
 import { FeeAPI as API3 } from "@/api/Fees/AddFeeAPI"
+import { GetFeeModel} from "@/models/Fees/Fee";
 import { toast } from "sonner";
 import {
   Command,
@@ -22,15 +23,15 @@ import {
 } from "@/components/ui/popover";
 import { Check, ChevronsUpDown } from "lucide-react";
 import { cn } from "@/libs/utils";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 
-// Define the FilteredFees interface
-interface FilteredFees {
-  student_id: number;
-  class_name_id: number;
-  fee_month: string;
-  fee_year: string;
-  fee_status: string;
-}
 
 interface ClassNameResponse {
   class_name_id: number;
@@ -42,6 +43,17 @@ interface StudentResponse {
   student_name: string;
 }
 
+interface FeeData {
+  fee_id: number;
+  student_name: string;
+  father_name: string;
+  class_name: string;
+  fee_amount: number;
+  fee_month: string;
+  fee_year: number;
+  fee_status: string;
+}
+
 const ViewFees: React.FC = () => {
   const {
     register,
@@ -49,7 +61,7 @@ const ViewFees: React.FC = () => {
     setValue,
     setValue: setFormValue,
     formState: { errors },
-  } = useForm<FilteredFees>();
+  } = useForm<GetFeeModel>();
   const [studentsList, setStudentsList] = useState<
     { id: number; title: string }[]
   >([]);
@@ -59,6 +71,7 @@ const ViewFees: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [open, setOpen] = useState(false);
   const [selectedStudent, setSelectedStudent] = useState("");
+  const [feesData, setFeesData] = useState<FeeData[]>([]);
 
   useEffect(() => {
     GetStudents();
@@ -87,6 +100,10 @@ const ViewFees: React.FC = () => {
     try {
       const response = (await API2.Get()) as { data: ClassNameResponse[] };
       if (response.data && Array.isArray(response.data)) {
+        response.data.unshift({
+          class_name_id: 0,
+          class_name: "All",
+        });
         setClassNameList(
           response.data.map((item: ClassNameResponse) => ({
             id: item.class_name_id,
@@ -101,14 +118,16 @@ const ViewFees: React.FC = () => {
     }
   };
 
-  const handleGetFees = async (data: FilteredFees) => {
+  const handleGetFees = async (data: GetFeeModel) => {
     try {
-        const response = await API3.GetFeebyFilter();
-        console.log("Fetching fees with data:", data);
-        // Handle the response as needed
+      const response = await API3.GetFeebyFilter(data);
+      if (response.data) {
+        setFeesData(response.data as unknown as FeeData[]);
+        toast.success("Fees data fetched successfully");
+      }
     } catch (error) {
-        console.error("Error fetching fees:", error);
-        toast.error("Failed to fetch fees");
+      console.error("Error fetching fees:", error);
+      toast.error("Failed to fetch fees");
     }
   };
 
@@ -164,7 +183,7 @@ const ViewFees: React.FC = () => {
                                 setOpen(false);
                                 setFormValue(
                                   "student_id",
-                                  Number(currentValue)
+                                  currentValue ? parseInt(currentValue, 10) : 0
                                 );
                               }}
                             >
@@ -191,7 +210,7 @@ const ViewFees: React.FC = () => {
           <Select
             label="Class Name"
             options={classNameList}
-            {...register("class_name_id")}
+            {...register("class_id")}
           />
           <Select
             label="Fee Month"
@@ -223,13 +242,52 @@ const ViewFees: React.FC = () => {
           <Select
             label="Fee Status"
             options={[
-              { id: "paid", title: "Paid" },
-              { id: "unpaid", title: "Unpaid" },
+              { id: "Paid", title: "Paid" },
+              { id: "Unpaid", title: "Unpaid" },
             ]}
             {...register("fee_status")}
           />
           <Button type="submit">Get</Button>
         </form>
+        
+        {feesData.length > 0 && (
+          <div className="p-4">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Student Name</TableHead>
+                  <TableHead>Father Name</TableHead>
+                  <TableHead>Class</TableHead>
+                  <TableHead>Amount</TableHead>
+                  <TableHead>Month</TableHead>
+                  <TableHead>Year</TableHead>
+                  <TableHead>Status</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {feesData.map((fee) => (
+                  <TableRow key={fee.fee_id}>
+                    <TableCell>{fee.student_name}</TableCell>
+                    <TableCell>{fee.father_name}</TableCell>
+                    <TableCell>{fee.class_name}</TableCell>
+                    <TableCell>{fee.fee_amount}</TableCell>
+                    <TableCell>{fee.fee_month}</TableCell>
+                    <TableCell>{fee.fee_year}</TableCell>
+                    <TableCell>
+                      <span className={`px-2 py-1 rounded-full text-xs ${
+                        fee.fee_status === "Paid" 
+                          ? "bg-green-100 text-green-800" 
+                          : "bg-red-100 text-red-800"
+                      }`}>
+                        {fee.fee_status}
+                      </span>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+        )}
       </div>
     </div>
   );
