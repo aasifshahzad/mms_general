@@ -101,7 +101,7 @@ const AddFees = () => {
   const onSubmit = async (formData: AddFeeModel) => {
     try {
       setIsLoading(true);
-      const response = await AddFeeAPI.Create(formData);
+      const response = await FeeAPI.Create(formData);
       console.log("Form Data:", formData);
       toast.success("Fee record added successfully");
       reset(); // Reset form after successful submission
