@@ -24,8 +24,8 @@ class Fee(FeeBase, table=True):
     fee_status: FeeStatus = Field(nullable=False, default=FeeStatus.UNPAID)
 
     # Relationships back to Student and ClassNames
-    students: Optional["Students"] = Relationship(back_populates="fees")
-    class_names: Optional["ClassNames"] = Relationship(back_populates="fees")
+    students: Optional["Students"] = Relationship(back_populates="fees") # type: ignore
+    class_names: Optional["ClassNames"] = Relationship(back_populates="fees") # type: ignore
     
 
 class FeeCreate(SQLModel):

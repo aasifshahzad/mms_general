@@ -1,7 +1,7 @@
 from datetime import datetime
-from sqlmodel import Relationship, SQLModel, Field, Column
-from sqlalchemy import String, Integer, DateTime
-from typing import List, Optional, TYPE_CHECKING
+from sqlmodel import Relationship, SQLModel, Field, Column # type: ignore
+from sqlalchemy import DateTime
+from typing import List, Optional
 
 
 from schemas.attendance_time_model import AttendanceTime

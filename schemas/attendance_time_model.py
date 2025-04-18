@@ -1,11 +1,7 @@
 from datetime import datetime
-
-from sqlmodel import Relationship, SQLModel, Field, Column
-from sqlalchemy import String, Integer, DateTime
-from typing import List, Optional
-
+from sqlmodel import Relationship, SQLModel, Field # type: ignore
 from datetime import datetime
-from typing import List, Optional, TYPE_CHECKING
+
 
 # Attendance Time
 
@@ -19,7 +15,7 @@ class AttendanceTime(AttendanceTimeBase, table=True):
     attendance_time: str = Field(index=True, unique=True)
 
     # Relationship back to Attendance
-    attendances: list["Attendance"] = Relationship(
+    attendances: list["Attendance"] = Relationship( # type: ignore
         back_populates="attendance_time")
 
 

@@ -17,6 +17,9 @@ from router.students import students_router
 from router.mark_attendance import mark_attendance_router
 from router.adm_del import adm_del_router
 from router.fee import fee_router
+from router.income import income_router
+from router.income_cat_names import income_cat_names_router
+
 
 # User related imports
 from user.user_crud import (
@@ -89,6 +92,9 @@ app.add_middleware(
 )
 
 # Include the grouped router in the FastAPI app
+app.include_router(fee_router)
+app.include_router(income_router)
+app.include_router(income_cat_names_router)
 app.include_router(attendancevalue_router)
 app.include_router(attendance_time_router)
 app.include_router(teachernames_router)
@@ -96,7 +102,6 @@ app.include_router(classnames_router)
 app.include_router(students_router)
 app.include_router(mark_attendance_router)
 app.include_router(adm_del_router)
-app.include_router(fee_router)
 
 @app.get("/", tags=["MMS Backend"])
 async def root():
