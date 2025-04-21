@@ -19,6 +19,8 @@ from router.adm_del import adm_del_router
 from router.fee import fee_router
 from router.income import income_router
 from router.income_cat_names import income_cat_names_router
+from router.expense_cat_names import expense_cat_names_router
+from router.expense import expense_router
 
 
 # User related imports
@@ -92,6 +94,8 @@ app.add_middleware(
 )
 
 # Include the grouped router in the FastAPI app
+app.include_router(expense_cat_names_router)
+app.include_router(expense_router)
 app.include_router(fee_router)
 app.include_router(income_router)
 app.include_router(income_cat_names_router)
