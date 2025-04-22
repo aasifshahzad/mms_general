@@ -19,6 +19,41 @@ income_router = APIRouter(
 async def root():
     return {"message": "Income Router Page running :-)"}
 
+@income_router.get("/all", response_model=List[IncomeResponse])
+def get_all_incomes(
+    session: Session = Depends(get_session),
+    # user: User = Depends(check_admin)
+):
+    """Get all income records."""
+    try:
+        # Query to get all income records
+        incomes = session.query(Income).all()
+
+        # Prepare the response
+        response = []
+        for income in incomes:
+            category = session.get(IncomeCatNames, income.category_id)
+            response.append(
+                IncomeResponse(
+                    id=income.id,  # type: ignore
+                    created_at=income.created_at or datetime.utcnow(),  # Ensure created_at is not None
+                    recipt_number=income.recipt_number,
+                    date=income.date,  # type: ignore
+                    category=category.income_cat_name if category else None,  # Convert category to string
+                    source=income.source,
+                    description=income.description,
+                    contact=income.contact,
+                    amount=income.amount
+                )
+            )
+        
+        return response
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error fetching income records: {str(e)}"
+        )
+
 @income_router.post("/", response_model=IncomeResponse, status_code=status.HTTP_201_CREATED)
 def create_income(
     income: IncomeCreate,
@@ -51,7 +86,7 @@ def create_income(
         description=income.description,
         contact=income.contact,
         amount=income.amount,
-        created_at=datetime.utcnow()  # Set created_at to current datetime
+        created_at=datetime.now()  # Set created_at to current datetime
     )
     session.add(db_income)
     session.commit()

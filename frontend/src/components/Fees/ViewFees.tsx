@@ -95,7 +95,7 @@ const ViewFees: React.FC = () => {
     }
   };
 
-  const GetClassName = async () => {
+  const GetClassName = async () => {                          
     setIsLoading(true);
     try {
       const response = (await API2.Get()) as { data: ClassNameResponse[] };
