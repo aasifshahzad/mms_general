@@ -69,8 +69,8 @@ const menuList: MenuItem[] = [
     path: "/dashboard/fees",
     hasSubmenu: true,
     submenu: [
-      { id: 14, name: "Add Income", icon: GoDotFill, path: "/dashboard/fees/add_fees" },
-      { id: 15, name: "View Income", icon: GoDotFill, path: "/dashboard/fees/view_fees" },
+      { id: 14, name: "Add Income", icon: GoDotFill, path: "/dashboard/income/add_income" },
+      { id: 15, name: "View Income", icon: GoDotFill, path: "/dashboard/income/view_income" },
     ],
   },
   {
