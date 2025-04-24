@@ -16,6 +16,7 @@ import {
   ChevronDown,
 } from "lucide-react";
 import { RiCashLine } from "react-icons/ri";
+import { BsCashCoin } from "react-icons/bs";
 
 type MenuItem = {
   id: number;
@@ -51,6 +52,28 @@ const menuList: MenuItem[] = [
     ],
   },
   {
+    id: 10,
+    name: "Fees",
+    icon: RiCashLine,
+    path: "/dashboard/fees",
+    hasSubmenu: true,
+    submenu: [
+      { id: 11, name: "Add Fees", icon: GoDotFill, path: "/dashboard/fees/add_fees" },
+      { id: 12, name: "View Fees", icon: GoDotFill, path: "/dashboard/fees/view_fees" },
+    ],
+  },
+  {
+    id: 13,
+    name: "Income",
+    icon: BsCashCoin,
+    path: "/dashboard/fees",
+    hasSubmenu: true,
+    submenu: [
+      { id: 14, name: "Add Income", icon: GoDotFill, path: "/dashboard/income/add_income" },
+      { id: 15, name: "View Income", icon: GoDotFill, path: "/dashboard/income/view_income" },
+    ],
+  },
+  {
     id: 4,
     name: "Setup",
     icon: UserCog2,
@@ -60,17 +83,6 @@ const menuList: MenuItem[] = [
       { id: 5, name: "Class Name", icon: GoDotFill, path: "/dashboard/setup/class_name" },
       { id: 6, name: "Class Timings", icon: GoDotFill, path: "/dashboard/setup/class_timings" },
       { id: 7, name: "Teacher", icon: GoDotFill, path: "/dashboard/setup/teacher" },
-    ],
-  },
-  {
-    id: 10,
-    name: "Fees",
-    icon: RiCashLine,
-    path: "/dashboard/fees",
-    hasSubmenu: true,
-    submenu: [
-      { id: 11, name: "Add Fees", icon: GoDotFill, path: "/dashboard/fees/add_fees" },
-      { id: 12, name: "View Fees", icon: GoDotFill, path: "/dashboard/fees/view_fees" },
     ],
   },
   { id: 5, name: "Logout", icon: LogOut, path: "/login" },
