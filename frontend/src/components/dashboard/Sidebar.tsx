@@ -83,6 +83,7 @@ const menuList: MenuItem[] = [
       { id: 5, name: "Class Name", icon: GoDotFill, path: "/dashboard/setup/class_name" },
       { id: 6, name: "Class Timings", icon: GoDotFill, path: "/dashboard/setup/class_timings" },
       { id: 7, name: "Teacher", icon: GoDotFill, path: "/dashboard/setup/teacher" },
+      { id: 16, name: "Income Category", icon: GoDotFill, path: "/dashboard/setup/income_category" },
     ],
   },
   { id: 5, name: "Logout", icon: LogOut, path: "/login" },

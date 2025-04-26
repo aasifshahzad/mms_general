@@ -6,8 +6,9 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Header } from "@/components/dashboard/Header";
 import { toast } from "sonner";
-// import { IncomeAPI } from "@/api/Income/AddIncomeAPI";
+import { IncomeAPI as API } from "@/api/Income/IncomeAPI";
 import { Select } from "@/components/Select";
+import { IncomeCategory } from "@/models/income/income";
 
 interface AddIncomeModel {
   recipt_number: number;
@@ -27,14 +28,6 @@ interface SelectOption {
     label: string;
 }
 
-// Likely structure of IncomeCategory
-interface IncomeCategory {
-    // Has specific properties but no index signature
-    id: number;
-    name: string;
-    // other properties...
-}
-
 const AddIncome = () => {
   const {
     register,
@@ -46,22 +39,22 @@ const AddIncome = () => {
 
   const [isLoading, setIsLoading] = useState(false);
   const [categories, setCategories] = useState<IncomeCategory[]>([]);
+  const [incomeCategory, setIncomeCategory] = useState<IncomeCategory[]>([]);
 
   useEffect(() => {
     getCategories();
   }, []);
 
   const getCategories = async () => {
+    setIsLoading(true);
     try {
-      // Replace this with actual API call
-      const response = await fetch("/api/income-categories"); // Placeholder
-      const data = await response.json();
-      setCategories(data.map((cat: any) => ({
-        id: cat.category_id,
-        title: cat.category_name,
-      })));
+      const res = await API.GetIncomeCategory();
+      console.log("Categories:", res);
+      setIncomeCategory(res);
     } catch (error) {
-      console.error("Error fetching categories:", error);
+      console.error("Error fetching income categories:", error);
+    } finally {
+      setIsLoading(false);
     }
   };
 
