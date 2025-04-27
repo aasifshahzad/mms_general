@@ -2,8 +2,8 @@ from pydantic import BaseModel
 from typing import List, Dict, Optional, Union
 
 class UserLoginSummary(BaseModel):
-    username: str
-    login_count: int
+    Roll: str
+    Total: int
 
 class AttendanceSummary(BaseModel):
     date: str
