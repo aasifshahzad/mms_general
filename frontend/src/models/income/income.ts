@@ -7,7 +7,15 @@ export interface AddIncomeModel {
   contact: string;
   amount: number;
 }
-
+export interface ViewIncomeModel {
+  attendance_date: string; // ISO date string format
+  attendance_time: string;
+  attendance_class: string;
+  attendance_teacher: string;
+  attendance_student: string;
+  attendance_std_fname: string;
+  attendance_value: string;
+}
 export interface IncomeCategory {
   income_cat_name_id: number;
   income_cat_name: string;

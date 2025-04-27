@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 import { RiCashLine } from "react-icons/ri";
 import { BsCashCoin } from "react-icons/bs";
+import { GiExpense } from "react-icons/gi";
 
 type MenuItem = {
   id: number;
@@ -71,6 +72,17 @@ const menuList: MenuItem[] = [
     submenu: [
       { id: 14, name: "Add Income", icon: GoDotFill, path: "/dashboard/income/add_income" },
       { id: 15, name: "View Income", icon: GoDotFill, path: "/dashboard/income/view_income" },
+    ],
+  },
+  {
+    id: 17,
+    name: "Expense",
+    icon: GiExpense ,
+    path: "/dashboard/Expense",
+    hasSubmenu: true,
+    submenu: [
+      { id: 18, name: "Add Expense", icon: GoDotFill, path: "/dashboard/expense/add_expense" },
+      { id: 19, name: "View Expense", icon: GoDotFill, path: "/dashboard/expense/view_expense" },
     ],
   },
   {

@@ -1,8 +1,11 @@
+import ViewIncome from '@/components/Income/ViewIncome'
 import React from 'react'
 
 const page = () => {
   return (
-    <div>page</div>
+    <div>
+      <ViewIncome/>
+    </div>
   )
 }
 
