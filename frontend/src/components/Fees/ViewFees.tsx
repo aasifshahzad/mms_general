@@ -31,6 +31,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { Header } from "../dashboard/Header";
 
 
 interface ClassNameResponse {
@@ -132,8 +133,9 @@ const ViewFees: React.FC = () => {
   };
 
   return (
-    <div className="container mx-auto px-4 py-6">
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200">
+    <div className="container mx-auto px-4">
+            <Header value="View Fees" />
+      <div className="bg-white rounded-xl shadow-sm border border-gray-200 mt-3">
         <form onSubmit={handleSubmit(handleGetFees)} className="flex p-3 gap-6">
           <div className="space-y-2">
             <label className="text-sm text-gray-700 dark:text-gray-300 font-bold">
