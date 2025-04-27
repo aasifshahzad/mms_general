@@ -8,6 +8,10 @@ export interface AddIncomeModel {
     amount: number;
   }
 
+export interface IncomeCategory {
+  income_cat_name: string;
+  }
+  
 // export interface GetFeeModel {
 //     fee_status: number,
 //     student_id: number,
