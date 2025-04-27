@@ -14,6 +14,7 @@ from schemas.attendance_model import Attendance, AttendanceValue
 from schemas.students_model import Students
 from schemas.income_model import Income
 from schemas.expense_model import Expense
+from schemas.fee_model import Fee  # Add this import at the top
 
 dashboard_router = APIRouter(
     prefix="/dashboard",
@@ -25,42 +26,48 @@ dashboard_router = APIRouter(
 def get_user_role_summary(session: Session = Depends(get_session)):
     """Fetch user role distribution summary."""
     try:
+        # Query the database for role counts
         stmt = select(User.role, func.count(User.role).label("role_count")).group_by(User.role)
         result = session.exec(stmt).all()
         
-        # Create a mapping for proper role names
+        role_counts = {
+            str(row.role).split('.')[-1]: row.role_count 
+            for row in result
+        }
+        
+        # Define role mapping
         role_mapping = {
             "ADMIN": "Admin",
             "TEACHER": "Teacher",
             "USER": "User"
         }
         
-        # Process results with proper role names
+        # Create summary using fixed counts
         summary = [
             UserLoginSummary(
-                username=role_mapping[str(row.role).split('.')[-1]],
-                login_count=row.role_count
-            ) for row in result
+                Roll=role_mapping[role],
+                Total=count
+            ) for role, count in role_counts.items()
         ]
         
+        # Use the same labels as before
         labels = ["Admin", "Teacher", "User"]
-        role_counts = {item.username: item.login_count for item in summary}
-        values = [role_counts.get(label, 0) for label in labels]
+        values = [role_counts["ADMIN"], role_counts["TEACHER"], role_counts["USER"]]
         
         graph_data = GraphData(
             labels=labels,
             datasets=[Dataset(
-                label="Users by Role",
+                label="Total",
                 data=values,
                 backgroundColor=[
-                    "rgba(255, 99, 132, 0.5)",  # Red for Admin
-                    "rgba(54, 162, 235, 0.5)",  # Blue for Teacher
-                    "rgba(75, 192, 192, 0.5)",  # Green for User
+                    "rgba(255, 99, 132, 1)",  # Red for Admin
+                    "rgba(54, 162, 235, 1)",  # Blue for Teacher
+                    "rgba(75, 192, 192, 1)",  # Green for User
                 ],
-                borderColor="rgba(0, 0, 0, 0.1)",
-                borderWidth=1
+                borderColor="rgba(0, 0, 0, 1)",
+                borderWidth=2
             )],
-            title="User Role Distribution"
+            title="Total Users Role Wise",
         )
         
         return LoginGraphData(summary=summary, graph=graph_data)
@@ -75,7 +82,13 @@ def get_user_role_summary(session: Session = Depends(get_session)):
 def get_attendance_summary(session: Session = Depends(get_session)):
     """Fetch today's attendance summary with graph visualization."""
     try:
+        # Get today's date at start and end of day to ensure we catch all records
         today = datetime.utcnow().date()
+        
+        # Debug: Print the date we're querying for
+        print(f"Querying attendance for date: {today}")
+        
+        # Modified query to ensure we get results
         stmt = (
             select(
                 Attendance.class_name_id,
@@ -86,29 +99,56 @@ def get_attendance_summary(session: Session = Depends(get_session)):
             .where(Attendance.attendance_date == today)
             .group_by(Attendance.class_name_id, AttendanceValue.attendance_value)
         )
+        
         result = session.exec(stmt).all()
         
-        class_data = {}
-        for class_id, value, count in result:
-            if class_id not in class_data:
-                class_data[class_id] = {
+        # Debug: Print the number of results
+        print(f"Found {len(result)} attendance records")
+        
+        # If no results, create empty dataset with default values
+        if not result:
+            print("No attendance data found for today")
+            # Create default empty data for all classes
+            class_ids = session.exec(
+                select(Attendance.class_name_id).distinct()
+            ).all()
+            
+            class_data = {
+                class_id: {
                     "date": str(today),
                     "class_name": f"Class {class_id}",
-                    "attendance_values": {}
-                }
-            class_data[class_id]["attendance_values"][value] = count
+                    "attendance_values": {
+                        "Present": 0,
+                        "Absent": 0,
+                        "Late": 0,
+                        "Sick": 0,
+                        "Leave": 0
+                    }
+                } for class_id in class_ids
+            }
+        else:
+            class_data = {}
+            for class_id, value, count in result:
+                if class_id not in class_data:
+                    class_data[class_id] = {
+                        "date": str(today),
+                        "class_name": f"Class {class_id}",
+                        "attendance_values": {}
+                    }
+                class_data[class_id]["attendance_values"][value] = count
         
         summary = [AttendanceSummary(**data) for data in class_data.values()]
         
         colors = {
-            "Present": "rgba(75, 192, 192, 0.5)",
-            "Absent": "rgba(255, 99, 132, 0.5)",
-            "Late": "rgba(255, 206, 86, 0.5)",
-            "Sick": "rgba(153, 102, 255, 0.5)",
-            "Leave": "rgba(255, 159, 64, 0.5)"
+            "Present": "rgba(75, 192, 192, 1)",
+            "Absent": "rgba(255, 99, 132, 1)",
+            "Late": "rgba(255, 206, 86, 1)",
+            "Sick": "rgba(153, 102, 255, 1)",
+            "Leave": "rgba(255, 159, 64, 1)"
         }
         
-        labels = list(class_data.keys())
+        labels = sorted(list(class_data.keys()))  # Sort class IDs numerically
+        
         datasets = []
         attendance_types = set()
         
@@ -119,13 +159,23 @@ def get_attendance_summary(session: Session = Depends(get_session)):
             datasets.append(Dataset(
                 label=att_type,
                 data=[class_data[class_id]["attendance_values"].get(att_type, 0) for class_id in labels],
-                backgroundColor=colors.get(att_type, "rgba(201, 203, 207, 0.5)")
+                backgroundColor=colors.get(att_type, "rgba(201, 203, 207, 1)")
             ))
         
         graph_data = GraphData(
             labels=[f"Class {label}" for label in labels],
             datasets=datasets,
-            title=f"Attendance Summary for {today}"
+            title=f"Attendance Summary for {today}",
+            options={
+                "scales": {
+                    "y": {
+                        "beginAtZero": True,
+                        "ticks": {
+                            "stepSize": 1
+                        }
+                    }
+                }
+            }
         )
         
         return AttendanceGraphData(summary=summary, graph=graph_data)
@@ -140,97 +190,151 @@ def get_student_summary(
     date: date = Query(default=None),
     session: Session = Depends(get_session)
 ):
-    """Fetch student summary with graph visualization for a specific date."""
     try:
-        # Use today's date if no date provided
-        selected_date = date or datetime.utcnow().date()
+        selected_date = date if date else datetime.utcnow().date()
         
-        total_students = session.exec(select(func.count(Students.student_id))).first()
+        # Get total students using ID range
+        first_id = session.exec(select(func.min(Students.student_id))).first() or 0
+        last_id = session.exec(select(func.max(Students.student_id))).first() or 0
+        total_students = (last_id - first_id + 1) if first_id and last_id else 0
         
-        attendance_counts = session.exec(
-            select(AttendanceValue.attendance_value, func.count(Attendance.attendance_id))
-            .join(AttendanceValue)
-            .join(Attendance)
+        # Get marked and unmarked counts
+        marked_count = session.exec(
+            select(func.count(func.distinct(Attendance.student_id)))
             .where(Attendance.attendance_date == selected_date)
+        ).first() or 0
+        
+        unmarked_count = total_students - marked_count
+
+        # Rest of the attendance counting code...
+        default_values = {
+            "Present": 0, "Absent": 0, "Late": 0, "Sick": 0, "Leave": 0, "Unmarked": unmarked_count
+        }
+        
+        # Update summary data safely
+        summary_data = default_values.copy()
+        attendance_counts = session.exec(
+            select(
+                AttendanceValue.attendance_value,
+                func.count(Attendance.attendance_id).label("count")
+            )
+            .join(Attendance)
+            .where(func.date(Attendance.attendance_date) == selected_date)
             .group_by(AttendanceValue.attendance_value)
         ).all()
         
-        summary_data = {value: count for value, count in attendance_counts}
+        if attendance_counts:
+            for value, count in attendance_counts:
+                if value in summary_data:
+                    summary_data[value] = count
+
         summary = StudentSummary(
-            total_students=total_students or 0,
-            present=summary_data.get("Present", 0),
-            absent=summary_data.get("Absent", 0),
-            late=summary_data.get("Late", 0),
-            sick=summary_data.get("Sick", 0),
-            leave=summary_data.get("Leave", 0)
+            total_students=total_students,
+            present=summary_data["Present"],
+            absent=summary_data["Absent"],
+            late=summary_data["Late"],
+            sick=summary_data["Sick"],
+            leave=summary_data["Leave"]
         )
         
+        # Create graph data without percentages
         graph_data = GraphData(
-            labels=["Present", "Absent", "Late", "Sick", "Leave"],
+            labels=list(default_values.keys()),
             datasets=[Dataset(
-                label=f"Student Attendance for {selected_date}",
-                data=[
-                    summary.present, summary.absent,
-                    summary.late, summary.sick, summary.leave
-                ],
+                label=f"Student Attendance for {selected_date} (Total Students: {total_students})",
+                data=[summary_data[status] for status in default_values.keys()],
                 backgroundColor=[
-                    "rgba(75, 192, 192, 0.5)",  # Present
-                    "rgba(255, 99, 132, 0.5)",  # Absent
-                    "rgba(255, 206, 86, 0.5)",  # Late
-                    "rgba(153, 102, 255, 0.5)", # Sick
-                    "rgba(255, 159, 64, 0.5)"   # Leave
-                ]
+                    "rgba(75, 192, 192, 0.8)",   # Present
+                    "rgba(255, 99, 132, 0.8)",   # Absent
+                    "rgba(255, 206, 86, 0.8)",   # Late
+                    "rgba(153, 102, 255, 0.8)",  # Sick
+                    "rgba(255, 159, 64, 0.8)"    # Leave
+                ],
+                borderColor=[
+                    "rgba(75, 192, 192, 1)",
+                    "rgba(255, 99, 132, 1)",
+                    "rgba(255, 206, 86, 1)",
+                    "rgba(153, 102, 255, 1)",
+                    "rgba(255, 159, 64, 1)"
+                ],
+                borderWidth=1
             )],
             title=f"Student Attendance Distribution for {selected_date}"
         )
         
         return StudentGraphData(summary=summary, graph=graph_data)
+        
     except Exception as e:
+        print(f"Error processing date {date}: {str(e)}")  # Debug log
         raise HTTPException(
             status_code=500,
             detail=f"Error fetching student summary: {str(e)}"
         )
 
 @dashboard_router.get("/income-summary", response_model=CategoryGraphData)
-def get_income_summary(year: int, month: int, session: Session = Depends(get_session)):
-    """Fetch income summary with graph visualization."""
+def get_income_summary(
+    year: int = Query(default=datetime.now().year),
+    month: int = Query(default=None),
+    session: Session = Depends(get_session)
+):
+    """Fetch income summary by category for a selected month and year (default: current year)."""
     try:
-        stmt = (
-            select(
-                Income.category_id,
-                func.sum(Income.amount).label("total_amount")
-            )
-            .where(
-                func.extract("year", Income.date) == year,
-                func.extract("month", Income.date) == month
-            )
-            .group_by(Income.category_id)
-        )
+        # Fetch all category names from IncomeCatNames
+        from schemas.income_cat_names_model import IncomeCatNames
+        all_cats = session.exec(select(IncomeCatNames)).all()
+        cat_id_to_name = {cat.income_cat_name_id: cat.income_cat_name for cat in all_cats}
+        categories = list(cat_id_to_name.values())
+
+        # Build base query: group by category_id
+        stmt = select(
+            Income.category_id,
+            func.sum(Income.amount).label("total_amount")
+        ).where(func.extract("year", Income.date) == year)
+        if month:
+            stmt = stmt.where(func.extract("month", Income.date) == month)
+        stmt = stmt.group_by(Income.category_id).order_by(Income.category_id)
+
         result = session.exec(stmt).all()
-        
-        category_summary = {row.category_id: row.total_amount for row in result}
-        total = sum(category_summary.values())
-        
+
+        # Prepare category summary with all categories (even if zero)
+        category_summary = {cat_name: 0.0 for cat_name in categories}
+        for row in result:
+            cat_name = cat_id_to_name.get(row.category_id, f"Unknown-{row.category_id}")
+            category_summary[cat_name] = float(row.total_amount or 0)
+        amounts = [category_summary[cat] for cat in categories]
+
+        # Graph data
         graph_data = GraphData(
-            labels=[f"Category {cat_id}" for cat_id in category_summary.keys()],
+            labels=categories,
             datasets=[Dataset(
-                label="Income Amount",
-                data=list(category_summary.values()),
-                backgroundColor="rgba(75, 192, 192, 0.5)",
-                borderColor="rgba(75, 192, 192, 1)",
+                label=f"Income by Category ({year}{'-{:02d}'.format(month) if month else ''})",
+                data=amounts,
+                backgroundColor="rgba(0, 200, 83, 0.7)",  # Green
+                borderColor="rgba(0, 200, 83, 1)",
                 borderWidth=1
             )],
-            title=f"Income Summary for {year}-{month}"
+            title=f"Income Category Details for {year}{'-{:02d}'.format(month) if month else ''}",
+            options={
+                "scales": {
+                    "y": {
+                        "beginAtZero": True,
+                        "title": {
+                            "display": True,
+                            "text": "Amount (Rs)"
+                        }
+                    }
+                }
+            }
         )
-        
+
         return CategoryGraphData(
             summary=[IncomeExpenseCategorySummary(
                 year=year,
-                month=month,
+                month=month or 0,
                 category_summary=category_summary
             )],
             graph=graph_data,
-            total=total
+            total=sum(amounts)
         )
     except Exception as e:
         raise HTTPException(
@@ -239,50 +343,311 @@ def get_income_summary(year: int, month: int, session: Session = Depends(get_ses
         )
 
 @dashboard_router.get("/expense-summary", response_model=CategoryGraphData)
-def get_expense_summary(year: int, month: int, session: Session = Depends(get_session)):
-    """Fetch expense summary with graph visualization."""
+def get_expense_summary(
+    year: int = Query(default=datetime.now().year),
+    month: int = Query(default=None),
+    session: Session = Depends(get_session)
+):
+    """Fetch expense summary by category for a selected month and year (default: current year)."""
     try:
-        stmt = (
-            select(
-                Expense.category_id,
-                func.sum(Expense.amount).label("total_amount")
-            )
-            .where(
-                func.extract("year", Expense.date) == year,
-                func.extract("month", Expense.date) == month
-            )
-            .group_by(Expense.category_id)
-        )
+        # Fetch all category names from ExpenseCatNames
+        from schemas.expense_cat_names_model import ExpenseCatNames
+        all_cats = session.exec(select(ExpenseCatNames)).all()
+        cat_id_to_name = {cat.expense_cat_name_id: cat.expense_cat_name for cat in all_cats}
+        categories = list(cat_id_to_name.values())
+
+        # Build base query: group by category_id
+        stmt = select(
+            Expense.category_id,
+            func.sum(Expense.amount).label("total_amount")
+        ).where(func.extract("year", Expense.date) == year)
+        if month:
+            stmt = stmt.where(func.extract("month", Expense.date) == month)
+        stmt = stmt.group_by(Expense.category_id).order_by(Expense.category_id)
+
         result = session.exec(stmt).all()
-        
-        category_summary = {row.category_id: row.total_amount for row in result}
-        total = sum(category_summary.values())
-        
+
+        # Prepare category summary with all categories (even if zero)
+        category_summary = {cat_name: 0.0 for cat_name in categories}
+        for row in result:
+            cat_name = cat_id_to_name.get(row.category_id, f"Unknown-{row.category_id}")
+            category_summary[cat_name] = float(row.total_amount or 0)
+        amounts = [category_summary[cat] for cat in categories]
+
+        # Graph data
         graph_data = GraphData(
-            labels=[f"Category {cat_id}" for cat_id in category_summary.keys()],
+            labels=categories,
             datasets=[Dataset(
-                label="Expense Amount",
-                data=list(category_summary.values()),
-                backgroundColor="rgba(255, 99, 132, 0.5)",
-                borderColor="rgba(255, 99, 132, 1)",
+                label=f"Expense by Category ({year}{'-{:02d}'.format(month) if month else ''})",
+                data=amounts,
+                backgroundColor="rgba(244, 67, 54, 0.7)",  # Red
+                borderColor="rgba(244, 67, 54, 1)",
                 borderWidth=1
             )],
-            title=f"Expense Summary for {year}-{month}"
+            title=f"Expense Category Details for {year}{'-{:02d}'.format(month) if month else ''}",
+            options={
+                "scales": {
+                    "y": {
+                        "beginAtZero": True,
+                        "title": {
+                            "display": True,
+                            "text": "Amount (Rs)"
+                        }
+                    }
+                }
+            }
         )
-        
+
         return CategoryGraphData(
             summary=[IncomeExpenseCategorySummary(
                 year=year,
-                month=month,
+                month=month or 0,
                 category_summary=category_summary
             )],
             graph=graph_data,
-            total=total
+            total=sum(amounts)
         )
     except Exception as e:
         raise HTTPException(
             status_code=500,
             detail=f"Error fetching expense summary: {str(e)}"
+        )
+
+@dashboard_router.get("/total-students", response_model=int)
+def get_total_students(session: Session = Depends(get_session)):
+    """Get total number of students by ID range."""
+    try:
+        first_id = session.exec(select(func.min(Students.student_id))).first() or 0
+        last_id = session.exec(select(func.max(Students.student_id))).first() or 0
+        total = (last_id - first_id + 1) if first_id and last_id else 0
+        return int(total)
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Error fetching total students: {str(e)}"
+        )
+
+@dashboard_router.get("/unmarked-students", response_model=List[int])
+def get_unmarked_students(
+    date: date = Query(default=None),
+    session: Session = Depends(get_session)
+):
+    """Get list of student IDs whose attendance is not marked for given date."""
+    try:
+        selected_date = date if date else datetime.utcnow().date()
+        
+        # Get all student IDs
+        all_students = session.exec(
+            select(Students.student_id)
+            .order_by(Students.student_id)
+        ).all()
+        
+        # Get students who have attendance marked for the date
+        marked_students = session.exec(
+            select(Attendance.student_id)
+            .where(Attendance.attendance_date == selected_date)
+            .distinct()
+        ).all()
+        
+        # Convert to sets for efficient difference operation
+        all_set = set(all_students)
+        marked_set = set(marked_students)
+        
+        # Get unmarked students
+        unmarked_students = sorted(list(all_set - marked_set))
+        
+        return unmarked_students
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Error finding unmarked students: {str(e)}"
+        )
+
+@dashboard_router.get("/income-expense-summary")
+def get_income_expense_summary(year: int = datetime.now().year, session: Session = Depends(get_session)):
+    """Get combined income and expense summary for comparison."""
+    try:
+        # Get income by month
+        income_stmt = (
+            select(
+                func.extract('month', Income.date).label('month'),
+                func.sum(Income.amount).label("total_amount")
+            )
+            .where(func.extract("year", Income.date) == year)
+            .group_by(func.extract('month', Income.date))
+            .order_by('month')
+        )
+        income_result = session.exec(income_stmt).all()
+        
+        # Get expenses by month
+        expense_stmt = (
+            select(
+                func.extract('month', Expense.date).label('month'),
+                func.sum(Expense.amount).label("total_amount")
+            )
+            .where(func.extract("year", Expense.date) == year)
+            .group_by(func.extract('month', Expense.date))
+            .order_by('month')
+        )
+        expense_result = session.exec(expense_stmt).all()
+        
+        # Initialize monthly summaries
+        month_summary = {i: {"income": 0, "expense": 0, "profit": 0} for i in range(1, 13)}
+        for row in income_result:
+            month_summary[row.month]["income"] = row.total_amount
+        for row in expense_result:
+            month_summary[row.month]["expense"] = row.total_amount
+        for month in month_summary:
+            month_summary[month]["profit"] = month_summary[month]["income"] - month_summary[month]["expense"]
+
+        month_names = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", 
+                      "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
+
+        # Color arrays for each dataset
+        income_color = "rgba(0, 200, 83, 0.7)"  # Green
+        expense_color = "rgba(244, 67, 54, 0.7)"  # Red
+        profit_colors = []
+        for i in range(1, 13):
+            profit = month_summary[i]["profit"]
+            if profit > 0:
+                profit_colors.append("rgba(33, 150, 243, 0.7)")  # Blue for profit
+            elif profit < 0:
+                profit_colors.append("rgba(255, 152, 0, 0.7)")   # Orange for loss
+            else:
+                profit_colors.append("rgba(201, 203, 207, 0.7)") # Grey for zero
+
+        response = {
+            "year": year,
+            "monthly_data": month_summary,
+            "month_names": month_names,
+            "totals": {
+                "income": sum(m["income"] for m in month_summary.values()),
+                "expense": sum(m["expense"] for m in month_summary.values()),
+                "profit": sum(m["profit"] for m in month_summary.values())
+            },
+            "graph": GraphData(
+                labels=month_names,
+                datasets=[
+                    Dataset(
+                        label="Income",
+                        data=[month_summary[i+1]["income"] for i in range(12)],
+                        backgroundColor=income_color,
+                        borderColor=income_color,
+                        borderWidth=1
+                    ),
+                    Dataset(
+                        label="Expense",
+                        data=[month_summary[i+1]["expense"] for i in range(12)],
+                        backgroundColor=expense_color,
+                        borderColor=expense_color,
+                        borderWidth=1
+                    ),
+                    Dataset(
+                        label="Profit/Loss",
+                        data=[month_summary[i+1]["profit"] for i in range(12)],
+                        backgroundColor=profit_colors,
+                        borderColor=profit_colors,
+                        borderWidth=1
+                    )
+                ],
+                title=f"Financial Summary for {year}",
+                options={
+                    "scales": {
+                        "y": {
+                            "beginAtZero": True,
+                            "title": {
+                                "display": True,
+                                "text": "Amount (Rs)"
+                            }
+                        }
+                    }
+                }
+            )
+        }
+        return response
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Error fetching financial summary: {str(e)}"
+        )
+
+@dashboard_router.get("/fee-summary")
+def get_fee_summary(year: int = datetime.now().year, session: Session = Depends(get_session)):
+    """Get monthly fee collection summary."""
+    try:
+        current_year = datetime.now().year
+        if year < 2000 or year > current_year + 5:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Invalid year: {year}. Year must be between 2000 and {current_year + 5}"
+            )
+
+        stmt = (
+            select(
+                func.extract('month', Fee.created_at).label('month'),
+                func.coalesce(func.sum(Fee.fee_amount), 0).label("total_amount")  # Use fee_amount, not amount
+            )
+            .where(func.extract("year", Fee.created_at) == year)
+            .group_by(func.extract('month', Fee.created_at))
+            .order_by('month')
+        )
+
+        try:
+            result = session.exec(stmt).all()
+        except Exception as db_error:
+            print(f"Database error fetching fee data: {str(db_error)}")
+            raise HTTPException(
+                status_code=500,
+                detail=f"Database error: {str(db_error)}"
+            )
+
+        month_summary = {i: 0 for i in range(1, 13)}
+        for row in result:
+            if row.month is not None and 1 <= row.month <= 12:
+                month_summary[row.month] = float(row.total_amount or 0)
+
+        month_names = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", 
+                      "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
+        total = sum(month_summary.values())
+
+        response = {
+            "year": year,
+            "monthly_data": month_summary,
+            "total": total,
+            "graph": GraphData(
+                labels=month_names,
+                datasets=[Dataset(
+                    label=f"Monthly Fee Collection for {year}",
+                    data=list(month_summary.values()),
+                    backgroundColor="rgba(54, 162, 235, 0.5)",
+                    borderColor="rgba(54, 162, 235, 1)",
+                    borderWidth=1,
+                    type="bar"
+                )],
+                title=f"Fee Collection Summary for {year}" + (" (No Data)" if total == 0 else ""),
+                options={
+                    "scales": {
+                        "y": {
+                            "beginAtZero": True,
+                            "title": {
+                                "display": True,
+                                "text": "Amount (Rs)"
+                            }
+                        }
+                    }
+                }
+            )
+        }
+
+        return response
+
+    except HTTPException as he:
+        raise he
+    except Exception as e:
+        print(f"Error in fee summary: {str(e)}")
+        raise HTTPException(
+            status_code=500,
+            detail=f"Error fetching fee summary: {str(e)}"
         )
 
 @dashboard_router.get("/graph-test", response_class=HTMLResponse)
@@ -307,13 +672,13 @@ async def get_graph_test():
             </style>
         </head>
         <body>
-            <div style="width: 800px; margin: 20px auto;">
+            <div style="width: 900px; margin: 20px auto;">
                 <div class="chart-container">
-                    <h2>User Role Distribution</h2>
+                    <h2>Total Users Roll Wise</h2>
                     <canvas id="userRolesChart"></canvas>
                 </div>
                 <div class="chart-container">
-                    <h2>Student Attendance</h2>
+                    <h2>Student Attendance Overview</h2>
                     <div style="text-align: center; margin-bottom: 10px;">
                         <label>Date: <input type="date" id="attendanceDate"></label>
                         <button onclick="updateStudentChart()">Update</button>
@@ -321,21 +686,77 @@ async def get_graph_test():
                     <canvas id="studentChart"></canvas>
                 </div>
                 <div class="chart-container">
-                    <h2>Class-wise Attendance</h2>
+                    <h2>Class-wise Attendance for Today</h2>
                     <canvas id="attendanceChart"></canvas>
                 </div>
                 <div class="chart-container">
-                    <h2>Financial Summary</h2>
-                    <canvas id="incomeChart"></canvas>
+                    <h2>Financial Overview</h2>
+                    <canvas id="financialChart"></canvas>
+                </div>
+                <div class="chart-container">
+                    <h2>Fee Collection Overview</h2>
+                    <canvas id="feeChart"></canvas>
+                </div>
+                <div class="chart-container">
+                    <h2>Income Category Details</h2>
+                    <div style="text-align: center; margin-bottom: 10px;">
+                        <label>Year: <input type="number" id="incomeYear" min="2000" max="2100" style="width:80px"></label>
+                        <label>Month: 
+                            <select id="incomeMonth">
+                                <option value="">All</option>
+                                <option value="1">Jan</option>
+                                <option value="2">Feb</option>
+                                <option value="3">Mar</option>
+                                <option value="4">Apr</option>
+                                <option value="5">May</option>
+                                <option value="6">Jun</option>
+                                <option value="7">Jul</option>
+                                <option value="8">Aug</option>
+                                <option value="9">Sep</option>
+                                <option value="10">Oct</option>
+                                <option value="11">Nov</option>
+                                <option value="12">Dec</option>
+                            </select>
+                        </label>
+                        <button onclick="updateIncomeCategoryChart()">Update</button>
+                    </div>
+                    <canvas id="incomeCategoryChart"></canvas>
+                </div>
+                <div class="chart-container">
+                    <h2>Expense Category Details</h2>
+                    <div style="text-align: center; margin-bottom: 10px;">
+                        <label>Year: <input type="number" id="expenseYear" min="2000" max="2100" style="width:80px"></label>
+                        <label>Month: 
+                            <select id="expenseMonth">
+                                <option value="">All</option>
+                                <option value="1">Jan</option>
+                                <option value="2">Feb</option>
+                                <option value="3">Mar</option>
+                                <option value="4">Apr</option>
+                                <option value="5">May</option>
+                                <option value="6">Jun</option>
+                                <option value="7">Jul</option>
+                                <option value="8">Aug</option>
+                                <option value="9">Sep</option>
+                                <option value="10">Oct</option>
+                                <option value="11">Nov</option>
+                                <option value="12">Dec</option>
+                            </select>
+                        </label>
+                        <button onclick="updateExpenseCategoryChart()">Update</button>
+                    </div>
+                    <canvas id="expenseCategoryChart"></canvas>
                 </div>
             </div>
             <script>
-                // Store chart instances
-                let charts = {
+                const charts = {
                     userRoles: null,
                     student: null,
                     attendance: null,
-                    income: null
+                    financial: null,
+                    fee: null,
+                    incomeCategory: null,
+                    expenseCategory: null
                 };
 
                 function destroyChart(chartId) {
@@ -347,19 +768,17 @@ async def get_graph_test():
 
                 async function updateStudentChart() {
                     const date = document.getElementById('attendanceDate').value;
-                    
                     if (!date) {
                         alert('Please select a date');
                         return;
                     }
-
-                    const url = `/auth/dashboard/student-summary?date=${date}`;
                     try {
+                        const totalRes = await fetch('/dashboard/total-students');
+                        const totalStudents = await totalRes.json();
+                        const url = `/dashboard/student-summary?date=${date}`;
                         const response = await fetch(url);
                         const data = await response.json();
-                        
                         destroyChart('student');
-                        
                         const ctx = document.getElementById('studentChart');
                         charts.student = new Chart(ctx, {
                             type: 'bar',
@@ -368,61 +787,152 @@ async def get_graph_test():
                                 responsive: true,
                                 scales: {
                                     y: {
-                                        beginAtZero: true
+                                        beginAtZero: true,
+                                        ticks: { stepSize: 1 }
                                     }
                                 }
                             }
                         });
                     } catch (error) {
-                        console.error('Error fetching student data:', error);
+                        console.error('Error fetching data:', error);
                         alert('Error updating chart. Please try again.');
                     }
                 }
 
-                // Initialize with today's date
-                document.getElementById('attendanceDate').valueAsDate = new Date();
+                async function updateIncomeCategoryChart() {
+                    const year = document.getElementById('incomeYear').value || new Date().getFullYear();
+                    const month = document.getElementById('incomeMonth').value;
+                    let url = `/dashboard/income-summary?year=${year}`;
+                    if (month) url += `&month=${month}`;
+                    try {
+                        const res = await fetch(url);
+                        const data = await res.json();
+                        destroyChart('incomeCategory');
+                        charts.incomeCategory = new Chart(document.getElementById('incomeCategoryChart'), {
+                            type: 'bar',
+                            data: data.graph,
+                            options: { 
+                                responsive: true,
+                                scales: {
+                                    y: {
+                                        beginAtZero: true,
+                                        title: { display: true, text: 'Amount (Rs)' }
+                                    }
+                                }
+                            }
+                        });
+                    } catch (error) {
+                        console.error('Error fetching income category data:', error);
+                    }
+                }
+
+                async function updateExpenseCategoryChart() {
+                    const year = document.getElementById('expenseYear').value || new Date().getFullYear();
+                    const month = document.getElementById('expenseMonth').value;
+                    let url = `/dashboard/expense-summary?year=${year}`;
+                    if (month) url += `&month=${month}`;
+                    try {
+                        const res = await fetch(url);
+                        const data = await res.json();
+                        destroyChart('expenseCategory');
+                        charts.expenseCategory = new Chart(document.getElementById('expenseCategoryChart'), {
+                            type: 'bar',
+                            data: data.graph,
+                            options: { 
+                                responsive: true,
+                                scales: {
+                                    y: {
+                                        beginAtZero: true,
+                                        title: { display: true, text: 'Amount (Rs)' }
+                                    }
+                                }
+                            }
+                        });
+                    } catch (error) {
+                        console.error('Error fetching expense category data:', error);
+                    }
+                }
 
                 async function fetchAndRenderGraphs() {
                     try {
                         // User roles chart
-                        const rolesRes = await fetch('/auth/dashboard/user-roles');
+                        const rolesRes = await fetch('/dashboard/user-roles');
                         const rolesData = await rolesRes.json();
                         destroyChart('userRoles');
                         charts.userRoles = new Chart(document.getElementById('userRolesChart'), {
                             type: 'bar',
                             data: rolesData.graph,
-                            options: { responsive: true }
+                            options: { 
+                                responsive: true,
+                                scales: {
+                                    y: { beginAtZero: true, ticks: { stepSize: 1 } }
+                                }
+                            }
                         });
 
                         // Initial student chart
                         await updateStudentChart();
 
                         // Class attendance chart
-                        const attendanceRes = await fetch('/auth/dashboard/attendance-summary');
+                        const attendanceRes = await fetch('/dashboard/attendance-summary');
                         const attendanceData = await attendanceRes.json();
                         destroyChart('attendance');
                         charts.attendance = new Chart(document.getElementById('attendanceChart'), {
                             type: 'bar',
                             data: attendanceData.graph,
-                            options: { responsive: true }
+                            options: { 
+                                responsive: true,
+                                scales: {
+                                    y: { beginAtZero: true, ticks: { stepSize: 1 } }
+                                }
+                            }
                         });
 
-                        // Income chart
+                        // Financial summary chart
                         const year = new Date().getFullYear();
-                        const month = new Date().getMonth() + 1;
-                        const incomeRes = await fetch(`/auth/dashboard/income-summary?year=${year}&month=${month}`);
-                        const incomeData = await incomeRes.json();
-                        destroyChart('income');
-                        charts.income = new Chart(document.getElementById('incomeChart'), {
+                        const financialRes = await fetch(`/dashboard/income-expense-summary?year=${year}`);
+                        const financialData = await financialRes.json();
+                        destroyChart('financial');
+                        charts.financial = new Chart(document.getElementById('financialChart'), {
                             type: 'bar',
-                            data: incomeData.graph,
-                            options: { responsive: true }
+                            data: financialData.graph,
+                            options: { 
+                                responsive: true,
+                                scales: {
+                                    y: { beginAtZero: true, title: { display: true, text: 'Amount (Rs)' } }
+                                }
+                            }
                         });
+
+                        // Fee collection chart
+                        const feeRes = await fetch(`/dashboard/fee-summary?year=${year}`);
+                        const feeData = await feeRes.json();
+                        destroyChart('fee');
+                        charts.fee = new Chart(document.getElementById('feeChart'), {
+                            type: 'bar',
+                            data: feeData.graph,
+                            options: { 
+                                responsive: true,
+                                scales: {
+                                    y: { beginAtZero: true, title: { display: true, text: 'Amount (Rs)' } }
+                                }
+                            }
+                        });
+
+                        // Income category chart (default current year, all months)
+                        document.getElementById('incomeYear').value = year;
+                        await updateIncomeCategoryChart();
+
+                        // Expense category chart (default current year, all months)
+                        document.getElementById('expenseYear').value = year;
+                        await updateExpenseCategoryChart();
+
                     } catch (error) {
                         console.error('Error fetching data:', error);
                     }
                 }
 
+                document.getElementById('attendanceDate').valueAsDate = new Date();
                 fetchAndRenderGraphs();
             </script>
         </body>
