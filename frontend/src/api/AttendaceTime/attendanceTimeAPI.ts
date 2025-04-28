@@ -3,7 +3,7 @@ import {GetActionDetail} from "@/utils/GetActionDetail";
 import AxiosInstance from "@/api/axiosInterceptorInstance";
 import { ClassTiming, CreateTiming } from "@/models/classTiming/classTiming";
 
-// eslint-disable-next-line @typescript-eslint/no-namespace
+// eslint-disable-next-line @typescript-eslint/no-namespace 
 export namespace AttendanceTimeAPI {
   export const Get = async () => {
     try {
