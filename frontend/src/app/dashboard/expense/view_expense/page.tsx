@@ -1,10 +1,10 @@
-import ViewIncome from '@/components/Income/ViewIncome'
+import ViewExpense from '@/components/Expense/viewExpense'
 import React from 'react'
 
 const page = () => {
   return (
     <div>
-      <ViewIncome/>
+      <ViewExpense/>
     </div>
   )
 }

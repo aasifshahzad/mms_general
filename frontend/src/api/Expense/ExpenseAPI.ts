@@ -7,7 +7,7 @@ export namespace ExpenseAPI {
   export const GetExpenseData =  async (category_id: number) => {
     try {
       const response = await AxiosInstance.get(
-        `/Expense/filter_Expense?category_id=${category_id}`,
+        `/expenses/filter-by-category/${category_id}`,
         {
           headers: {
             "Content-Type": "application/json",

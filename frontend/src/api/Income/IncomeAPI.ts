@@ -54,7 +54,7 @@ export namespace IncomeAPI {
               }
             }
           );
-          console.log("API Response:", response.data);
+          // console.log("API Response:", response.data);
           return response;
         } catch (error) {
           console.error("API Error:", error);
