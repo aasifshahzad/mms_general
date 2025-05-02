@@ -1,3 +1,5 @@
+import { EntityBase } from "../EntityBase";
+
 export interface AddIncomeModel {
   recipt_number: number;
   date: string; // ISO date string format
@@ -18,6 +20,10 @@ export interface ViewIncomeModel {
 }
 export interface IncomeCategory {
   income_cat_name_id: number;
+  income_cat_name: string;
+}
+
+export interface CreateIncomeCat extends EntityBase {
   income_cat_name: string;
 }
 

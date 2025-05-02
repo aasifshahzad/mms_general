@@ -1,6 +1,6 @@
 import AxiosInstance from "@/api/axiosInterceptorInstance";
 import {GetActionDetail} from "@/utils/GetActionDetail";
-import { AddIncomeModel } from "@/models/income/income";
+import { AddIncomeModel, CreateIncomeCat } from "@/models/income/income";
 
 export namespace IncomeAPI {
 
@@ -61,4 +61,24 @@ export namespace IncomeAPI {
           throw error;
         }
       }
+
+      export const AddIncomeCategory  = async (AddIncomeCat: CreateIncomeCat) => {
+        try {
+          const response = await AxiosInstance.post<CreateIncomeCat>(
+            "/income_cat_names/add_income_cat_name/",
+            JSON.stringify(AddIncomeCat),
+            {
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${localStorage.getItem("access_token")}`,
+              },
+            }
+          );
+          console.log("API Response:", response);
+          return response;
+        } catch (error) {
+          console.error("API Error:", error);
+          throw error; 
+        }
+      };
 }
