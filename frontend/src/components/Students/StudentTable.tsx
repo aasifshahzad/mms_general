@@ -175,7 +175,7 @@ export default function ModernStudentTable() {
   });
 
   return (
-    <Card className="ml-3 mr-3 mt-7 p-6 w-auto bg-white dark:bg-background rounded-lg shadow-lg">
+    <Card className="ml-3 mr-3 mt-7 p-6 w-[80%] bg-white dark:bg-background rounded-lg shadow-lg">
       <AddNewStudent onClassAdded={GetData} />
       <div className="flex items-center justify-between mb-6">
         <div className="relative">
@@ -192,7 +192,7 @@ export default function ModernStudentTable() {
       {/* Table rendering */}
       <div className="rounded-md border w-auto border-gray-200 transition-shadow duration-300 hover:shadow-md overflow-hidden">
         <Table className="whitespace-nowrap scroll-smooth">
-          <TableHeader className="bg-primary hover:bg-none text-white">
+          <TableHeader className="bg-primary w-[60%] hover:bg-none text-white">
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow key={headerGroup.id}>
                 {headerGroup.headers.map((header) => (
