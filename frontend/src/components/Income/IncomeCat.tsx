@@ -10,7 +10,7 @@ import {
   getFilteredRowModel,
 } from "@tanstack/react-table";
 import { Search, ChevronLeft, ChevronRight, LoaderIcon } from "lucide-react";
-import { AttendanceTimeAPI as API } from "@/api/AttendaceTime/attendanceTimeAPI";
+import { IncomeAPI as API } from "@/api/Income/IncomeAPI";
 export { format } from "date-fns";
 import type { ClassTiming } from "@/models/classTiming/classTiming";
 
@@ -25,20 +25,21 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useEffect, useState } from "react";
-import AddClassTime from "./CreateTIming";
+import AddIncomeCategory from "./CreateIncome";
+import { IncomeCategory} from "@/models/income/income";
 
 // Define columns
 const columns: ColumnDef<ClassTiming>[] = [
   {
-    accessorKey: "attendance_time_id",
+    accessorKey: "income_category_id",
     header: "Sr. No",
     cell: ({ row }) => (
-      <div className="font-medium">{row.getValue("attendance_time_id")}</div>
+      <div className="font-medium">{row.getValue("income_category_id")}</div>
     ),
   },
   {
-    accessorKey: "attendance_time",
-    header: "Class Name",
+    accessorKey: "income_category_name",
+    header: "Income Category",
   },
   {
     accessorKey: "created_at",
@@ -51,7 +52,7 @@ const columns: ColumnDef<ClassTiming>[] = [
   },
 ];
 
-export default function ClassTiming() {
+export default function IncomeCat() {
   const [globalFilter, setGlobalFilter] = useState("");
   const [data, setData] = useState<ClassTiming[]>([]);
   const [loading, setLoading] = useState(true);
@@ -64,8 +65,8 @@ export default function ClassTiming() {
   const GetData = async () => {
     setLoading(true);
     try {
-      const response = await API.Get();
-      const data: ClassTiming[] = (response as { data: ClassTiming[] }).data;
+      const response = await API.GetIncomeCategory();
+      const data: IncomeCategory[] = (response as { data: IncomeCategory[] }).data;
       setData(data);
     } catch (error) {
       console.error("Error fetching data:", error);
@@ -87,13 +88,13 @@ export default function ClassTiming() {
   });
 
   return (
-    <div className=" mt-7 ml-3 p-6 w-[82rem] bg-white dark:bg-transparent dark:border-gray-100 dark:border rounded-lg shadow-lg">
-      <AddClassTime onClassAdded={GetData}/>
+    <div className=" mt-7 ml-3 p-6 w-[98%] bg-white dark:bg-transparent dark:border-gray-100 dark:border rounded-lg shadow-lg">
+      <AddIncomeCategory onIncomeCatAdd={GetData}/>
       <div className="flex items-center justify-between mb-6">
         <div className="relative">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
           <Input
-            placeholder="Search Class..."
+            placeholder="Search Income Category..."
             value={globalFilter ?? ""}
             onChange={(e: React.ChangeEvent<HTMLInputElement>) => setGlobalFilter(e.target.value)}
             className="pl-10 pr-4 py-2 w-64 rounded-full border-purple-300 focus:border-purple-500 focus:ring focus:ring-purple-200 focus:ring-opacity-50 transition-all duration-300"

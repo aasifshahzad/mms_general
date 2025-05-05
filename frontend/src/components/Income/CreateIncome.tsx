@@ -12,11 +12,15 @@ import { Input } from "../ui/input";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { LoaderIcon } from "lucide-react";
-import { AttendanceTimeAPI as API } from "@/api/AttendaceTime/attendanceTimeAPI";
+import { IncomeAPI as API } from "@/api/Income/IncomeAPI";
 import { CreateIncomeCat } from "@/models/income/income";
 
-const AddClassTime = ({ onClassAdded }: { onClassAdded: () => void }) => {
-  const {  
+const AddIncomeCategory = ({
+  onIncomeCatAdd,
+}: {
+  onIncomeCatAdd: () => void;
+}) => {
+  const {
     register,
     handleSubmit,
     reset,
@@ -34,7 +38,7 @@ const AddClassTime = ({ onClassAdded }: { onClassAdded: () => void }) => {
         setOpen(false);
         reset();
         toast("Class Added Successfully!");
-        onClassAdded(); // Call the function to refresh the table
+        onIncomeCatAdd(); // Call the function to refresh the table
       }
     } catch (error) {
       console.error("Error creating class:", error);
@@ -46,7 +50,7 @@ const AddClassTime = ({ onClassAdded }: { onClassAdded: () => void }) => {
 
   const CreateIncomeCatAPI = async (data: CreateIncomeCat) => {
     try {
-      const response = await API.Create(data);
+      const response = await API.AddIncomeCategory(data);
       console.log("API Response:", response.data);
       return response.data;
     } catch (error: unknown) {
@@ -71,7 +75,7 @@ const AddClassTime = ({ onClassAdded }: { onClassAdded: () => void }) => {
           <DialogHeader>
             {/* Dialog Title */}
             <DialogTitle className="text-2xl font-semibold text-gray-800 dark:text-gray-100">
-              Add Class Time
+              Add Income Category
             </DialogTitle>
             <hr className="bg-gray-400 dark:bg-gray-200" />
 
@@ -84,13 +88,17 @@ const AddClassTime = ({ onClassAdded }: { onClassAdded: () => void }) => {
                 {/* Category Name Field */}
                 <div className="py-2 space-y-1">
                   <label className="text-gray-700 dark:text-gray-400">
-                  Category Name
+                    Category Name
                   </label>
                   <Input
                     placeholder="Enter Category Name"
-                    {...register("income_cat_name", { required: "Field is required" })}
+                    {...register("income_cat_name", {
+                      required: "Field is required",
+                    })}
                   />
-                  <p className="text-red-500">{errors.income_cat_name?.message}</p>
+                  <p className="text-red-500">
+                    {errors.income_cat_name?.message}
+                  </p>
                 </div>
 
                 {/* Form Buttons: Cancel and Save */}
@@ -120,4 +128,4 @@ const AddClassTime = ({ onClassAdded }: { onClassAdded: () => void }) => {
   );
 };
 
-export default AddClassTime;
+export default AddIncomeCategory;
