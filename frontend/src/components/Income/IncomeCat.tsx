@@ -12,7 +12,6 @@ import {
 import { Search, ChevronLeft, ChevronRight, LoaderIcon } from "lucide-react";
 import { IncomeAPI as API } from "@/api/Income/IncomeAPI";
 export { format } from "date-fns";
-import type { ClassTiming } from "@/models/classTiming/classTiming";
 
 import {
   Table,
@@ -29,16 +28,16 @@ import AddIncomeCategory from "./CreateIncome";
 import { IncomeCategory} from "@/models/income/income";
 
 // Define columns
-const columns: ColumnDef<ClassTiming>[] = [
+const columns: ColumnDef<IncomeCategory>[] = [
   {
-    accessorKey: "income_category_id",
+    accessorKey: "income_cat_name_id", // Updated to match interface
     header: "Sr. No",
     cell: ({ row }) => (
-      <div className="font-medium">{row.getValue("income_category_id")}</div>
+      <div className="font-medium">{row.getValue("income_cat_name_id")}</div>
     ),
   },
   {
-    accessorKey: "income_category_name",
+    accessorKey: "income_cat_name", // Updated to match interface
     header: "Income Category",
   },
   {
@@ -46,7 +45,7 @@ const columns: ColumnDef<ClassTiming>[] = [
     header: "Created Date",
     cell: ({ row }) => {
       const date = new Date(row.getValue("created_at"));
-      const formattedDate = date.toLocaleDateString("en-GB"); // Use 'en-GB' for dd/MM/yyyy
+      const formattedDate = date.toLocaleDateString("en-GB");
       return <div>{formattedDate}</div>;
     }
   },
@@ -54,7 +53,7 @@ const columns: ColumnDef<ClassTiming>[] = [
 
 export default function IncomeCat() {
   const [globalFilter, setGlobalFilter] = useState("");
-  const [data, setData] = useState<ClassTiming[]>([]);
+  const [data, setData] = useState<IncomeCategory[]>([]);
   const [loading, setLoading] = useState(true);
 
   // Fetch data from API
@@ -67,14 +66,15 @@ export default function IncomeCat() {
     try {
       const response = await API.GetIncomeCategory();
       const data: IncomeCategory[] = (response as { data: IncomeCategory[] }).data;
-      setData(data);
+      console.log("API Response:", data);
+      setData(data); // Just use the data directly if it already matches the interface
     } catch (error) {
       console.error("Error fetching data:", error);
     } finally {
       setLoading(false);
     }
   };
-
+  
   const table = useReactTable({
     data,
     columns,

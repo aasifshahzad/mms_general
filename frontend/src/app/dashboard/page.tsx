@@ -5,7 +5,6 @@ import {
   PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
   LineChart, Line
 } from 'recharts';
-import { Calendar, Clock, Users, Mail, AlertCircle, Check, X, TrendingUp, Briefcase, Award, Clock3 } from 'lucide-react';
 import { DashboardAPI } from "@/api/Dashboard/dashboardAPI";
 import { useEffect } from 'react';
 import { CardsSkeleton, ChartSkeleton, Skeleton } from '@/components/dashboard/Skeleton';

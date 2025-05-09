@@ -19,8 +19,9 @@ export interface ViewIncomeModel {
   attendance_value: string;
 }
 export interface IncomeCategory {
-  income_cat_name_id: number;
-  income_cat_name: string;
+  income_cat_name_id: number; // Updated key
+  income_cat_name: string; // Updated key
+  created_at: string; // ISO date string format
 }
 
 export interface CreateIncomeCat extends EntityBase {

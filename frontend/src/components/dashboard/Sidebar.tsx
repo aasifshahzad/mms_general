@@ -48,8 +48,18 @@ const menuList: MenuItem[] = [
     path: "/dashboard/attendance",
     hasSubmenu: true,
     submenu: [
-      { id: 8, name: "Mark Attendance", icon: GoDotFill, path: "/dashboard/attendance/mark_attendance" },
-      { id: 9, name: "View Attendance", icon: GoDotFill, path: "/dashboard/attendance/view_attendance" },
+      {
+        id: 8,
+        name: "Mark Attendance",
+        icon: GoDotFill,
+        path: "/dashboard/attendance/mark_attendance",
+      },
+      {
+        id: 9,
+        name: "View Attendance",
+        icon: GoDotFill,
+        path: "/dashboard/attendance/view_attendance",
+      },
     ],
   },
   {
@@ -59,8 +69,18 @@ const menuList: MenuItem[] = [
     path: "/dashboard/fees",
     hasSubmenu: true,
     submenu: [
-      { id: 11, name: "Add Fees", icon: GoDotFill, path: "/dashboard/fees/add_fees" },
-      { id: 12, name: "View Fees", icon: GoDotFill, path: "/dashboard/fees/view_fees" },
+      {
+        id: 11,
+        name: "Add Fees",
+        icon: GoDotFill,
+        path: "/dashboard/fees/add_fees",
+      },
+      {
+        id: 12,
+        name: "View Fees",
+        icon: GoDotFill,
+        path: "/dashboard/fees/view_fees",
+      },
     ],
   },
   {
@@ -70,19 +90,39 @@ const menuList: MenuItem[] = [
     path: "/dashboard/fees",
     hasSubmenu: true,
     submenu: [
-      { id: 14, name: "Add Income", icon: GoDotFill, path: "/dashboard/income/add_income" },
-      { id: 15, name: "View Income", icon: GoDotFill, path: "/dashboard/income/view_income" },
+      {
+        id: 14,
+        name: "Add Income",
+        icon: GoDotFill,
+        path: "/dashboard/income/add_income",
+      },
+      {
+        id: 15,
+        name: "View Income",
+        icon: GoDotFill,
+        path: "/dashboard/income/view_income",
+      },
     ],
   },
   {
     id: 17,
     name: "Expense",
-    icon: GiExpense ,
+    icon: GiExpense,
     path: "/dashboard/Expense",
     hasSubmenu: true,
     submenu: [
-      { id: 18, name: "Add Expense", icon: GoDotFill, path: "/dashboard/expense/add_expense" },
-      { id: 19, name: "View Expense", icon: GoDotFill, path: "/dashboard/expense/view_expense" },
+      {
+        id: 18,
+        name: "Add Expense",
+        icon: GoDotFill,
+        path: "/dashboard/expense/add_expense",
+      },
+      {
+        id: 19,
+        name: "View Expense",
+        icon: GoDotFill,
+        path: "/dashboard/expense/view_expense",
+      },
     ],
   },
   {
@@ -92,10 +132,30 @@ const menuList: MenuItem[] = [
     path: "/dashboard/settings",
     hasSubmenu: true,
     submenu: [
-      { id: 5, name: "Class Name", icon: GoDotFill, path: "/dashboard/setup/class_name" },
-      { id: 6, name: "Class Timings", icon: GoDotFill, path: "/dashboard/setup/class_timings" },
-      { id: 7, name: "Teacher", icon: GoDotFill, path: "/dashboard/setup/teacher" },
-      { id: 16, name: "Income Category", icon: GoDotFill, path: "/dashboard/setup/income_category" },
+      {
+        id: 5,
+        name: "Class Name",
+        icon: GoDotFill,
+        path: "/dashboard/setup/class_name",
+      },
+      {
+        id: 6,
+        name: "Class Timings",
+        icon: GoDotFill,
+        path: "/dashboard/setup/class_timings",
+      },
+      {
+        id: 7,
+        name: "Teacher",
+        icon: GoDotFill,
+        path: "/dashboard/setup/teacher",
+      },
+      {
+        id: 16,
+        name: "Income Category",
+        icon: GoDotFill,
+        path: "/dashboard/setup/income_category",
+      },
     ],
   },
   { id: 5, name: "Logout", icon: LogOut, path: "/login" },
@@ -108,7 +168,8 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isDarkMode, setIsDarkMode] = useState(true);
 
-  const toggleSubmenu = (id: number) => setOpenSubmenu(openSubmenu === id ? null : id);
+  const toggleSubmenu = (id: number) =>
+    setOpenSubmenu(openSubmenu === id ? null : id);
 
   const handleLogout = () => {
     localStorage.clear();
@@ -127,19 +188,39 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
 
       {/* Sidebar */}
       <aside
-        className={`fixed z-50 top-0 left-0 h-full w-64 bg-white dark:bg-neutral-950 border-r border-gray-200 dark:border-gray-700 p-4 flex flex-col transform transition-transform duration-300
-          ${isOpen ? "translate-x-0" : "-translate-x-full"} md:translate-x-0 md:static md:z-auto`}
+        className={`fixed z-50 top-0 left-0 h-screen w-64 bg-white dark:bg-neutral-950 border-r border-gray-200 dark:border-gray-700 p-4 flex flex-col transform transition-transform duration-300
+          ${
+            isOpen ? "translate-x-0" : "-translate-x-full"
+          } md:translate-x-0 md:static md:z-auto`}
       >
         <div className="flex items-center justify-between border-b border-gray-200 dark:border-gray-700 pb-4">
-          <Image src="/logo.png" alt="Logo" width={50} height={50} className="dark:invert" />
-          <h2 className="text-sm font-semibold text-gray-700 dark:text-gray-200">MADRESSA ZAID BIN HARIS (R.A)</h2>
+          <Image
+            src="/logo.png"
+            alt="Logo"
+            width={50}
+            height={50}
+            className="dark:invert"
+          />
+          <h2 className="text-sm font-semibold text-gray-700 dark:text-gray-200">
+            MADRESSA ZAID BIN HARIS (R.A)
+          </h2>
         </div>
 
         <div className="flex items-center space-x-4 my-4">
-          <Image src="/image.png" alt="User" width={40} height={40} className="rounded-full" />
+          <Image
+            src="/image.png"
+            alt="User"
+            width={40}
+            height={40}
+            className="rounded-full"
+          />
           <div>
-            <h2 className="text-sm font-semibold text-gray-700 dark:text-gray-200">User</h2>
-            <p className="text-xs text-gray-500 dark:text-gray-400">sample@gmail.com</p>
+            <h2 className="text-sm font-semibold text-gray-700 dark:text-gray-200">
+              User
+            </h2>
+            <p className="text-xs text-gray-500 dark:text-gray-400">
+              sample@gmail.com
+            </p>
           </div>
         </div>
 
@@ -159,7 +240,11 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
                     <item.icon className="w-5 h-5 mr-3" />
                     <span>{item.name}</span>
                   </div>
-                  <ChevronDown className={`w-5 h-5 transition-transform ${openSubmenu === item.id ? "rotate-180" : "rotate-0"}`} />
+                  <ChevronDown
+                    className={`w-5 h-5 transition-transform ${
+                      openSubmenu === item.id ? "rotate-180" : "rotate-0"
+                    }`}
+                  />
                 </button>
               ) : item.name === "Logout" ? (
                 <button
@@ -207,7 +292,11 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
           }}
           className="mt-auto p-2 rounded-lg bg-gray-50 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600"
         >
-          {isDarkMode ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
+          {isDarkMode ? (
+            <Sun className="w-5 h-5" />
+          ) : (
+            <Moon className="w-5 h-5" />
+          )}
         </button>
       </aside>
     </>

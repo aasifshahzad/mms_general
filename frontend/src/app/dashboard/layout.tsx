@@ -8,7 +8,7 @@ function layout({ children }: { children: React.ReactNode }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   return (
-    <div className="min-h-screen flex flex-col md:flex-row bg-secondary dark:bg-neutral-950">
+    <div className="min-h-screen flex flex-col md:flex-row bg-secondary dark:bg-neutral-950 overflow-hidden">
       {/* Mobile Top Bar */}
       <div className="md:hidden flex items-center justify-between p-4 bg-white dark:bg-neutral-900 shadow-md z-50">
         <button onClick={() => setSidebarOpen(true)}>
