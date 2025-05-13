@@ -20,12 +20,12 @@ function layout({ children }: { children: React.ReactNode }) {
       </div>
 
       {/* Sidebar */}
-      <div className="md:w-64">
+      <div className="md:w-64 fixed h-full">
         <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
       </div>
 
       {/* Main content */}
-      <main className="flex-1 p-4 md:ml-0">{children}</main>
+      <main className="flex-1 p-4 md:ml-60">{children}</main>
     </div>
   );
 }
