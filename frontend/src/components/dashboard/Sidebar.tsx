@@ -156,6 +156,12 @@ const menuList: MenuItem[] = [
         icon: GoDotFill,
         path: "/dashboard/setup/income_category",
       },
+      {
+        id: 20,
+        name: "Expense Category",
+        icon: GoDotFill,
+        path: "/dashboard/setup/expense_category",
+      },
     ],
   },
   { id: 5, name: "Logout", icon: LogOut, path: "/login" },
@@ -167,6 +173,8 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
   const [openSubmenu, setOpenSubmenu] = useState<number | null>(null);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isDarkMode, setIsDarkMode] = useState(true);
+
+  const userData = localStorage.getItem("user");
 
   const toggleSubmenu = (id: number) =>
     setOpenSubmenu(openSubmenu === id ? null : id);
@@ -215,12 +223,10 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
             className="rounded-full"
           />
           <div>
-            <h2 className="text-sm font-semibold text-gray-700 dark:text-gray-200">
-              User
+            <h2 className="text-sm font-semibold text-gray-700 uppercase dark:text-gray-200">
+                {userData ? JSON.parse(userData).username : "Guest"}
             </h2>
-            <p className="text-xs text-gray-500 dark:text-gray-400">
-              sample@gmail.com
-            </p>
+            
           </div>
         </div>
 

@@ -34,12 +34,8 @@ const ViewExpense = () => {
     setIsLoading(true);
     try {
       const res: any = await API.GetExpenseCategory();
-      const data = res.data.map((item: ExpenseCategory) => ({
-        Expense_cat_name_id: item.Expense_cat_name_id,
-        Expense_cat_name: item.Expense_cat_name,
-      }));
-      setExpenseCategory(data);
-      console.log("Expense categories:", data);
+      setExpenseCategory(res.data);
+    console.log("Expense categories:", res.data);
     } catch (error) {
       console.error("Error fetching Expense categories:", error);
       setExpenseCategory([]);
@@ -83,10 +79,10 @@ const ViewExpense = () => {
             </option>
             {ExpenseCategory.map((category) => (
               <option
-                key={category.Expense_cat_name_id} // Use unique key
-                value={category.Expense_cat_name_id} // Set value to expense_cat_name_id
+                key={category.expense_cat_name_id} // Use unique key
+                value={category.expense_cat_name_id} // Set value to expense_cat_name_id
               >
-                {category.Expense_cat_name} {/* Display category name */}
+                {category.expense_cat_name} {/* Display category name */}
               </option>
             ))}
           </select>

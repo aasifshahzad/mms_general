@@ -64,7 +64,7 @@ export default function LoginForm() {
         <div className="flex justify-center">
           <Image src="/logo.png" alt="logo" width={100} height={100} className="object-contain" />
         </div>
-        <h2 className="text-center text-2xl font-semibold mt-4">Sign In</h2>
+        <h2 className="text-center text-2xl font-semibold text-gray-800 mt-4">Sign In</h2>
         <p className="text-center text-gray-500 mb-4">Enter your credentials to access your account</p>
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <div>
@@ -74,7 +74,8 @@ export default function LoginForm() {
               <input
                 id="username"
                 type="text"
-                className="w-full border rounded-md px-10 py-2 focus:ring focus:ring-indigo-300"
+                placeholder="Enter your username"
+                className="w-full border rounded-md bg-white text-gray-900 px-10 py-2 focus:ring focus:ring-indigo-300"
                 {...register("username", { required: "This field is required" })}
               />
             </div>
@@ -87,10 +88,14 @@ export default function LoginForm() {
               <Lock className="absolute left-3 top-2.5 h-5 w-5 text-gray-400" />
               <input
                 id="password"
-                type="password"
-                className="w-full border rounded-md px-10 py-2 focus:ring focus:ring-indigo-300"
+                type= {showPassword ? "text" : "password"}
+                placeholder="Enter your password"
+                className="w-full bg-white border text-gray-900 rounded-md px-10 py-2 focus:ring focus:ring-indigo-300"
                 {...register("password", { required: "Password is required" })}
               />
+              <button type="button" onClick={togglePasswordVisibility} className="absolute right-3 top-2.5">
+                {showPassword ? <EyeOff className="h-5 w-5 text-gray-400" /> : <Eye className="h-5 w-5 text-gray-400" />}
+              </button>
             </div>
             {errors.password && <p className="text-sm text-red-500 mt-1">{errors.password.message}</p>}
           </div>
@@ -103,9 +108,6 @@ export default function LoginForm() {
             {isLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : "Sign In"}
           </button>
         </form>
-        <p className="text-center text-sm text-gray-500 mt-4">
-          Not a member? <a href="#" className="text-indigo-600">Sign up now</a>
-        </p>
       </div>
     </div>
   )

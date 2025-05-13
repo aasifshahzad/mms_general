@@ -10,7 +10,7 @@ import {
   getFilteredRowModel,
 } from "@tanstack/react-table";
 import { Search, ChevronLeft, ChevronRight, LoaderIcon } from "lucide-react";
-import { TeacherNameAPI as API } from "@/api/Teacher/TeachetAPI";
+import { ExpenseAPI as API } from "@/api/Expense/ExpenseAPI";
 export { format } from "date-fns";
 
 import {
@@ -23,69 +23,37 @@ import {
 } from "@/components/ui/table";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { TeacherModel } from "@/models/teacher/Teacher";
 import { useEffect, useState } from "react";
-import AddNewTeacher from "./CreateTeacher";
-import DelConfirmMsg from "../DelConfMsg";
-import { toast } from "sonner";
+import AddExpenseCategory from "./CreateExpenseCat";
+import { ExpenseCategory} from "@/models/expense/expense";
 
 // Define columns
-const columns: ColumnDef<TeacherModel>[] = [
+const columns: ColumnDef<ExpenseCategory>[] = [
   {
-    accessorKey: "teacher_name_id",
+    accessorKey: "expense_cat_name_id", // Updated to match interface
     header: "Sr. No",
     cell: ({ row }) => (
-      <div className="font-medium">{row.getValue("teacher_name_id")}</div>
+      <div className="font-medium">{row.getValue("expense_cat_name_id")}</div>
     ),
   },
   {
-    accessorKey: "teacher_name",
-    header: "Teacher Name",
+    accessorKey: "expense_cat_name", // Updated to match interface
+    header: "Expense Category",
   },
   {
     accessorKey: "created_at",
     header: "Created Date",
     cell: ({ row }) => {
       const date = new Date(row.getValue("created_at"));
-      const formattedDate = date.toLocaleDateString("en-GB"); // Use 'en-GB' for dd/MM/yyyy
+      const formattedDate = date.toLocaleDateString("en-GB");
       return <div>{formattedDate}</div>;
-    },
-  },
-  {
-    accessorKey: "Delete",
-    header: "Delete",
-    cell: ({ row }) => (
-      <DelConfirmMsg
-        rowId={row.getValue("teacher_name_id ")}
-        OnDelete={(confirmed) => formDeleteHandler(confirmed, row.original)}
-      />
-    ),
+    }
   },
 ];
-const formDeleteHandler = async (confirmed: boolean, data: TeacherModel) => {
-  try {
-    if (confirmed) {
-      const response = await API.Delete(data.teacher_name_id) as Response;
 
-      if (response.status === 200) {
-        toast.success("Record deleted successfully", {
-          position: "bottom-center",
-        });
-      } else {
-        const errorData = await response.json();
-        toast.error(errorData?.message || "An error occurred", {
-          position: "bottom-center",
-        });
-      }
-    }
-  } catch (error) {
-    console.log("Error on Delete", error);
-  }
-};
-
-export default function TeacherTable() {
+export default function ExpenseCat() {
   const [globalFilter, setGlobalFilter] = useState("");
-  const [data, setData] = useState<TeacherModel[]>([]);
+  const [data, setData] = useState<ExpenseCategory[]>([]);
   const [loading, setLoading] = useState(true);
 
   // Fetch data from API
@@ -96,16 +64,18 @@ export default function TeacherTable() {
   const GetData = async () => {
     setLoading(true);
     try {
-      const response = await API.Get();
-      setData(Array.isArray(response.data) ? response.data : []);
+      const response = await API.GetExpenseCategory();
+      const data: ExpenseCategory[] = (response as { data: ExpenseCategory[] }).data;
+      console.log("API Response:", data);
+      setData(data); // Just use the data directly if it already matches the interface
     } catch (error) {
       console.error("Error fetching data:", error);
     } finally {
       setLoading(false);
     }
   };
-
-  const table = useReactTable<TeacherModel>({
+  
+  const table = useReactTable({
     data,
     columns,
     getCoreRowModel: getCoreRowModel(),
@@ -118,17 +88,15 @@ export default function TeacherTable() {
   });
 
   return (
-    <div className="ml-3 mt-7 p-6 w-[98%] bg-white dark:bg-transparent dark:border-gray-100 dark:border rounded-lg shadow-lg">
-      <AddNewTeacher onClassAdded={GetData} />
+    <div className=" mt-7 ml-3 p-6 w-[98%] bg-white dark:bg-transparent dark:border-gray-100 dark:border rounded-lg shadow-lg">
+      <AddExpenseCategory onExpenseCatAdd={GetData}/>
       <div className="flex items-center justify-between mb-6">
         <div className="relative">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
           <Input
-            placeholder="Search Class..."
+            placeholder="Search Expense Category..."
             value={globalFilter ?? ""}
-            onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-              setGlobalFilter(e.target.value)
-            }
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setGlobalFilter(e.target.value)}
             className="pl-10 pr-4 py-2 w-64 rounded-full border-purple-300 focus:border-purple-500 focus:ring focus:ring-purple-200 focus:ring-opacity-50 transition-all duration-300"
           />
         </div>

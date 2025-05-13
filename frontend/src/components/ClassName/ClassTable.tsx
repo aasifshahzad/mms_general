@@ -30,12 +30,20 @@ const columns: ColumnDef<ClassNameModel>[] = [
   {
     accessorKey: "class_name_id",
     header: "Sr. No",
-    cell: ({ row }) => <div className="font-semibold text-gray-700">{row.getValue("class_name_id")}</div>,
+    cell: ({ row }) => (
+      <div className="font-semibold text-gray-700 dark:text-gray-200">
+        {row.getValue("class_name_id")}
+      </div>
+    ),
   },
   {
     accessorKey: "class_name",
     header: "Class Name",
-    cell: ({ row }) => <div className="text-gray-600 font-medium">{row.getValue("class_name")}</div>,
+    cell: ({ row }) => (
+      <div className="text-gray-600 dark:text-gray-200 font-medium">
+        {row.getValue("class_name")}
+      </div>
+    ),
   },
   {
     accessorKey: "created_at",
@@ -43,7 +51,9 @@ const columns: ColumnDef<ClassNameModel>[] = [
     cell: ({ row }) => {
       const date = new Date(row.getValue("created_at"));
       const formattedDate = format(date, "dd/MM/yyyy");
-      return <div className="text-gray-500">{formattedDate}</div>;
+      return (
+        <div className="text-gray-500 dark:text-gray-200">{formattedDate}</div>
+      );
     },
   },
 ];
@@ -60,7 +70,7 @@ export default function ModernStudentTable() {
   const GetData = async () => {
     setLoading(true);
     try {
-      const response = await API.Get() as { data: ClassNameModel[] };
+      const response = (await API.Get()) as { data: ClassNameModel[] };
       setData(response.data);
     } catch (error) {
       console.error("Error fetching data:", error);
@@ -82,27 +92,33 @@ export default function ModernStudentTable() {
   });
 
   return (
-    <div className="p-6 bg-white dark:bg-gray-900 rounded-lg shadow-lg m-3 w-[98%]">
+    <div className="mt-7 ml-3 p-6 w-[98%] bg-white dark:bg-transparent dark:border-gray-100 dark:border rounded-lg shadow-lg">
       <ClassName onClassAdded={GetData} />
       <div className="flex items-center justify-between mb-6">
-        <div className="relative w-72">
+        <div className="relative">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
           <Input
             placeholder="Search Class..."
             value={globalFilter ?? ""}
             onChange={(e) => setGlobalFilter(e.target.value)}
-            className="pl-10 pr-4 py-2 w-full rounded-lg border-gray-300 focus:border-indigo-500 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 transition-all duration-300"
+            className="pl-10 pr-4 py-2 w-64 rounded-full border-purple-300 focus:border-purple-500 focus:ring focus:ring-purple-200 focus:ring-opacity-50 transition-all duration-300"
           />
         </div>
       </div>
-      <div className="overflow-hidden rounded-lg border border-gray-200">
+      <div className="rounded-md border border-purple-200 overflow-hidden transition-shadow duration-300 hover:shadow-md">
         <Table>
-          <TableHeader className="bg-primary">
+          <TableHeader className="bg-primary dark:bg-secondary">
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow key={headerGroup.id}>
                 {headerGroup.headers.map((header) => (
-                  <TableHead key={header.id} className="px-4 py-3 text-white">
-                    {flexRender(header.column.columnDef.header, header.getContext())}
+                  <TableHead
+                    key={header.id}
+                    className="font-bold text-white dark:text-gray-100"
+                  >
+                    {flexRender(
+                      header.column.columnDef.header,
+                      header.getContext()
+                    )}
                   </TableHead>
                 ))}
               </TableRow>
@@ -111,23 +127,39 @@ export default function ModernStudentTable() {
           <TableBody>
             {loading ? (
               <TableRow>
-                <TableCell colSpan={columns.length} className="text-center py-6">
+                <TableCell
+                  colSpan={columns.length}
+                  className="text-center py-6"
+                >
                   <LoaderIcon className="animate-spin w-6 h-6 mx-auto" />
                 </TableCell>
               </TableRow>
             ) : table.getRowModel().rows.length ? (
               table.getRowModel().rows.map((row, i) => (
-                <TableRow key={row.id} className={`${i % 2 === 0 ? "bg-gray-50" : "bg-white"} hover:bg-gray-100 transition-colors duration-200`}>                  
+                <TableRow
+                  key={row.id}
+                  className={`transition-colors duration-200 hover:bg-purple-50 ${
+                    i % 2 === 0
+                      ? "bg-white dark:bg-transparent"
+                      : "bg-purple-50 dark:bg-black"
+                  }`}
+                >
                   {row.getVisibleCells().map((cell) => (
                     <TableCell key={cell.id} className="px-4 py-3">
-                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                      {flexRender(
+                        cell.column.columnDef.cell,
+                        cell.getContext()
+                      )}
                     </TableCell>
                   ))}
                 </TableRow>
               ))
             ) : (
               <TableRow>
-                <TableCell colSpan={columns.length} className="text-center text-gray-500 py-6">
+                <TableCell
+                  colSpan={columns.length}
+                  className="h-24 text-center text-gray-500 dark:text-gray-100"
+                >
                   No results found.
                 </TableCell>
               </TableRow>
@@ -135,15 +167,38 @@ export default function ModernStudentTable() {
           </TableBody>
         </Table>
       </div>
-      <div className="flex items-center justify-between mt-4 text-gray-600 text-sm">
-        <span>
-          Showing {table.getState().pagination.pageIndex * table.getState().pagination.pageSize + 1} - {Math.min((table.getState().pagination.pageIndex + 1) * table.getState().pagination.pageSize, table.getFilteredRowModel().rows.length)} of {table.getFilteredRowModel().rows.length} students
+      {/* Pagination */}
+      <div className="flex items-center justify-between mt-4">
+        <span className="text-sm text-gray-500">
+          Showing{" "}
+          {table.getState().pagination.pageIndex *
+            table.getState().pagination.pageSize +
+            1}{" "}
+          -{" "}
+          {Math.min(
+            (table.getState().pagination.pageIndex + 1) *
+              table.getState().pagination.pageSize,
+            table.getFilteredRowModel().rows.length
+          )}{" "}
+          of {table.getFilteredRowModel().rows.length} students
         </span>
-        <div className="flex space-x-2">
-          <Button onClick={() => table.previousPage()} disabled={!table.getCanPreviousPage()} className="px-3 py-2 rounded-full bg-primary text-white">
+        <div className="flex items-center space-x-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => table.previousPage()}
+            disabled={!table.getCanPreviousPage()}
+            className="px-3 py-2 rounded-full"
+          >
             <ChevronLeft className="h-4 w-4" />
           </Button>
-          <Button onClick={() => table.nextPage()} disabled={!table.getCanNextPage()} className="px-3 py-2 rounded-full primary text-white">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => table.nextPage()}
+            disabled={!table.getCanNextPage()}
+            className="px-3 py-2 rounded-full"
+          >
             <ChevronRight className="h-4 w-4" />
           </Button>
         </div>

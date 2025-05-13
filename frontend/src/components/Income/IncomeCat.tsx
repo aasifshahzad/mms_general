@@ -24,7 +24,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useEffect, useState } from "react";
-import AddIncomeCategory from "./CreateIncome";
+import AddIncomeCategory from "./CreateIncomeCat";
 import { IncomeCategory} from "@/models/income/income";
 
 // Define columns
@@ -32,6 +32,11 @@ const columns: ColumnDef<IncomeCategory>[] = [
   {
     accessorKey: "income_cat_name_id", // Updated to match interface
     header: "Sr. No",
+    /**
+     * A cell component that renders the income category id as a string in a font-medium div
+     * @param {{row: Row<IncomeCategory>}} props The props object with a row property containing the row data
+     * @returns {ReactElement} The rendered cell component
+     */
     cell: ({ row }) => (
       <div className="font-medium">{row.getValue("income_cat_name_id")}</div>
     ),

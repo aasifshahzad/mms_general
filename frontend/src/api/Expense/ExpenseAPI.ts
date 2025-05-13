@@ -1,6 +1,6 @@
 import AxiosInstance from "@/api/axiosInterceptorInstance";
 import {GetActionDetail} from "@/utils/GetActionDetail";
-import { AddExpenseModel } from "@/models/expense/expense";
+import { AddExpenseModel, ExpenseCategory } from "@/models/expense/expense";
 
 export namespace ExpenseAPI {
 
@@ -28,6 +28,25 @@ export namespace ExpenseAPI {
           const response = await AxiosInstance.post<AddExpenseModel>(
             "/expenses/add_expense/",
             JSON.stringify(AddFee),
+            {
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${localStorage.getItem("access_token")}`,
+              },
+            }
+          );
+          console.log("API Response:", response);
+          return response;
+        } catch (error) {
+          console.error("API Error:", error);
+          throw error; 
+        }
+      };
+    export const AddExpenseCat = async (AddExpenseCat: ExpenseCategory ) => {
+        try {
+          const response = await AxiosInstance.post<AddExpenseModel>(
+            "/expense_cat_names/add_expense_cat_name/",
+            JSON.stringify(AddExpenseCat),
             {
               headers: {
                 "Content-Type": "application/json",

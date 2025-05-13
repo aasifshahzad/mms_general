@@ -8,8 +8,8 @@ export interface AddExpenseModel {
 }
 
 export interface ExpenseCategory {
-  Expense_cat_name_id: number;
-  Expense_cat_name: string;
+  expense_cat_name_id: number;
+  expense_cat_name: string;
 }
 
 export interface ExpenseData {
