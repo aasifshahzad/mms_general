@@ -85,49 +85,57 @@ const AddIncome = () => {
   };
 
   return (
-    <div className="mx-auto w-auto px-4">
+    <div className="mx-auto w-auto px-2">
       <Header value="Add Income Record" />
       <form onSubmit={handleSubmit(onSubmit)}>
-        <div className="bg-white dark:bg-background rounded-xl shadow-sm border border-gray-200 dark:border-secondary p-6 mt-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="space-y-2">
-              <label className="font-bold text-sm dark:text-gray-300">
+        <div className="bg-white dark:bg-background rounded-lg shadow-sm border border-gray-200 dark:border-secondary p-4 mt-2">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+            <div className="space-y-1">
+              <label className="text-xs font-medium dark:text-gray-300">
                 Receipt Number
               </label>
               <Input
                 type="number"
                 {...register("recipt_number", {
                   valueAsNumber: true,
-                  required: "Receipt number is required",
+                  required: "Required",
                 })}
                 placeholder="Enter receipt number"
+                className="h-9 text-sm"
               />
-              <p className="text-red-500 text-xs">
-                {errors.recipt_number?.message}
-              </p>
+              {errors.recipt_number && (
+                <span className="text-red-500 text-xs inline-block">
+                  {errors.recipt_number.message}
+                </span>
+              )}
             </div>
 
-            <div className="space-y-2">
-              <label className="font-bold text-sm dark:text-gray-300">
+            <div className="space-y-1">
+              <label className="text-xs font-medium dark:text-gray-300">
                 Date
               </label>
               <Input
                 type="date"
-                {...register("date", { required: "Date is required" })}
+                {...register("date", { required: "Required" })}
+                className="h-9 text-sm"
               />
-              <p className="text-red-500 text-xs">{errors.date?.message}</p>
+              {errors.date && (
+                <span className="text-red-500 text-xs inline-block">
+                  {errors.date.message}
+                </span>
+              )}
             </div>
 
-            <div className="space-y-2">
-              <label className="font-bold text-sm dark:text-gray-300">
+            <div className="space-y-1">
+              <label className="text-xs font-medium dark:text-gray-300">
                 Category
               </label>
               <select
                 {...register("category_id", {
                   valueAsNumber: true,
-                  required: "Category is required",
+                  required: "Required",
                 })}
-                className="w-full border bg-white rounded-md px-3 py-2 focus:ring focus:ring-indigo-300 dark:bg-gray-800 dark:text-gray-300"
+                className="w-full border bg-white rounded-md h-9 px-3 text-sm focus:ring focus:ring-indigo-300 dark:bg-gray-800 dark:text-gray-300"
               >
                 <option disabled value="">Select Category</option>
                 {incomeCategory.map((category) => (
@@ -136,70 +144,90 @@ const AddIncome = () => {
                   </option>
                 ))}
               </select>
-              <p className="text-red-500 text-xs">
-                {errors.category_id?.message}
-              </p>
+              {errors.category_id && (
+                <span className="text-red-500 text-xs inline-block">
+                  {errors.category_id.message}
+                </span>
+              )}
             </div>
 
-            <div className="space-y-2">
-              <label className="font-bold text-sm dark:text-gray-300">
+            <div className="space-y-1">
+              <label className="text-xs font-medium dark:text-gray-300">
                 Source
               </label>
               <Input
-                {...register("source", { required: "Source is required" })}
+                {...register("source", { required: "Required" })}
                 placeholder="e.g. Donation, Sponsorship"
+                className="h-9 text-sm"
               />
-              <p className="text-red-500 text-xs">{errors.source?.message}</p>
+              {errors.source && (
+                <span className="text-red-500 text-xs inline-block">
+                  {errors.source.message}
+                </span>
+              )}
             </div>
 
-            <div className="space-y-2">
-              <label className="font-bold text-sm dark:text-gray-300">
+            <div className="space-y-1">
+              <label className="text-xs font-medium dark:text-gray-300">
                 Description
               </label>
               <Input
                 {...register("description", {
-                  required: "Description is required",
+                  required: "Required",
                 })}
                 placeholder="Enter description"
+                className="h-9 text-sm"
               />
-              <p className="text-red-500 text-xs">
-                {errors.description?.message}
-              </p>
+              {errors.description && (
+                <span className="text-red-500 text-xs inline-block">
+                  {errors.description.message}
+                </span>
+              )}
             </div>
 
-            <div className="space-y-2">
-              <label className="font-bold text-sm dark:text-gray-300">
+            <div className="space-y-1">
+              <label className="text-xs font-medium dark:text-gray-300">
                 Contact
               </label>
               <Input
-                {...register("contact", { required: "Contact is required" })}
+                {...register("contact", { required: "Required" })}
                 placeholder="Enter contact"
+                className="h-9 text-sm"
               />
-              <p className="text-red-500 text-xs">{errors.contact?.message}</p>
+              {errors.contact && (
+                <span className="text-red-500 text-xs inline-block">
+                  {errors.contact.message}
+                </span>
+              )}
             </div>
 
-            <div className="space-y-2">
-              <label className="font-bold text-sm dark:text-gray-300">
+            <div className="space-y-1">
+              <label className="text-xs font-medium dark:text-gray-300">
                 Amount
               </label>
               <Input
                 type="number"
                 {...register("amount", {
                   valueAsNumber: true,
-                  required: "Amount is required",
-                  min: { value: 1, message: "Amount must be at least 1" },
+                  required: "Required",
+                  min: { value: 1, message: "Min: 1" },
                 })}
                 placeholder="Enter amount"
+                className="h-9 text-sm"
               />
-              <p className="text-red-500 text-xs">{errors.amount?.message}</p>
+              {errors.amount && (
+                <span className="text-red-500 text-xs inline-block">
+                  {errors.amount.message}
+                </span>
+              )}
             </div>
           </div>
 
-          <div className="mt-6 flex justify-end">
-            <Button type="submit" disabled={isLoading}>
+          <div className="mt-3 flex justify-end">
+            <Button type="submit" disabled={isLoading} size="sm">
               {isLoading ? (
                 <>
-                  <div className="animate-spin h-4 w-4 mr-2 border-2 border-t-transparent rounded-full" />
+                  <div className="animate-spin h-3 w-3 mr-1 border-2 border-t-transparent rounded-full" />
                   Saving...
                 </>
               ) : (

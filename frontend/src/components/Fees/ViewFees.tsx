@@ -119,18 +119,25 @@ const ViewFees: React.FC = () => {
     }
   };
 
-  const handleGetFees = async (data: GetFeeModel) => {
-    try {
-      const response = await API3.GetFeebyFilter(data);
-      if (response.data) {
-        setFeesData(response.data as unknown as FeeData[]);
-        toast.success("Fees data fetched successfully");
-      }
-    } catch (error) {
-      console.error("Error fetching fees:", error);
-      toast.error("Failed to fetch fees");
+const handleGetFees = async (data: GetFeeModel) => {
+  try {
+    const response = await API3.GetFeebyFilter(data);
+
+    if (Array.isArray(response.data) && response.data.length === 0) {
+      toast.error("No data found");
+      setFeesData([]); // Optional: clear old data
+    } else if (Array.isArray(response.data)) {
+      setFeesData(response.data as FeeData[]);
+      toast.success("Fees data fetched successfully");
+    } else {
+      toast.error("Unexpected response format");
     }
-  };
+
+  } catch (error) {
+    console.error("Error fetching fees:", error);
+    toast.error("Failed to fetch fees");
+  }
+};
 
   return (
     <div className="container mx-auto px-4">
@@ -249,7 +256,7 @@ const ViewFees: React.FC = () => {
             ]}
             {...register("fee_status")}
           />
-          <Button type="submit">Get</Button>
+          <Button className="mt-6" type="submit">Get</Button>
         </form>
         
         {feesData.length > 0 && (

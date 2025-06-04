@@ -234,20 +234,24 @@ const AddFees = () => {
             </div>
 
             <div className="space-y-2">
-              <label className="text-sm text-gray-700 dark:text-gray-300 font-bold">
-                Month
-              </label>
-              <Input
-                type="text"
-                className="w-full focus:ring-primary"
-                {...register("fee_month", {
-                  required: "Month is required",
-                })}
-                placeholder="e.g. January"
+              <Select
+                label="Fee Month"
+                options={[
+                  { id: "January", title: "January" },
+                  { id: "February", title: "February" },
+                  { id: "March", title: "March" },
+                  { id: "April", title: "April" },
+                  { id: "May", title: "May" },
+                  { id: "June", title: "June" },
+                  { id: "July", title: "July" },
+                  { id: "August", title: "August" },
+                  { id: "September", title: "September" },
+                  { id: "October", title: "October" },
+                  { id: "November", title: "November" },
+                  { id: "December", title: "December" },
+                ]}
+                {...register("fee_month")}
               />
-              <p className="text-red-500 text-xs">
-                {errors.fee_month?.message}
-              </p>
             </div>
 
             <div className="space-y-2">

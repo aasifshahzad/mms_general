@@ -188,15 +188,15 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
     <>
       {/* Mobile Overlay */}
       <div
-        className={`fixed inset-0 bg-black bg-opacity-50 z-40 md:hidden transition-opacity ${
-          isOpen ? "opacity-100 visible" : "opacity-0 invisible"
+        className={`fixed inset-0 bg-black bg-opacity-70 z-40 md:hidden transition-opacity ${
+          isOpen ? "opacity-100 visible" : "opacity-0 invisible -z-10"
         }`}
         onClick={onClose}
       />
 
       {/* Sidebar */}
       <aside
-        className={`fixed z-50 top-0 left-0 h-screen w-64 bg-white dark:bg-neutral-950 border-r border-gray-200 dark:border-gray-700 p-4 flex flex-col transform transition-transform duration-300
+        className={`fixed z-50 top-0 left-0 h-screen w-64 bg-white dark:bg-neutral-950 border-r border-gray-200 dark:border-gray-700 p-4 flex flex-col transform transition-transform duration-300 shadow-lg
           ${
             isOpen ? "translate-x-0" : "-translate-x-full"
           } md:translate-x-0 md:static md:z-auto`}

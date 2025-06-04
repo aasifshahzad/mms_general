@@ -149,7 +149,7 @@ export default function ModernStudentTable() {
     setLoading(true);
     try {
       const response = await API.Get() as { data: StudentModel[] };
-      console.log(response.data); // Check the API response
+      // console.log(response.data); // Check the API response
       setData(response.data);
     } catch (error) {
       console.error("Error fetching data:", error);
@@ -175,22 +175,22 @@ export default function ModernStudentTable() {
   });
 
   return (
-    <Card className="ml-3 mr-3 mt-7 p-6 w-[80%] bg-white dark:bg-background rounded-lg shadow-lg">
+    <Card className="ml-3 mr-3 mt-2 p-6 w-full md:w-[80%] bg-white dark:bg-background rounded-lg shadow-lg">
       <AddNewStudent onClassAdded={GetData} />
-      <div className="flex items-center justify-between mb-6">
-        <div className="relative">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 gap-4">
+        <div className="relative w-full sm:w-auto">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
           <Input
-            placeholder="Search Class..."
+            placeholder="Search Students..."
             value={globalFilter ?? ""}
             onChange={(e: React.ChangeEvent<HTMLInputElement>) => setGlobalFilter(e.target.value)}
-            className="pl-10 pr-4 py-2 w-64 rounded-full border-gray-300 focus:border-blue-500 focus:ring focus:ring-blue-200 transition-all duration-300"
+            className="pl-10 pr-4 py-2 w-full sm:w-64 rounded-full border-gray-300 focus:border-blue-500 focus:ring focus:ring-blue-200 transition-all duration-300"
           />
         </div>
       </div>
 
       {/* Table rendering */}
-      <div className="rounded-md border w-auto border-gray-200 transition-shadow duration-300 hover:shadow-md overflow-hidden">
+      <div className="rounded-md border w-auto border-gray-200 transition-shadow duration-300 hover:shadow-md overflow-x-auto">
         <Table className="whitespace-nowrap scroll-smooth">
           <TableHeader className="bg-primary w-[60%] hover:bg-none text-white">
             {table.getHeaderGroups().map((headerGroup) => (

@@ -4,12 +4,12 @@ import React from "react";
 
 const page = () => {
   return (
-    <div className="w-[70%] h-screen overflow-y-hidden bg-bg-light-secondary dark:bg-bg-dark-primary">
-      <div className="pt-2 pl-2 pr-2">
+    <div className="w-full md:w-[70%] h-screen overflow-y-auto overflow-x-hidden bg-bg-light-secondary dark:bg-bg-dark-primary">
+      <div className="w-screen">
         <Header value="Students List" />
       </div>
       {/* <AddNewStudent/> */}
-      <ModernStudentTable/>
+      <ModernStudentTable />
     </div>
   );
 };

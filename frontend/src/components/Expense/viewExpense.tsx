@@ -13,6 +13,7 @@ import {
   TableRow,
 } from "@/components/ui/table"; // Adjust the import path based on your project structure
 import { Header } from "../dashboard/Header";
+import Loader from "../Loader";
 
 const ViewExpense = () => {
   const {
@@ -60,6 +61,7 @@ const ViewExpense = () => {
   return (
     <div>
       <Header value="View Expense" />
+      <Loader isActive={isLoading} />
       <form className="space-y-4 border w-full my-2">
         <div className="space-y-4 px-2 rounded-md">
           <label className="font-bold text-sm dark:text-gray-300">

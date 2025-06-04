@@ -9,6 +9,7 @@ import { StudentAPI as API3 } from "@/api/Student/StudentsAPI";
 import { Select, SelectOption as SelectComponentOption } from "../Select";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
+import { useIsMobile } from "@/hooks/use-mobile";
 import {
   flexRender,
   getCoreRowModel,
@@ -27,6 +28,7 @@ import Loader from "../Loader";
 import { AttendanceAPI } from "@/api/Attendance/AttendanceAPI";
 import { MarkAttInput } from "@/models/markattendace/markattendance";
 import { toast } from "sonner";
+import { Header } from "../dashboard/Header";
 
 type Attendance = {
   id: string;
@@ -312,18 +314,23 @@ const MarkAttendance = () => {
   };
 
   return (
-    <div className="mt-2 flex flex-col gap-5">
+    <div className="flex flex-col gap-2 -mt-2">
+      <Header value="Mark Attendance" />
       <Loader isActive={isLoading} />
-      <div className="ml-2 bg-white dark:bg-transparent drop-shadow-sm border border-gray-200 dark:border-secondary rounded-lg w-auto p-2">
+      <div className="ml-2 bg-white dark:bg-transparent drop-shadow-sm border border-gray-200 dark:border-secondary rounded-lg w-[98%] p-2">
         <form onSubmit={handleSubmit(onSubmit)}>
-          <div className="flex gap-32 ml-1 border p-2 rounded-lg  ">
+          <div
+            className={`${
+              useIsMobile() ? "flex-col" : "flex"
+            } gap-32 ml-1 border p-2 rounded-lg  `}
+          >
             <div className="py-2">
               <label className="text-gray-700 font-bold dark:text-gray-400">
                 Date
               </label>
               <Input
                 type="date"
-                className="border-gray-300 w-36"
+                className="border-gray-300 w-full md:w-36"
                 {...register("attendance_date", {
                   required: "Date is required",
                 })}
@@ -331,7 +338,7 @@ const MarkAttendance = () => {
               <p className="text-red-500">{errors.attendance_date?.message}</p>
             </div>
 
-            <div className="py-2 w-36">
+            <div className="py-2 w-full md:w-36">
               <Select
                 label="Class Time"
                 options={classTimeList}
@@ -346,7 +353,7 @@ const MarkAttendance = () => {
               </p>
             </div>
 
-            <div className="py-2 w-36">
+            <div className="py-2 w-full md:w-36">
               <Select
                 label="Class Name"
                 options={classNameList}
@@ -359,7 +366,7 @@ const MarkAttendance = () => {
               <p className="text-red-500">{errors.class_name_id?.message}</p>
             </div>
 
-            <div className="py-2 w-36">
+            <div className="py-2 w-full md:w-36">
               <Select
                 label="Teacher Name"
                 options={teacherNameList}
@@ -375,7 +382,7 @@ const MarkAttendance = () => {
             <Button
               type="button"
               onClick={() => handleSubmit(HandleSubmitForStudentGet)()}
-              className="mt-8 w-[6rem]"
+              className="mt-8 w-full md:w-[6rem]"
             >
               Get
             </Button>
@@ -389,7 +396,10 @@ const MarkAttendance = () => {
                     {table.getHeaderGroups().map((headerGroup) => (
                       <TableRow key={headerGroup.id}>
                         {headerGroup.headers.map((header) => (
-                          <TableHead key={header.id} className="text-center bg-black dark:bg-secondary text-white">
+                          <TableHead
+                            key={header.id}
+                            className="text-center bg-black dark:bg-secondary text-white"
+                          >
                             {flexRender(
                               header.column.columnDef.header,
                               header.getContext()

@@ -13,6 +13,7 @@ import {
   TableRow,
 } from "@/components/ui/table"; // Adjust the import path based on your project structure
 import { Header } from "../dashboard/Header";
+import Loader from "../Loader";
 
 const ViewIncome = () => {
   const {
@@ -61,8 +62,10 @@ const ViewIncome = () => {
   };
 
   return (
-    <div>
+    <div className="container mx-auto">
       <Header value="View Income" />
+      <Loader isActive={isLoading} />
+
       <form className="space-y-4 border w-full my-2">
         <div className="space-y-4 px-2 rounded-md">
           <label className="font-bold text-sm dark:text-gray-300">
@@ -96,7 +99,7 @@ const ViewIncome = () => {
       </form>
 
       {/* Table to display income data */}
-      <div className="mt-4 bg-white dark:bg-background rounded-md">
+      <div className="mt-4 container mx-auto bg-white dark:bg-background rounded-md">
         {incomeData.length > 0 ? (
           <Table>
             <TableHeader className="bg-primary dark:bg-secondary hover:bg-none">
@@ -125,7 +128,7 @@ const ViewIncome = () => {
             </TableBody>
           </Table>
         ) : (
-          <p>No income data available.</p>
+          <p>Select Category for View Income.</p>
         )}
       </div>
     </div>
