@@ -69,3 +69,29 @@ def delete_attendance_time(user: Annotated[User, Depends(check_admin)],attend_va
     session.delete(attendance_time)
     session.commit()
     return {"message": "Attendance Time deleted successfully"}
+
+@attendance_time_router.delete("/{attendance_time_id}", response_model=dict)
+def delete_attendance_time_by_id(
+    user: Annotated[User, Depends(check_admin)],
+    attendance_time_id: int, 
+    session: Session = Depends(get_session)
+):
+    """Delete an attendance time by its ID"""
+    attendance_time = session.get(AttendanceTime, attendance_time_id)
+    if not attendance_time:
+        raise HTTPException(
+            status_code=404, 
+            detail=f"Attendance Time with ID {attendance_time_id} not found"
+        )
+    
+    try:
+        session.delete(attendance_time)
+        session.commit()
+        return {"message": f"Attendance Time with ID {attendance_time_id} deleted successfully"}
+    except Exception as e:
+        session.rollback()
+        logger.error(f"Error deleting attendance time: {e}")
+        raise HTTPException(
+            status_code=500,
+            detail="Error deleting attendance time"
+        )

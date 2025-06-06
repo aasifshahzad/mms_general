@@ -1,5 +1,5 @@
 from asyncio.log import logger
-from typing import Annotated, List
+from typing import Annotated, List, Optional
 from fastapi import APIRouter, Depends, HTTPException
 from sqlmodel import Session, select
 
@@ -69,3 +69,36 @@ def delete_classnames(user: Annotated[User, Depends(check_admin)],class_name: st
     session.delete(classnames)
     session.commit()
     return {"message": "Class Name deleted successfully"}
+
+@classnames_router.delete("/{class_name_id}", response_model=dict)
+def delete_classnames_by_id(
+    user: Annotated[User, Depends(check_admin)],
+    class_name_id: int, 
+    session: Session = Depends(get_session)
+):
+    """Delete a class name by its ID"""
+    classname = session.get(ClassNames, class_name_id)
+    if not classname:
+        raise HTTPException(
+            status_code=404, 
+            detail=f"Class Name with ID {class_name_id} not found"
+        )
+    
+    try:
+        session.delete(classname)
+        session.commit()
+        return {"message": f"Class Name with ID {class_name_id} deleted successfully"}
+    except Exception as e:
+        session.rollback()
+        logger.error(f"Error deleting class name: {e}")
+        raise HTTPException(
+            status_code=500,
+            detail="Error deleting class name"
+        )
+
+def get_class_name(session: Session, class_id: int) -> Optional[str]:
+    """Fetch class name by class_id."""
+    class_name_obj = session.exec(select(ClassNames).where(ClassNames.class_name_id == class_id)).first()
+    if class_name_obj:
+        return class_name_obj.class_name
+    return None

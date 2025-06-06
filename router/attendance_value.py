@@ -70,6 +70,31 @@ def delete_attendancevalue(user: Annotated[User, Depends(check_admin)],attend_va
     session.commit()
     return {"message": "Attendance Value deleted successfully"}
 
+@attendancevalue_router.delete("/{attendance_value_id}", response_model=dict)
+def delete_attendancevalue_by_id(
+    user: Annotated[User, Depends(check_admin)],
+    attendance_value_id: int, 
+    session: Session = Depends(get_session)
+):
+    """Delete an attendance value by its ID"""
+    attendancevalue = session.get(AttendanceValue, attendance_value_id)
+    if not attendancevalue:
+        raise HTTPException(
+            status_code=404, 
+            detail=f"Attendance Value with ID {attendance_value_id} not found"
+        )
+    
+    try:
+        session.delete(attendancevalue)
+        session.commit()
+        return {"message": f"Attendance Value with ID {attendance_value_id} deleted successfully"}
+    except Exception as e:
+        session.rollback()
+        logger.error(f"Error deleting attendance value: {e}")
+        raise HTTPException(
+            status_code=500,
+            detail="Error deleting attendance value"
+        )
 
 @attendancevalue_router.post("/reset_attendance_id", response_model=str)
 def reset_attendance_id(current_user: Annotated[User, Depends(check_authenticated_user)],session: Session = Depends(get_session)):

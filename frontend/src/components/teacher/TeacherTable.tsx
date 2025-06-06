@@ -118,7 +118,7 @@ export default function TeacherTable() {
   });
 
   return (
-    <div className="ml-3 mt-7 p-6 w-[82rem] bg-white dark:bg-transparent dark:border-gray-100 dark:border rounded-lg shadow-lg">
+    <div className="ml-3 mt-7 p-6 w-[98%] bg-white dark:bg-transparent dark:border-gray-100 dark:border rounded-lg shadow-lg">
       <AddNewTeacher onClassAdded={GetData} />
       <div className="flex items-center justify-between mb-6">
         <div className="relative">

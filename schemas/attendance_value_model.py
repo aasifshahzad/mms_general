@@ -18,7 +18,7 @@ class AttendanceValue(AttendanceValueBase, table=True):
     attendance_value: str = Field(index=True, unique=True)
 
     # Relationship back to Attendance
-    attendances: list["Attendance"] = Relationship(
+    attendances: list["Attendance"] = Relationship( # type: ignore
         back_populates="attendance_value")
 
 
@@ -30,3 +30,8 @@ class AttendanceValueCreate(SQLModel):
 
 class AttendanceValueResponse (AttendanceValueBase, SQLModel):
     attendance_value: str
+
+
+class AttendanceValueDelete(SQLModel):
+    attendance_value_id: int
+    message: str = "Attendance value deleted successfully"

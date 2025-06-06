@@ -20,7 +20,7 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(function Select
     options = [],
     label,
     parentStyle = "white",
-    background = "transparent",
+    background  = "transparent",
     DisplayItem = "title",
     DisplayCode = "code",
     ...props

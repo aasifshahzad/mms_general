@@ -1,7 +1,8 @@
 from sqlmodel import SQLModel, Field, Enum, Column
 from typing import Optional
 from uuid import UUID
-from datetime import timedelta
+from datetime import timedelta, datetime
+from uuid import uuid4
 import enum
 
 class UserRole(str, enum.Enum):
@@ -61,3 +62,9 @@ class LoginResponse(SQLModel):
     token_type: str = "bearer"
     expires_in: int
     user: UserResponse
+
+class RefreshToken(SQLModel, table=True):
+    id: UUID = Field(default_factory=uuid4, primary_key=True)
+    user_id: UUID = Field(index=True, nullable=False)
+    token: str = Field(nullable=False, unique=True)
+    expires_at: datetime = Field(nullable=False)

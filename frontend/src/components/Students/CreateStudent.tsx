@@ -16,6 +16,8 @@ import { StudentAPI as API } from "@/api/Student/StudentsAPI";
 import { CreateStudent } from "@/models/students/Student";
 import { Select, SelectOption as SelectComponentOption } from "../Select";
 import { ClassNameAPI as API1 } from "@/api/Classname/ClassNameAPI";
+import { useIsMobile } from "@/hooks/use-mobile";
+
 
 const AddNewStudent = ({ onClassAdded }: { onClassAdded: () => void }) => {
   const {
@@ -47,12 +49,12 @@ const AddNewStudent = ({ onClassAdded }: { onClassAdded: () => void }) => {
       if (response) {
         setOpen(false);
         reset();
-        toast("Class Added Successfully!");
+        toast("Student Added Successfully!");
         onClassAdded(); // Call the function to refresh the table
       }
     } catch (error) {
-      console.error("Error creating class:", error);
-      toast("Failed to add class");
+      console.error("Error creating student:", error);
+      toast("Failed to add student");
     } finally {
       setLoading(false);
     }
@@ -97,7 +99,7 @@ const AddNewStudent = ({ onClassAdded }: { onClassAdded: () => void }) => {
 
   return (
     <div>
-      <div className="flex justify-end my-4  mr-2">
+      <div className="flex justify-end my-4 mr-2">
         <Button
           onClick={() => setOpen(true)}
           className="bg-primary dark:bg-transparent dark:border dark:border-white text-white hover:bg-blue-600 dark:hover:bg-zinc-900"
@@ -107,10 +109,10 @@ const AddNewStudent = ({ onClassAdded }: { onClassAdded: () => void }) => {
       </div>
       {/* Dialog for the form */}
       <Dialog open={open}>
-        <DialogContent>
+        <DialogContent className="max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             {/* Dialog Title */}
-            <DialogTitle className="text-2xl font-semibold text-gray-800 dark:text-gray-100">
+            <DialogTitle className="text-xl sm:text-2xl font-semibold text-gray-800 dark:text-gray-100">
               Add Student
             </DialogTitle>
             <hr className="bg-gray-400 dark:bg-gray-200" />
@@ -119,258 +121,248 @@ const AddNewStudent = ({ onClassAdded }: { onClassAdded: () => void }) => {
               {/* Form starts here */}
               <form
                 onSubmit={handleSubmit(handleFormSubmit)}
-                className="dark:bg-card dark:text-card-foreground max-w-4xl mx-auto"
+                className="dark:bg-card dark:text-card-foreground mx-auto space-y-2 sm:space-y-3"
               >
-                <div className="py-2 w-36">
+                <div className="py-1 sm:py-2 w-full sm:w-36">
                   <Select
-                    label="Class Name"
+                    label={useIsMobile() ? "null" : "Class Name"}
                     options={classNameList}
-                    {...register("student_class_name")}
+                    {...register("class_name")}
                     onChange={(event: React.ChangeEvent<HTMLSelectElement>) => {
-                      register("student_class_name").onChange({
+                      register("class_name").onChange({
                         target: { value: event.target.value },
                       });
                     }}
                     DisplayItem="title"
                     className="w-full"
                   />
-                  <p className="text-red-500">
-                    {errors.student_class_name?.message}
+                  <p className="text-red-500 text-xs">
+                    {errors.class_name?.message}
                   </p>
                 </div>
                 {/* Student Name and Father Name Fields */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="py-2">
-                    <label className="text-gray-700 dark:text-gray-400">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-4">
+                  <div className="py-1 sm:py-2">
+                    <label className="hidden sm:block text-sm text-gray-700 dark:text-gray-400">
                       Student Name
                     </label>
                     <Input
-                      className="border-gray-300 focus:border-blue-500 focus:ring-blue-500"
-                      placeholder="Enter Full Name"
+                      className="border-gray-300 focus:border-blue-500 focus:ring-blue-500 mt-1 h-8 sm:h-10"
+                      placeholder="Enter Student Name"
                       {...register("student_name", {
                         required: "Field is required",
-                      })} // Student name field
+                      })}
                     />
-                    <p className="text-red-500">
+                    <p className="text-red-500 text-xs">
                       {errors.student_name?.message}
-                    </p>{" "}
-                    {/* Error message for student name */}
+                    </p>
                   </div>
 
-                  <div className="py-2">
-                    <label className="text-gray-700 dark:text-gray-400">
+                  <div className="py-1 sm:py-2">
+                    <label className="hidden sm:block text-sm text-gray-700 dark:text-gray-400">
                       Father Name
                     </label>
                     <Input
-                      className="border-gray-300 focus:border-blue-500 focus:ring-blue-500"
+                      className="border-gray-300 focus:border-blue-500 focus:ring-blue-500 mt-1 h-8 sm:h-10"
                       placeholder="Enter Father Name"
                       {...register("father_name", {
                         required: "Field is required",
-                      })} // Father name field
+                      })}
                     />
-                    <p className="text-red-500">
+                    <p className="text-red-500 text-xs">
                       {errors.father_name?.message}
-                    </p>{" "}
-                    {/* Error message for father name */}
+                    </p>
                   </div>
                 </div>
 
                 {/* Age and Date of Birth Fields */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="py-2">
-                    <label className="text-gray-700 dark:text-gray-400">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-4">
+                  <div className="py-1 sm:py-2">
+                    <label className="hidden sm:block text-sm text-gray-700 dark:text-gray-400">
                       Age
                     </label>
                     <Input
                       type="number"
-                      className="border-gray-300 focus:border-blue-500 focus:ring-blue-500"
+                      className="border-gray-300 focus:border-blue-500 focus:ring-blue-500 mt-1 h-8 sm:h-10"
                       placeholder="Enter Age"
                       {...register("student_age", {
                         required: "Field is required",
-                      })} // Age field
+                      })}
                     />
-                    <p className="text-red-500">
+                    <p className="text-red-500 text-xs">
                       {errors.student_age?.message}
-                    </p>{" "}
-                    {/* Error message for age */}
+                    </p>
                   </div>
 
-                  <div className="py-2">
-                    <label className="text-gray-700 dark:text-gray-400">
+                  <div className="py-1 sm:py-2">
+                    <label className="hidden sm:block text-sm text-gray-700 dark:text-gray-400">
                       Date of Birth
                     </label>
                     <Input
                       type="date"
-                      className="border-gray-300 focus:border-blue-500 focus:ring-blue-500"
+                      className="border-gray-300 focus:border-blue-500 focus:ring-blue-500 mt-1 h-8 sm:h-10"
+                      placeholder="Date of Birth"
                       {...register("student_date_of_birth", {
                         required: "Field is required",
-                      })} // Date of Birth field
+                      })}
                     />
-                    <p className="text-red-500">
+                    <p className="text-red-500 text-xs">
                       {errors.student_date_of_birth?.message}
-                    </p>{" "}
-                    {/* Error message for Date of Birth */}
+                    </p>
                   </div>
                 </div>
 
                 {/* Cast and City Fields */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="py-2">
-                    <label className="text-gray-700 dark:text-gray-400">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-4">
+                  <div className="py-1 sm:py-2">
+                    <label className="hidden sm:block text-sm text-gray-700 dark:text-gray-400">
                       Father Cast
                     </label>
                     <Input
-                      className="border-gray-300 focus:border-blue-500 focus:ring-blue-500"
-                      placeholder="Enter Cast"
+                      className="border-gray-300 focus:border-blue-500 focus:ring-blue-500 mt-1 h-8 sm:h-10"
+                      placeholder="Enter Father Cast"
                       {...register("father_cast_name", {
                         required: "Field is required",
-                      })} // Cast field
+                      })}
                     />
-                    <p className="text-red-500">
+                    <p className="text-red-500 text-xs">
                       {errors.father_cast_name?.message}
-                    </p>{" "}
-                    {/* Error message for cast */}
+                    </p>
                   </div>
 
-                  <div className="py-2">
-                    <label className="text-gray-700 dark:text-gray-400">
+                  <div className="py-1 sm:py-2">
+                    <label className="hidden sm:block text-sm text-gray-700 dark:text-gray-400">
                       City
                     </label>
                     <Input
-                      className="border-gray-300 focus:border-blue-500 focus:ring-blue-500"
+                      className="border-gray-300 focus:border-blue-500 focus:ring-blue-500 mt-1 h-8 sm:h-10"
                       placeholder="Enter City"
                       {...register("student_city", {
                         required: "Field is required",
-                      })} // City field
+                      })}
                     />
-                    <p className="text-red-500">
+                    <p className="text-red-500 text-xs">
                       {errors.student_city?.message}
-                    </p>{" "}
-                    {/* Error message for city */}
+                    </p>
                   </div>
                 </div>
 
-                {/* Gender and Education Fields */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="py-2">
-                    <label className="text-gray-700 dark:text-gray-400">
+                {/* Gender and CNIC Fields */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-4">
+                  <div className="py-1 sm:py-2">
+                    <label className="hidden sm:block text-sm text-gray-700 dark:text-gray-400">
                       Gender
                     </label>
                     <Input
-                      className="border-gray-300 focus:border-blue-500 focus:ring-blue-500"
+                      className="border-gray-300 focus:border-blue-500 focus:ring-blue-500 mt-1 h-8 sm:h-10"
                       placeholder="Enter Gender"
                       {...register("student_gender", {
                         required: "Field is required",
-                      })} // Gender field
+                      })}
                     />
-                    <p className="text-red-500">
+                    <p className="text-red-500 text-xs">
                       {errors.student_gender?.message}
-                    </p>{" "}
+                    </p>
                   </div>
-                  <div className="py-2">
-                    <label className="text-gray-700 dark:text-gray-400">
+                  <div className="py-1 sm:py-2">
+                    <label className="hidden sm:block text-sm text-gray-700 dark:text-gray-400">
                       Father&apos;s Cnic
                     </label>
                     <Input
-                      className="border-gray-300 focus:border-blue-500 focus:ring-blue-500"
-                      placeholder="Enter Education"
+                      className="border-gray-300 focus:border-blue-500 focus:ring-blue-500 mt-1 h-8 sm:h-10"
+                      placeholder="Enter Father's CNIC"
                       {...register("father_cnic", {
                         required: "Field is required",
                       })}
                     />
-                    <p className="text-red-500">
+                    <p className="text-red-500 text-xs">
                       {errors.father_cnic?.message}
-                    </p>{" "}
-                    {/* Error message for Father's Cnic */}
+                    </p>
                   </div>
                 </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="py-2">
-                    <label className="text-gray-700 dark:text-gray-400">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-4">
+                  <div className="py-1 sm:py-2">
+                    <label className="hidden sm:block text-sm text-gray-700 dark:text-gray-400">
                       Education
                     </label>
                     <Input
-                      className="border-gray-300 focus:border-blue-500 focus:ring-blue-500"
-                      placeholder="Enter Father Occupation"
+                      className="border-gray-300 focus:border-blue-500 focus:ring-blue-500 mt-1 h-8 sm:h-10"
+                      placeholder="Enter Education"
                       {...register("student_education", {
                         required: "Field is required",
-                      })} // Father's occupation field
+                      })}
                     />
-                    <p className="text-red-500">
+                    <p className="text-red-500 text-xs">
                       {errors.student_education?.message}
-                    </p>{" "}
-                    {/* Error message for father's occupation */}
+                    </p>
                   </div>
 
-                  <div className="py-2">
-                    <label className="text-gray-700 dark:text-gray-400">
+                  <div className="py-1 sm:py-2">
+                    <label className="hidden sm:block text-sm text-gray-700 dark:text-gray-400">
                       Father Contact
                     </label>
                     <Input
                       type="number"
-                      className="border-gray-300 focus:border-blue-500 focus:ring-blue-500"
+                      className="border-gray-300 focus:border-blue-500 focus:ring-blue-500 mt-1 h-8 sm:h-10"
                       placeholder="Enter Father Contact"
                       {...register("father_contact", {
                         required: "Field is required",
-                      })} // Father's contact field
+                      })}
                     />
-                    <p className="text-red-500">
+                    <p className="text-red-500 text-xs">
                       {errors.father_contact?.message}
-                    </p>{" "}
-                    {/* Error message for father's contact */}
+                    </p>
                   </div>
                 </div>
                 {/* Father's Occupation and Address Fields */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="py-2">
-                    <label className="text-gray-700 dark:text-gray-400">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-4">
+                  <div className="py-1 sm:py-2">
+                    <label className="hidden sm:block text-sm text-gray-700 dark:text-gray-400">
                       Father Occupation
                     </label>
                     <Input
-                      className="border-gray-300 focus:border-blue-500 focus:ring-blue-500"
+                      className="border-gray-300 focus:border-blue-500 focus:ring-blue-500 mt-1 h-8 sm:h-10"
                       placeholder="Enter Father Occupation"
                       {...register("father_occupation", {
                         required: "Field is required",
-                      })} // Father's occupation field
+                      })}
                     />
-                    <p className="text-red-500">
+                    <p className="text-red-500 text-xs">
                       {errors.father_occupation?.message}
-                    </p>{" "}
-                    {/* Error message for father's occupation */}
+                    </p>
                   </div>
 
-                  <div className="py-2">
-                    <label className="text-gray-700 dark:text-gray-400">
+                  <div className="py-1 sm:py-2">
+                    <label className="hidden sm:block text-sm text-gray-700 dark:text-gray-400">
                       Address
                     </label>
                     <Input
-                      className="border-gray-300 focus:border-blue-500 focus:ring-blue-500"
-                      placeholder="Enter Father Contact"
+                      className="border-gray-300 focus:border-blue-500 focus:ring-blue-500 mt-1 h-8 sm:h-10"
+                      placeholder="Enter Address"
                       {...register("student_address", {
                         required: "Field is required",
-                      })} // Father's contact field
+                      })}
                     />
-                    <p className="text-red-500">
+                    <p className="text-red-500 text-xs">
                       {errors.student_address?.message}
-                    </p>{" "}
-                    {/* Error message for father's contact */}
+                    </p>
                   </div>
                 </div>
 
                 {/* Form Buttons: Cancel and Save */}
-                <div className="flex justify-end gap-4 mt-5">
+                <div className="flex justify-end gap-2 sm:gap-4 mt-3 sm:mt-5">
                   <Button
                     type="button"
                     onClick={() => setOpen(false)}
                     variant="ghost"
-                    className="bg-gray-200 text-gray-700 dark:text-gray-200 hover:bg-gray-300 dark:bg-secondary dark:hover:bg-gray-800"
+                    className="bg-gray-200 text-gray-700 dark:text-gray-200 hover:bg-gray-300 dark:bg-secondary dark:hover:bg-gray-800 text-sm h-8 sm:h-10"
                   >
-                    Cancel {/* Cancel button */}
+                    Cancel
                   </Button>
                   <Button
                     type="submit"
                     disabled={loading}
-                    className="bg-primary dark:bg-transparent dark:border dark:border-white text-white hover:bg-blue-600 dark:hover:bg-zinc-900"
+                    className="bg-primary dark:bg-transparent dark:border dark:border-white text-white hover:bg-blue-600 dark:hover:bg-zinc-900 text-sm h-8 sm:h-10"
                   >
                     {loading ? <LoaderIcon className="animate-spin" /> : "Save"}
                   </Button>

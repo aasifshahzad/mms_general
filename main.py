@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Depends, HTTPException, Body
+from fastapi import FastAPI, Depends, HTTPException, Cookie
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlmodel import select, Session, SQLModel
@@ -18,6 +18,12 @@ from router.students import students_router
 from router.mark_attendance import mark_attendance_router
 from router.adm_del import adm_del_router
 from router.fee import fee_router
+from router.income import income_router
+from router.income_cat_names import income_cat_names_router
+from router.expense_cat_names import expense_cat_names_router
+from router.expense import expense_router
+from router.dashboard import dashboard_router
+
 
 # User related imports
 from user.user_crud import (
@@ -32,15 +38,40 @@ from db import *
 from user.services import *
 from user.user_models import *
 
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    # 🔹 Startup Tasks
     print("Starting Application")
     print("Creating database and tables")
     create_db_and_tables()
     print("Database and tables created")
-    yield
 
-origins = ["http://localhost:3000"]
+    logger.info("Starting application...")
+    try:
+        cleanup_old_logs()
+        logger.info("Log cleanup process completed")
+    except Exception as e:
+        logger.error(f"Failed to clean up logs: {str(e)}")
+
+    yield  # 🔸 Application Runs Here
+
+    # 🔹 Shutdown Tasks
+    logger.info("Application shutting down...")
+    try:
+        await engine.dispose()  # Close database connections
+        
+        # Cancel any pending tasks
+        for task in asyncio.all_tasks():
+            if not task.done():
+                task.cancel()
+
+        logger.info("Shutdown completed successfully")
+    except Exception as e:
+        logger.error(f"Shutdown error: {str(e)}")
+
+origins = ["http://localhost:3000","https://mzbs.vercel.app"]
 
 app = FastAPI(
     title="MMS-GENERAL", 
@@ -69,6 +100,12 @@ app.add_middleware(
 )
 
 # Include the grouped router in the FastAPI app
+app.include_router(dashboard_router, tags=["Dashboard"])
+app.include_router(expense_cat_names_router)
+app.include_router(expense_router)
+app.include_router(fee_router)
+app.include_router(income_router)
+app.include_router(income_cat_names_router)
 app.include_router(attendancevalue_router)
 app.include_router(attendance_time_router)
 app.include_router(teachernames_router)
@@ -76,7 +113,6 @@ app.include_router(classnames_router)
 app.include_router(students_router)
 app.include_router(mark_attendance_router)
 app.include_router(adm_del_router)
-app.include_router(fee_router)
 
 @app.get("/", tags=["MMS Backend"])
 async def root():
@@ -92,17 +128,15 @@ async def login_for_swagger(
 ):
     return user_login(db, form_data)
 
-# 2️⃣ API Login (For frontend, mobile apps, Postman - accepts JSON)
-@app.post("/auth/login", response_model=LoginResponse, tags=["User"])
-async def login_for_api(
+@app.post("/frontend/login", response_model=LoginResponse, tags=["User"])
+# @app.post("/auth/login", response_model=LoginResponse, tags=["User"])
+async def login_for_frontend(
     login_data: UserLogin,
     db: Session = Depends(get_session)
 ):
     return user_login(db, login_data)
-
-
-# 3️⃣ Signup (For frontend, mobile apps, Postman - accepts JSON)
 @app.post("/signup", response_model=User, tags=["User"])
+
 async def signup(
     db: Annotated[Session, Depends(get_session)], 
     user: UserCreate
@@ -166,33 +200,58 @@ def update_user_roll(username: str, user: AdminUserUpdate, session: Session = De
     
     return db_user
 
-@app.on_event("startup")
-async def startup_event():
-    logger.info("Starting application...")
-    try:
-        cleanup_old_logs()
-        logger.info("Log cleanup process completed")
-    except Exception as e:
-        logger.error(f"Failed to clean up logs: {str(e)}")
-    # ...rest of startup code...
+@app.post("/refresh", response_model=LoginResponse, tags=["User"])
+async def refresh_access_token(
+    refresh_token: str = Cookie(None),  # Refresh token from HTTP-only cookie
+    db: Session = Depends(get_session)
+):
+    if not refresh_token:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Refresh token missing",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
 
-@app.on_event("shutdown")
-async def shutdown_event():
-    logger.info("Application shutting down...")
-    logger.info("Executing shutdown tasks...")
+    payload = verify_token(refresh_token)
+    if not payload:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid refresh token",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+
+    username = payload.get("sub")
+    if not username:
+        raise HTTPException(status_code=400, detail="Invalid token payload")
+
+    # Generate new access token
+    new_access_token = create_access_token(
+        data={"sub": username}, expires_delta=timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+    )
+
+    return {
+        "access_token": new_access_token,
+        "token_type": "bearer",
+        "expires_in": ACCESS_TOKEN_EXPIRE_MINUTES * 60
+    }
+
+@app.post("/logout", tags=["User"])
+async def logout(
+    refresh_token: str = Cookie(None),  # Refresh token from HTTP-only cookie
+    db: Session = Depends(get_session)
+):
+    if not refresh_token:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="No refresh token provided"
+        )
+    
     try:
-        # Close database connections
-        await engine.dispose()
-        
-        # Cancel background tasks
-        for task in asyncio.all_tasks():
-            if not task.done():
-                task.cancel()
-                
-        # Clear cache if needed
-        # Close other connections
-        
-        logger.info("Shutdown completed successfully")
+        revoke_refresh_token(db, refresh_token)
+        return {"message": "User logged out successfully"}
     except Exception as e:
-        logger.error(f"Shutdown error: {str(e)}")
-        raise
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error during logout: {str(e)}"
+        )
+    
