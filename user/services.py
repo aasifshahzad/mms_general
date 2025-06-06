@@ -1,8 +1,12 @@
 from jose import jwt
+from jose.exceptions import JWTError
 from passlib.context import CryptContext
+from typing import Annotated, Optional
+from fastapi.openapi.models import OAuthFlows
+from fastapi.openapi.models import OAuthFlowPassword
 from fastapi.security import OAuth2PasswordBearer
 from setting import *
-from user.user_models import *
+from user.settings import *
 from datetime import datetime, timedelta, timezone
 from sqlmodel import Session, select
 from fastapi import HTTPException, status, Depends
@@ -11,11 +15,20 @@ from typing import Annotated
 
 from pydantic import EmailStr
 from typing import Union, Any
-# from main import oauth2_scheme
+from user.user_models import User  # Import the User model
+
+
+credentials_exception = HTTPException(
+    status_code=status.HTTP_401_UNAUTHORIZED,
+    detail="Could not validate credentials",
+    headers={"WWW-Authenticate": "Bearer"},
+)
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
+
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login-swagger")  
+
 
 def verify_password(plain_password, hashed_password):
     """
@@ -141,23 +154,15 @@ def authenticate_user(db, username: str, password: str) -> User:
         )
     return user
 
-def create_access_token(data: dict, expires_delta: timedelta | None = None) -> str:
+def create_access_token(data: dict, expires_delta: Optional[timedelta] = None) -> str:
     """
-    Create an access token.
-    Args:
-        data (dict): The data to encode in the token.
-        expires_delta (timedelta): The time delta for the token to expire.
-    Returns:
-        str: The access token.
+    Create an access token with expiration.
     """
     to_encode = data.copy()
-    if expires_delta:
-        expire = datetime.now(timezone.utc) + expires_delta
-    else:
-        expire = datetime.now(timezone.utc) + timedelta(minutes=30)
+    expire = datetime.now(timezone.utc) + (expires_delta if expires_delta else timedelta(minutes=30))
     to_encode.update({"exp": expire})
-    encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
-    return encoded_jwt
+    
+    return jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
 
 def create_refresh_token(data: Union[str, Any], expires_delta: int = None) -> str:
 
@@ -178,29 +183,3 @@ def create_refresh_token(data: Union[str, Any], expires_delta: int = None) -> st
     encoded_jwt = jwt.encode(to_encode, JWT_REFRESH_SECRET_KEY, ALGORITHM)
     return encoded_jwt
 
-# def create_refresh_token(data: dict) -> str:
-#     to_encode = data.copy()
-#     expire = datetime.utcnow() + timedelta(days=7)
-#     to_encode.update({"exp": expire})
-#     return jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
-
-# @auth_router.post("/refresh")
-# async def refresh_token(
-#     refresh_token: str,
-#     db: Session = Depends(get_session)
-# ) -> Token:
-#     try:
-#         payload = jwt.decode(refresh_token, SECRET_KEY, algorithms=[ALGORITHM])
-#         username: str = payload.get("sub")
-#         if username is None:
-#             raise credentials_exception
-#         user = get_user_by_username(db, username=username)
-#         if user is None:
-#             raise credentials_exception
-#         access_token = create_access_token(data={"sub": user.username})
-#         return Token(
-#             access_token=access_token,
-#             refresh_token=refresh_token
-#         )
-#     except JWTError:
-#         raise credentials_exception

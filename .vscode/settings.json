@@ -8,7 +8,8 @@
   ],
   "terminal.integrated.defaultProfile.windows": "Command Prompt",
   "python.analysis.extraPaths": [
-    "./router/users"
+    "./router/users",
+    "./user"
   ],
   "python.testing.unittestArgs": [
     "-v",
