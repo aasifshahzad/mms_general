@@ -87,7 +87,7 @@ const menuList: MenuItem[] = [
     id: 13,
     name: "Income",
     icon: BsCashCoin,
-    path: "/dashboard/fees",
+    path: "/dashboard/income",
     hasSubmenu: true,
     submenu: [
       {

@@ -71,5 +71,9 @@ export namespace StudentAPI {
       return error;
     }
   }
+
+  export function GetByClassId(classId: number): { data: StudentResponse[]; } | PromiseLike<{ data: StudentResponse[]; }> {
+    throw new Error("Function not implemented.");
+  }
 }
 

@@ -517,15 +517,15 @@ const AttendanceTable: React.FC = () => {
   });
 
   return (
-    <div className="container mx-auto px-4 py-6">
+    <div className="container mx-auto px-2 sm:px-4 py-4 sm:py-6">
       <form
         onSubmit={handleSubmit((data) =>
           HandleSubmitForStudentGet(data as FilteredAttendance)
         )}
       >
-        <div className="bg-white dark:bg-background rounded-xl shadow-sm border border-gray-200 dark:border-secondary">
-          <div className="flex p-3 md:grid-cols-4 gap-6">
-            <div className="space-y-1 ">
+        <div className="bg-white dark:bg-background rounded-xl shadow-sm border border-gray-200 dark:border-secondary p-3 sm:p-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-3 sm:gap-4">
+            <div className="space-y-1">
               <label className="text-sm text-gray-700 dark:text-gray-300 font-bold">Date</label>
               <Input
                 type="date"
@@ -537,7 +537,7 @@ const AttendanceTable: React.FC = () => {
               </p>
             </div>
 
-            <div className="space-y-2">
+            <div className="space-y-1">
               <Select
                 label="Class Time"
                 options={classTimeList}
@@ -550,7 +550,7 @@ const AttendanceTable: React.FC = () => {
               </p>
             </div>
 
-            <div className="space-y-2">
+            <div className="space-y-1">
               <Select
                 label="Class Name"
                 options={classNameList}
@@ -563,7 +563,7 @@ const AttendanceTable: React.FC = () => {
               </p>
             </div>
 
-            <div className="space-y-2">
+            <div className="space-y-1">
               <Select
                 label="Teacher Name"
                 options={teacherNameList}
@@ -649,10 +649,10 @@ const AttendanceTable: React.FC = () => {
               </Popover>
             </div>
 
-            <div className="px-2 py-4 mt-[0.6rem] border-gray-200 flex justify-end">
+            <div className="flex items-end">
               <Button
                 type="submit"
-                className="inline-flex items-center px-4 py-2"
+                className="w-full sm:w-auto px-4 py-2"
                 disabled={isLoading}
               >
                 {isLoading ? (
@@ -685,7 +685,7 @@ const AttendanceTable: React.FC = () => {
       </form>
 
       {/* Table Section */}
-      <div className="mt-4 bg-white dark:bg-background rounded-xl shadow-sm border border-gray-200 dark:border-secondary">
+      <div className="mt-4 bg-white dark:bg-background rounded-xl shadow-sm border border-gray-200 dark:border-secondary overflow-hidden">
         <div className="overflow-x-auto">
           <Table>
             <TableHeader>
@@ -694,7 +694,7 @@ const AttendanceTable: React.FC = () => {
                   {headerGroup.headers.map((header) => (
                     <TableHead
                       key={header.id}
-                      className="text-xs h-10 bg-primary dark:bg-secondary text-white dark:text-gray-100 px-2"
+                      className="text-xs h-10 bg-primary dark:bg-secondary text-white dark:text-gray-100 px-2 whitespace-nowrap"
                     >
                       {header.isPlaceholder
                         ? null
@@ -712,9 +712,9 @@ const AttendanceTable: React.FC = () => {
                 <TableRow>
                   <TableCell
                     colSpan={columns.length}
-                    className="text-center py-[14rem] text-gray-500"
+                    className="text-center py-16 sm:py-[14rem] text-gray-500"
                   >
-                    <div className="flex justify-center py-10 items-center space-x-2">
+                    <div className="flex justify-center py-6 sm:py-10 items-center space-x-2">
                       <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-gray-500"></div>
                       <span>Loading records...</span>
                     </div>
@@ -728,7 +728,7 @@ const AttendanceTable: React.FC = () => {
                     className="text-xs hover:bg-gray-50 dark:hover:bg-secondary"
                   >
                     {row.getVisibleCells().map((cell) => (
-                      <TableCell key={cell.id} className="px-2 py-[0.4rem]">
+                      <TableCell key={cell.id} className="px-2 py-[0.4rem] whitespace-nowrap">
                         {flexRender(
                           cell.column.columnDef.cell,
                           cell.getContext()
@@ -741,10 +741,10 @@ const AttendanceTable: React.FC = () => {
                 <TableRow>
                   <TableCell
                     colSpan={columns.length}
-                    className="text-center py-[0.4rem] text-gray-500"
+                    className="text-center py-10 sm:py-16 text-gray-500"
                   >
                     <div className="flex flex-col items-center justify-center">
-                      <AlertCircle className="h-10 w-10 text-gray-400 mb-2" />
+                      <AlertCircle className="h-8 w-8 sm:h-10 sm:w-10 text-gray-400 mb-2" />
                       <p>No attendance records found</p>
                     </div>
                   </TableCell>
@@ -753,9 +753,96 @@ const AttendanceTable: React.FC = () => {
             </TableBody>
           </Table>
         </div>
-        <div className="border-t border-gray-200">
-          <PaginationControls />
-        </div>
+        
+        {/* Improved Pagination Controls */}
+        {attendanceRecords.length > 0 && (
+          <div className="border-t border-gray-200">
+            <div className="flex items-center justify-between px-2 py-2 sm:px-4 sm:py-3">
+              <div className="text-xs sm:text-sm text-gray-700">
+                <span className="hidden sm:inline">Showing </span>
+                <span className="font-medium">{(currentPage - 1) * recordsPerPage + 1}</span>
+                <span className="hidden sm:inline"> to </span>
+                <span className="sm:hidden">-</span>
+                <span className="font-medium">
+                  {Math.min(currentPage * recordsPerPage, attendanceRecords.length)}
+                </span>
+                <span className="hidden sm:inline"> of </span>
+                <span className="sm:hidden">/</span>
+                <span className="font-medium">{attendanceRecords.length}</span>
+              </div>
+              
+              <div className="flex space-x-1 sm:space-x-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="h-8 w-8 sm:h-9 sm:w-9 p-0"
+                  onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+                  disabled={currentPage === 1}
+                >
+                  <ChevronLeft className="h-4 w-4" />
+                  <span className="sr-only">Previous Page</span>
+                </Button>
+                
+                <div className="hidden sm:flex space-x-1">
+                  {Array.from({ length: Math.min(5, Math.ceil(attendanceRecords.length / recordsPerPage)) }, (_, i) => {
+                    // Logic to show pages around current page
+                    const totalPages = Math.ceil(attendanceRecords.length / recordsPerPage);
+                    let pageToShow;
+                    
+                    if (totalPages <= 5) {
+                      pageToShow = i + 1;
+                    } else {
+                      // Show pages around current page
+                      let startPage = Math.max(currentPage - 2, 1);
+                      const endPage = Math.min(startPage + 4, totalPages);
+                      
+                      if (endPage - startPage < 4) {
+                        startPage = Math.max(endPage - 4, 1);
+                      }
+                      
+                      pageToShow = startPage + i;
+                      
+                      if (pageToShow > totalPages) return null;
+                    }
+                    
+                    return (
+                      <Button
+                        key={pageToShow}
+                        variant={currentPage === pageToShow ? "default" : "outline"}
+                        size="sm"
+                        className="h-9 w-9 p-0"
+                        onClick={() => setCurrentPage(pageToShow)}
+                      >
+                        {pageToShow}
+                      </Button>
+                    );
+                  }).filter(Boolean)}
+                </div>
+                
+                <div className="flex items-center justify-center sm:hidden">
+                  <span className="text-xs font-medium mx-2">
+                    {currentPage} / {Math.ceil(attendanceRecords.length / recordsPerPage)}
+                  </span>
+                </div>
+                
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="h-8 w-8 sm:h-9 sm:w-9 p-0"
+                  onClick={() =>
+                    setCurrentPage((prev) => 
+                      Math.min(prev + 1, Math.ceil(attendanceRecords.length / recordsPerPage))
+                    )
+                  }
+                  disabled={currentPage === Math.ceil(attendanceRecords.length / recordsPerPage)}
+                >
+                  <ChevronRight className="h-4 w-4" />
+                  <span className="sr-only">Next Page</span>
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

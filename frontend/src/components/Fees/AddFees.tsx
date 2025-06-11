@@ -35,6 +35,7 @@ interface ClassNameResponse {
 interface StudentResponse {
   student_id: number;
   student_name: string;
+  class_name: string; // Add this property to match the data structure
 }
 
 const AddFees = () => {
@@ -44,6 +45,7 @@ const AddFees = () => {
     formState: { errors },
     handleSubmit,
     reset,
+    watch,
   } = useForm<AddFeeModel>();
 
   const [isLoading, setIsLoading] = useState(false);
@@ -53,19 +55,114 @@ const AddFees = () => {
   const [studentsList, setStudentsList] = useState<
     { id: number; title: string }[]
   >([]);
+  const [filteredStudentsList, setFilteredStudentsList] = useState<
+    { id: number; title: string }[]
+  >([]);
   const [open, setOpen] = useState(false);
   const [selectedStudent, setSelectedStudent] = useState("");
+  const selectedClassId = watch("class_id");
 
   useEffect(() => {
     GetClassName();
     GetStudents();
   }, []);
 
+  // Watch for class changes and filter students accordingly
+  useEffect(() => {
+    if (selectedClassId) {
+      filterStudentsByClass(selectedClassId);
+    } else {
+      setFilteredStudentsList(studentsList);
+    }
+    // Reset selected student when class changes
+    setSelectedStudent("");
+    // Use 0 instead of null or undefined for student_id
+    setFormValue("student_id", 0);
+  }, [selectedClassId, studentsList]);
+
+  // Modified to filter students using class_name instead of class_id
+  const filterStudentsByClass = async (classId: number) => {
+    setIsLoading(true);
+    try {
+      // First try to get students directly from API if your backend supports it
+      const response = (await StudentAPI.GetByClassId(classId)) as {
+        data: StudentResponse[];
+      };
+
+      if (response.data && response.data.length > 0) {
+        setFilteredStudentsList(
+          response.data.map((student) => ({
+            id: student.student_id,
+            title: student.student_name,
+          }))
+        );
+      } else {
+        // If API returns empty data, filter locally from existing list
+        // Get the class name corresponding to the selected class ID
+        const selectedClass = classNameList.find((cls) => cls.id === classId);
+        if (selectedClass) {
+          // Use the API to get all students and filter them by class name
+          const allStudentsResponse = (await StudentAPI.Get()) as {
+            data: StudentResponse[];
+          };
+
+          const filteredStudents = allStudentsResponse.data.filter(
+            (student) => student.class_name === selectedClass.title
+          );
+
+          setFilteredStudentsList(
+            filteredStudents.map((student) => ({
+              id: student.student_id,
+              title: student.student_name,
+            }))
+          );
+        } else {
+          setFilteredStudentsList([]);
+        }
+      }
+    } catch (error) {
+      console.error("Error fetching students by class:", error);
+
+      // If API fails completely, filter locally from our existing list
+      // Get the class name corresponding to the selected class ID
+      const selectedClass = classNameList.find((cls) => cls.id === classId);
+      if (selectedClass && studentsList.length > 0) {
+        // Create a simulated filtering based on class names
+        // This assumes you have the full student data in the studentsList
+        // and that you can match class names against class IDs
+        const allStudentsResponse = (await StudentAPI.Get()) as {
+          data: StudentResponse[];
+        };
+
+        const filteredStudents = allStudentsResponse.data.filter(
+          (student) => student.class_name === selectedClass.title
+        );
+
+        setFilteredStudentsList(
+          filteredStudents.map((student) => ({
+            id: student.student_id,
+            title: student.student_name,
+          }))
+        );
+      } else {
+        setFilteredStudentsList([]);
+      }
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const GetStudents = async () => {
     setIsLoading(true);
     try {
       const response = (await StudentAPI.Get()) as { data: StudentResponse[] };
       setStudentsList(
+        response.data.map((student) => ({
+          id: student.student_id,
+          title: student.student_name,
+        }))
+      );
+      setFilteredStudentsList(
         response.data.map((student) => ({
           id: student.student_id,
           title: student.student_name,
@@ -147,12 +244,15 @@ const AddFees = () => {
                     role="combobox"
                     aria-expanded={open}
                     className="w-full justify-between"
+                    disabled={!selectedClassId}
                   >
                     {selectedStudent
-                      ? studentsList.find(
+                      ? filteredStudentsList.find(
                           (student) => student.id.toString() === selectedStudent
                         )?.title
-                      : "Select student..."}
+                      : selectedClassId
+                      ? "Select student..."
+                      : "Please select a class first"}
                     <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                   </Button>
                 </PopoverTrigger>
@@ -171,7 +271,7 @@ const AddFees = () => {
                         <>
                           <CommandEmpty>No student found.</CommandEmpty>
                           <CommandGroup>
-                            {studentsList.map((student) => (
+                            {filteredStudentsList.map((student) => (
                               <CommandItem
                                 key={student.id}
                                 value={student.id.toString()}
