@@ -8,14 +8,7 @@ import { Header } from "@/components/dashboard/Header";
 import { toast } from "sonner";
 import { IncomeAPI as API } from "@/api/Income/IncomeAPI";
 import { IncomeCategory, AddIncomeModel } from "@/models/income/income";
-
-// Likely structure of SelectOption
-interface SelectOption {
-  [key: string]: any; // This is the index signature that's missing in IncomeCategory
-  // Other properties like:
-  value: string | number;
-  label: string;
-}
+import { AxiosResponse } from "axios";
 
 const AddIncome = () => {
   const {
@@ -23,11 +16,9 @@ const AddIncome = () => {
     handleSubmit,
     formState: { errors },
     reset,
-    setValue,
   } = useForm<AddIncomeModel>();
 
   const [isLoading, setIsLoading] = useState(false);
-  const [categories, setCategories] = useState<IncomeCategory[]>([]);
   const [incomeCategory, setIncomeCategory] = useState<IncomeCategory[]>([]);
 
   useEffect(() => {
@@ -37,10 +28,11 @@ const AddIncome = () => {
   const getCategories = async () => {
     setIsLoading(true);
     try {
-      const res: any = await API.GetIncomeCategory();
+      const res: AxiosResponse<IncomeCategory[]> = await API.GetIncomeCategory();
       const data = res.data.map((item: IncomeCategory) => ({
         income_cat_name_id: item.income_cat_name_id,
         income_cat_name: item.income_cat_name,
+        created_at: item.created_at,
       }));
       // console.log("Categories:", data);
       setIncomeCategory(data); // Ensure this is an array

@@ -3,7 +3,7 @@ import Sidebar from "@/components/dashboard/Sidebar";
 import React, { useState } from "react";
 import { Menu } from "lucide-react";
 
-function layout({ children }: { children: React.ReactNode }) {
+function Layout({ children }: { children: React.ReactNode }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   return (
@@ -29,4 +29,4 @@ function layout({ children }: { children: React.ReactNode }) {
   );
 }
 
-export default layout;
+export default Layout;

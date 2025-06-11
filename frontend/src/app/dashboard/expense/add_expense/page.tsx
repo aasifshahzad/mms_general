@@ -8,14 +8,7 @@ import { Header } from "@/components/dashboard/Header";
 import { toast } from "sonner";
 import { ExpenseAPI as API } from "@/api/Expense/ExpenseAPI";
 import { AddExpenseModel, ExpenseCategory } from "@/models/expense/expense";
-
-// Likely structure of SelectOption
-interface SelectOption {
-  [key: string]: any; // This is the index signature that's missing in expenseCategory
-  // Other properties like:
-  value: string | number;
-  label: string;
-}
+import { AxiosResponse } from "axios";
 
 const AddExpense = () => {
   const {
@@ -23,11 +16,9 @@ const AddExpense = () => {
     handleSubmit,
     formState: { errors },
     reset,
-    setValue,
   } = useForm<AddExpenseModel>();
 
   const [isLoading, setIsLoading] = useState(false);
-  const [categories, setCategories] = useState<ExpenseCategory[]>([]);
   const [expenseCategory, setExpenseCategory] = useState<ExpenseCategory[]>([]);
 
   useEffect(() => {
@@ -37,7 +28,7 @@ const AddExpense = () => {
   const getCategories = async () => {
     setIsLoading(true);
     try {
-      const res: any = await API.GetExpenseCategory();
+      const res: AxiosResponse<ExpenseCategory[]> = await API.GetExpenseCategory();
       const data = res.data.map((item: ExpenseCategory) => ({
         expense_cat_name_id: item.expense_cat_name_id,
         expense_cat_name: item.expense_cat_name,

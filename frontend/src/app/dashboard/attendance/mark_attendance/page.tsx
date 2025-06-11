@@ -1,4 +1,3 @@
-import { Header } from '@/components/dashboard/Header'
 import MarkAttendance from '@/components/Attendance/MarkAttendance'
 import React from 'react'
 
