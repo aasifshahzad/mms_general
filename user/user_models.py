@@ -29,6 +29,10 @@ class UserBase(SQLModel):
 class UserLogin(SQLModel):
     username: str
     password: str
+    grant_type: Optional[str] = "password"  # Default value
+    scope: Optional[str] = ""
+    client_id: Optional[str] = None
+    client_secret: Optional[str] = None
 
 class UserUpdate(SQLModel):
     username: Optional[str] = None

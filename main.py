@@ -1,12 +1,13 @@
 from fastapi import FastAPI, Depends, HTTPException, Cookie
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.security import OAuth2PasswordRequestForm, OAuth2PasswordBearer
+from fastapi.security import OAuth2PasswordRequestForm
 from sqlmodel import select, Session, SQLModel
 from typing import Annotated
 from contextlib import asynccontextmanager
 from utils.logging import logger, cleanup_old_logs
 from db import engine, SessionLocal, lifespan
 import asyncio
+from fastapi.openapi.utils import get_openapi
 
 # Router imports
 from router.attendance_value import attendancevalue_router
@@ -84,6 +85,10 @@ app = FastAPI(
     responses={404: {"Description": "MMS-GENERAL page not found :-("}},
 )
 
+# Explicitly tell Swagger UI about the OAuth2 flow
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login-swagger")
+
+
 logger.info("Starting application...")
 
 app.add_middleware(
@@ -114,11 +119,13 @@ async def root():
     return {"Message": "MMS Backend is running :-}"}
 
 
-@app.post("/login", response_model=LoginResponse, tags=["User"])
-async def login_for_access_token(
-    form_data: Annotated[OAuth2PasswordRequestForm, Depends()],
-    db: Annotated[Session, Depends(get_session)]
-) -> LoginResponse:
+
+# 1️⃣ Swagger UI Login (OAuth2PasswordRequestForm expects form-data)
+@app.post("/auth/login-swagger", response_model=LoginResponse, tags=["User"])
+async def login_for_swagger(
+    form_data: OAuth2PasswordRequestForm = Depends(),
+    db: Session = Depends(get_session)
+):
     return user_login(db, form_data)
 
 @app.post("/frontend/login", response_model=LoginResponse, tags=["User"])
@@ -143,7 +150,7 @@ async def signup(
             status_code=500,
             detail=f"Internal server error during signup: {str(e)}"
         )
-
+# 4️⃣ Get current user
 @app.get("/users/me", response_model=User, tags=["User"])
 async def read_users_me(token: Annotated[str, Depends(oauth2_scheme)], db: Annotated[Session, Depends(get_session)]) -> User:
     user = await get_current_user(token, db)
