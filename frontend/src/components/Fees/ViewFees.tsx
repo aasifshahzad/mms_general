@@ -59,7 +59,6 @@ const ViewFees: React.FC = () => {
   const {
     register,
     handleSubmit,
-    setValue,
     setValue: setFormValue,
     formState: { errors },
   } = useForm<GetFeeModel>();

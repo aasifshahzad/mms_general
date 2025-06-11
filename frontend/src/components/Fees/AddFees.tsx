@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/Select";
@@ -68,40 +68,57 @@ const AddFees = () => {
   }, []);
 
   // Watch for class changes and filter students accordingly
-  useEffect(() => {
-    if (selectedClassId) {
-      filterStudentsByClass(selectedClassId);
-    } else {
-      setFilteredStudentsList(studentsList);
-    }
-    // Reset selected student when class changes
-    setSelectedStudent("");
-    // Use 0 instead of null or undefined for student_id
-    setFormValue("student_id", 0);
-  }, [selectedClassId, studentsList]);
-
   // Modified to filter students using class_name instead of class_id
-  const filterStudentsByClass = async (classId: number) => {
-    setIsLoading(true);
-    try {
-      // First try to get students directly from API if your backend supports it
-      const response = (await StudentAPI.GetByClassId(classId)) as {
-        data: StudentResponse[];
-      };
+  const filterStudentsByClass = useCallback(
+    async (classId: number) => {
+      setIsLoading(true);
+      try {
+        // First try to get students directly from API if your backend supports it
+        const response = (await StudentAPI.GetByClassId(classId)) as unknown as {
+          data: StudentResponse[];
+        };
 
-      if (response.data && response.data.length > 0) {
-        setFilteredStudentsList(
-          response.data.map((student) => ({
-            id: student.student_id,
-            title: student.student_name,
-          }))
-        );
-      } else {
-        // If API returns empty data, filter locally from existing list
+        if (response.data && response.data.length > 0) {
+          setFilteredStudentsList(
+            response.data.map((student) => ({
+              id: student.student_id,
+              title: student.student_name,
+            }))
+          );
+        } else {
+          // If API returns empty data, filter locally from existing list
+          // Get the class name corresponding to the selected class ID
+          const selectedClass = classNameList.find((cls) => cls.id === classId);
+          if (selectedClass) {
+            // Use the API to get all students and filter them by class name
+            const allStudentsResponse = (await StudentAPI.Get()) as {
+              data: StudentResponse[];
+            };
+
+            const filteredStudents = allStudentsResponse.data.filter(
+              (student) => student.class_name === selectedClass.title
+            );
+
+            setFilteredStudentsList(
+              filteredStudents.map((student) => ({
+                id: student.student_id,
+                title: student.student_name,
+              }))
+            );
+          } else {
+            setFilteredStudentsList([]);
+          }
+        }
+      } catch (error) {
+        console.error("Error fetching students by class:", error);
+
+        // If API fails completely, filter locally from our existing list
         // Get the class name corresponding to the selected class ID
         const selectedClass = classNameList.find((cls) => cls.id === classId);
-        if (selectedClass) {
-          // Use the API to get all students and filter them by class name
+        if (selectedClass && studentsList.length > 0) {
+          // Create a simulated filtering based on class names
+          // This assumes you have the full student data in the studentsList
+          // and that you can match class names against class IDs
           const allStudentsResponse = (await StudentAPI.Get()) as {
             data: StudentResponse[];
           };
@@ -119,38 +136,24 @@ const AddFees = () => {
         } else {
           setFilteredStudentsList([]);
         }
+      } finally {
+        setIsLoading(false);
       }
-    } catch (error) {
-      console.error("Error fetching students by class:", error);
+    },
+    [classNameList, studentsList]
+  );
 
-      // If API fails completely, filter locally from our existing list
-      // Get the class name corresponding to the selected class ID
-      const selectedClass = classNameList.find((cls) => cls.id === classId);
-      if (selectedClass && studentsList.length > 0) {
-        // Create a simulated filtering based on class names
-        // This assumes you have the full student data in the studentsList
-        // and that you can match class names against class IDs
-        const allStudentsResponse = (await StudentAPI.Get()) as {
-          data: StudentResponse[];
-        };
-
-        const filteredStudents = allStudentsResponse.data.filter(
-          (student) => student.class_name === selectedClass.title
-        );
-
-        setFilteredStudentsList(
-          filteredStudents.map((student) => ({
-            id: student.student_id,
-            title: student.student_name,
-          }))
-        );
-      } else {
-        setFilteredStudentsList([]);
-      }
-    } finally {
-      setIsLoading(false);
+  useEffect(() => {
+    if (selectedClassId) {
+      filterStudentsByClass(selectedClassId);
+    } else {
+      setFilteredStudentsList(studentsList);
     }
-  };
+    // Reset selected student when class changes
+    setSelectedStudent("");
+    // Use 0 instead of null or undefined for student_id
+    setFormValue("student_id", 0);
+  }, [selectedClassId, studentsList, filterStudentsByClass, setFormValue]);
 
   const GetStudents = async () => {
     setIsLoading(true);
@@ -198,7 +201,7 @@ const AddFees = () => {
   const onSubmit = async (formData: AddFeeModel) => {
     try {
       setIsLoading(true);
-      const response = await FeeAPI.Create(formData);
+      await FeeAPI.Create(formData);
       console.log("Form Data:", formData);
       toast.success("Fee record added successfully");
       reset(); // Reset form after successful submission

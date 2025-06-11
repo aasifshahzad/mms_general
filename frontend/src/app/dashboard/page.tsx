@@ -25,6 +25,13 @@ import {
 } from "@/components/dashboard/Skeleton";
 import { Header } from "@/components/dashboard/Header";
 
+// API Response Type Definitions
+interface ApiResponse<T> {
+  data: T;
+  message?: string;
+  status?: number;
+}
+
 interface UserRolesData {
   summary: {
     Roll: string;
@@ -176,198 +183,11 @@ interface ExpenseSummaryData {
   total: number;
 }
 
-// Mock data
-
-const monthlyTrendData = [
-  { name: "Jan", leaves: 12 },
-  { name: "Feb", leaves: 15 },
-  { name: "Mar", leaves: 18 },
-  { name: "Apr", leaves: 14 },
-  { name: "May", leaves: 22 },
-  { name: "Jun", leaves: 28 },
-];
-
-const pendingRequests = [
-  {
-    id: 1,
-    name: "Ahmed Ali",
-    department: "IT",
-    type: "Annual",
-    days: 3,
-    startDate: "25-Apr-2025",
-  },
-  {
-    id: 2,
-    name: "Fatima Khan",
-    department: "Marketing",
-    type: "Sick",
-    days: 2,
-    startDate: "26-Apr-2025",
-  },
-  {
-    id: 3,
-    name: "Bilal Ahmad",
-    department: "Finance",
-    type: "Casual",
-    days: 1,
-    startDate: "28-Apr-2025",
-  },
-];
-
-const todayAbsentees = [
-  { id: 1, name: "Sara Malik", department: "HR", type: "Annual" },
-  { id: 2, name: "Usman Khan", department: "IT", type: "Sick" },
-  { id: 3, name: "Ayesha Siddiqui", department: "Marketing", type: "Casual" },
-];
-
-const topPerformers = [
-  {
-    id: 1,
-    name: "Zainab Akhtar",
-    department: "IT",
-    attendance: "99%",
-    productivity: "97%",
-    rating: 5,
-  },
-  {
-    id: 2,
-    name: "Hamza Malik",
-    department: "Finance",
-    attendance: "98%",
-    productivity: "96%",
-    rating: 5,
-  },
-  {
-    id: 3,
-    name: "Nadia Khan",
-    department: "Marketing",
-    attendance: "97%",
-    productivity: "95%",
-    rating: 4.9,
-  },
-  {
-    id: 4,
-    name: "Omar Farooq",
-    department: "Operations",
-    attendance: "96%",
-    productivity: "94%",
-    rating: 4.8,
-  },
-];
-
-const topLeaveEmployees = [
-  {
-    id: 1,
-    name: "Ali Hassan",
-    department: "Marketing",
-    leavesTaken: 7,
-    leaveType: "Sick",
-  },
-  {
-    id: 2,
-    name: "Saima Jabeen",
-    department: "HR",
-    leavesTaken: 5,
-    leaveType: "Annual",
-  },
-  {
-    id: 3,
-    name: "Tariq Mehmood",
-    department: "IT",
-    leavesTaken: 4,
-    leaveType: "Casual",
-  },
-  {
-    id: 4,
-    name: "Farah Ahmad",
-    department: "Operations",
-    leavesTaken: 3,
-    leaveType: "Annual",
-  },
-  {
-    id: 5,
-    name: "Imran Sheikh",
-    department: "Finance",
-    leavesTaken: 3,
-    leaveType: "Sick",
-  },
-];
-
-const recentLeaveRequests = [
-  {
-    id: 1,
-    name: "Ahmed Khan",
-    department: "IT",
-    type: "Casual",
-    days: 1,
-    status: "Approved",
-    date: "18-Apr-2025",
-  },
-  {
-    id: 2,
-    name: "Sana Rafiq",
-    department: "HR",
-    type: "Sick",
-    days: 2,
-    status: "Pending",
-    date: "17-Apr-2025",
-  },
-  {
-    id: 3,
-    name: "Kashif Ali",
-    department: "Marketing",
-    type: "Annual",
-    days: 5,
-    status: "Approved",
-    date: "16-Apr-2025",
-  },
-  {
-    id: 4,
-    name: "Rabia Iqbal",
-    department: "Finance",
-    type: "Sick",
-    days: 3,
-    status: "Rejected",
-    date: "15-Apr-2025",
-  },
-];
-
-const frequentLateComers = [
-  {
-    id: 1,
-    name: "Asad Mahmood",
-    department: "Operations",
-    lateCount: 8,
-    averageDelay: "22 mins",
-  },
-  {
-    id: 2,
-    name: "Hina Ali",
-    department: "Marketing",
-    lateCount: 6,
-    averageDelay: "17 mins",
-  },
-  {
-    id: 3,
-    name: "Faisal Khan",
-    department: "IT",
-    lateCount: 5,
-    averageDelay: "15 mins",
-  },
-  {
-    id: 4,
-    name: "Samreen Zaidi",
-    department: "HR",
-    lateCount: 4,
-    averageDelay: "12 mins",
-  },
-];
 const getTodayDate = () => {
   const today = new Date();
   return today.toISOString().split("T")[0];
 };
 export default function AdminDashboard() {
-  const [selectedTab, setSelectedTab] = useState("overview");
   // Add state for user roles data
   const [userRolesData, setUserRolesData] = useState<UserRolesData | null>(
     null
@@ -419,7 +239,7 @@ export default function AdminDashboard() {
   useEffect(() => {
     const fetchUserRolesData = async () => {
       try {
-        const response: any = await DashboardAPI.GetUserRoles();
+        const response = (await DashboardAPI.GetUserRoles()) as ApiResponse<UserRolesData>;
         if (response && response.data) {
           setUserRolesData(response.data);
         }
@@ -436,9 +256,9 @@ export default function AdminDashboard() {
     const fetchStudentSummaryData = async () => {
       setStudentSummaryLoading(true);
       try {
-        const response: any = await DashboardAPI.GetStudentSummary(
+        const response = (await DashboardAPI.GetStudentSummary(
           selectedDate
-        );
+        )) as ApiResponse<StudentSummaryData>;
         if (response && response.data) {
           setStudentSummaryData(response.data);
         }
@@ -455,7 +275,7 @@ export default function AdminDashboard() {
     const fetchAttendanceSummary = async () => {
       setAttendanceSummaryLoading(true);
       try {
-        const response: any = await DashboardAPI.GetAttendanceSummary();
+        const response = (await DashboardAPI.GetAttendanceSummary()) as ApiResponse<AttendanceSummaryData>;
         if (response && response.data) {
           setAttendanceSummaryData(response.data);
         }
@@ -472,9 +292,9 @@ export default function AdminDashboard() {
     const fetchIncomeExpenseSummary = async () => {
       setIncomeExpenseLoading(true);
       try {
-        const response: any = await DashboardAPI.GetIncomeExpenseSummary(
+        const response = (await DashboardAPI.GetIncomeExpenseSummary(
           selectedYear
-        );
+        )) as ApiResponse<IncomeExpenseSummaryData>;
         if (response && response.data) {
           setIncomeExpenseSummaryData(response.data);
         }
@@ -491,7 +311,7 @@ export default function AdminDashboard() {
     const fetchFeeSummary = async () => {
       setFeeSummaryLoading(true);
       try {
-        const response: any = await DashboardAPI.GetFeeSummary(selectedYear);
+        const response = (await DashboardAPI.GetFeeSummary(selectedYear)) as ApiResponse<FeeSummaryData>;
         if (response && response.data) {
           setFeeSummaryData(response.data);
         }
@@ -508,10 +328,10 @@ export default function AdminDashboard() {
     const fetchIncomeSummary = async () => {
       setIncomeSummaryLoading(true);
       try {
-        const response: any = await DashboardAPI.GetIncomeSummary(
+        const response = (await DashboardAPI.GetIncomeSummary(
           selectedYear,
           selectedMonth === null ? undefined : selectedMonth
-        );
+        )) as ApiResponse<IncomeSummaryData>;
         if (response && response.data) {
           setIncomeSummaryData(response.data);
         }
@@ -528,10 +348,10 @@ export default function AdminDashboard() {
     const fetchExpenseSummary = async () => {
       setExpenseSummaryLoading(true);
       try {
-        const response: any = await DashboardAPI.GetExpenseSummary(
+        const response = (await DashboardAPI.GetExpenseSummary(
           selectedYear,
           selectedExpenseMonth === null ? undefined : selectedExpenseMonth
-        );
+        )) as ApiResponse<ExpenseSummaryData>;
         if (response && response.data) {
           setExpenseSummaryData(response.data);
         }
@@ -784,7 +604,8 @@ export default function AdminDashboard() {
                     data={
                       attendanceSummaryData?.graph.labels.map(
                         (label, index) => {
-                          const dataPoint: any = { name: label };
+                          // Define a proper type with string index signature
+                          const dataPoint: { name: string; [key: string]: string | number } = { name: label };
 
                           // Add each attendance type as a property
                           attendanceSummaryData.graph.datasets.forEach(

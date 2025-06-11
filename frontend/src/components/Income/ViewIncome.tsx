@@ -1,5 +1,5 @@
 "use client";
-import { IncomeCategory, ViewIncomeModel } from "@/models/income/income";
+import { IncomeCategory } from "@/models/income/income";
 import React, { useEffect, useState } from "react";
 import { IncomeAPI as API } from "@/api/Income/IncomeAPI";
 import { useForm } from "react-hook-form";
@@ -15,17 +15,36 @@ import {
 import { Header } from "../dashboard/Header";
 import Loader from "../Loader";
 
+// Define interfaces for form values and income data
+interface IncomeFormValues {
+  category_id: number;
+}
+
+interface IncomeDataItem {
+  id: number;
+  date: string;
+  category: string;
+  source: string;
+  description: string;
+  contact: string;
+  amount: number;
+}
+
+// Define API response type
+interface ApiResponse<T> {
+  data: T;
+  status: number;
+  message?: string;
+}
+
 const ViewIncome = () => {
   const {
     register,
-    handleSubmit,
     formState: { errors },
-    reset,
-    setValue,
-  } = useForm<any>();
+  } = useForm<IncomeFormValues>();
   const [isLoading, setIsLoading] = useState(false);
   const [incomeCategory, setIncomeCategory] = useState<IncomeCategory[]>([]);
-  const [incomeData, setIncomeData] = useState<any[]>([]); // State to store income data
+  const [incomeData, setIncomeData] = useState<IncomeDataItem[]>([]); // State to store income data
 
   useEffect(() => {
     getCategories();
@@ -34,10 +53,11 @@ const ViewIncome = () => {
   const getCategories = async () => {
     setIsLoading(true);
     try {
-      const res: any = await API.GetIncomeCategory();
+      const res = (await API.GetIncomeCategory()) as ApiResponse<IncomeCategory[]>;
       const data = res.data.map((item: IncomeCategory) => ({
         income_cat_name_id: item.income_cat_name_id,
         income_cat_name: item.income_cat_name,
+        created_at: item.created_at,
       }));
       setIncomeCategory(data);
     } catch (error) {
@@ -51,7 +71,7 @@ const ViewIncome = () => {
   const getIncome = async (CategoryId: number) => {
     setIsLoading(true);
     try {
-      const res: any = await API.GetIncomeData(CategoryId); // Pass CategoryId to the API
+      const res = (await API.GetIncomeData(CategoryId)) as ApiResponse<IncomeDataItem[]>;
       setIncomeData(res.data); // Store the income data in state
     } catch (error) {
       console.error("Error fetching income data:", error);

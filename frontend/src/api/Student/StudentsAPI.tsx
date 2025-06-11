@@ -1,6 +1,12 @@
 import { StudentModel, CreateStudent} from "@/models/students/Student";
 import AxiosInstance from "@/api/axiosInterceptorInstance";
-// import {GetActionDetail} from "@/utils/GetActionDetail";
+
+// Define the StudentResponse type
+interface StudentResponse {
+  id: number;
+  name: string;
+  // Add other student properties as needed
+}
 
 // eslint-disable-next-line @typescript-eslint/no-namespace
 export namespace StudentAPI {
@@ -72,8 +78,21 @@ export namespace StudentAPI {
     }
   }
 
-  export function GetByClassId(classId: number): { data: StudentResponse[]; } | PromiseLike<{ data: StudentResponse[]; }> {
-    throw new Error("Function not implemented.");
+  export async function GetByClassId(classId: number): Promise<{ data: StudentResponse[] }> {
+    try {
+      const response = await AxiosInstance.get(
+        `/students/by_class_id/?class_id=${classId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("access_token")}`,
+          },
+        }
+      );
+      return response;
+    } catch (error) {
+      console.error("Error fetching students by class ID:", error);
+      throw error;
+    }
   }
 }
 

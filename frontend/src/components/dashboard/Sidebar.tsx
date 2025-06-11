@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { GoDotFill } from "react-icons/go";
 import { usePathname, useRouter } from "next/navigation";
 import Link from "next/link";
@@ -171,10 +171,14 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
   const pathname = usePathname();
   const router = useRouter();
   const [openSubmenu, setOpenSubmenu] = useState<number | null>(null);
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isDarkMode, setIsDarkMode] = useState(true);
-
-  const userData = localStorage.getItem("user");
+  const [userData, setUserData] = useState<string | null>(null);
+  
+  useEffect(() => {
+    // This runs only in the browser
+    const storedUser = localStorage.getItem("user");
+    setUserData(storedUser);
+  }, []);
 
   const toggleSubmenu = (id: number) =>
     setOpenSubmenu(openSubmenu === id ? null : id);
@@ -182,6 +186,18 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
   const handleLogout = () => {
     localStorage.clear();
     router.push("/login");
+  };
+
+  // Helper function to safely check if pathname starts with a path
+  const isActivePath = (path: string): boolean => {
+    if (!pathname) return false;
+    return pathname.startsWith(path);
+  };
+
+  // Helper function to check if pathname exactly matches a path
+  const isExactPath = (path: string): boolean => {
+    if (!pathname) return false;
+    return pathname === path;
   };
 
   return (
@@ -237,7 +253,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
                 <button
                   onClick={() => toggleSubmenu(item.id)}
                   className={`w-full flex items-center justify-between p-2 rounded-lg mb-1 transition ${
-                    pathname.startsWith(item.path)
+                    isActivePath(item.path)
                       ? "bg-primary text-primary-foreground"
                       : "hover:bg-gray-100 dark:hover:bg-neutral-800"
                   }`}
@@ -264,7 +280,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
                 <Link
                   href={item.path}
                   className={`flex items-center p-2 rounded-lg mb-1 transition ${
-                    pathname === item.path
+                    isExactPath(item.path)
                       ? "bg-primary text-primary-foreground"
                       : "hover:bg-gray-100 dark:hover:bg-neutral-800"
                   }`}

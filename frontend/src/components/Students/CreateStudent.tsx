@@ -18,7 +18,6 @@ import { Select, SelectOption as SelectComponentOption } from "../Select";
 import { ClassNameAPI as API1 } from "@/api/Classname/ClassNameAPI";
 import { useIsMobile } from "@/hooks/use-mobile";
 
-
 const AddNewStudent = ({ onClassAdded }: { onClassAdded: () => void }) => {
   const {
     register,
@@ -60,9 +59,26 @@ const AddNewStudent = ({ onClassAdded }: { onClassAdded: () => void }) => {
     }
   };
 
+  const GetClassName = React.useCallback(async () => {
+    try {
+      const response = (await API1.Get()) as { data: ClassNameResponse[] };
+      if (response.data) {
+        setClassNameList(
+          response.data.map((item) => ({
+            id: item.class_name_id,
+            title: item.class_name,
+          }))
+        );
+      }
+    } catch (error) {
+      console.error("Error fetching class names:", error);
+    }
+  }, []);
+
   useEffect(() => {
     GetClassName();
-  }, []);
+  }, [GetClassName]);
+
   const CreateStudentAPI = async (data: CreateStudent) => {
     try {
       const response = await API.Create(data);
@@ -78,22 +94,6 @@ const AddNewStudent = ({ onClassAdded }: { onClassAdded: () => void }) => {
         console.error("API Error:", error);
       }
       throw error;
-    }
-  };
-
-  const GetClassName = async () => {
-    try {
-      const response = (await API1.Get()) as { data: ClassNameResponse[] };
-      if (response.data) {
-        setClassNameList(
-          response.data.map((item) => ({
-            id: item.class_name_id,
-            title: item.class_name,
-          }))
-        );
-      }
-    } catch (error) {
-      console.error("Error fetching class names:", error);
     }
   };
 

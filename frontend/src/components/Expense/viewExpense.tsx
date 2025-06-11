@@ -1,5 +1,5 @@
 "use client";
-import { ExpenseCategory, ExpenseData } from "@/models/expense/expense";
+import { ExpenseCategory } from "@/models/expense/expense";
 import React, { useEffect, useState } from "react";
 import { ExpenseAPI as API } from "@/api/Expense/ExpenseAPI";
 import { useForm } from "react-hook-form";
@@ -15,17 +15,29 @@ import {
 import { Header } from "../dashboard/Header";
 import Loader from "../Loader";
 
+// Form values interface
+interface ExpenseFormValues {
+  category_id: number;
+}
+
+// Interface for expense data items
+interface ExpenseDataItem {
+  id: number;
+  date: string;
+  category: string;
+  to_whom: string;
+  description: string;
+  amount: number;
+}
+
 const ViewExpense = () => {
   const {
     register,
-    handleSubmit,
     formState: { errors },
-    reset,
-    setValue,
-  } = useForm<any>();
+  } = useForm<ExpenseFormValues>();
   const [isLoading, setIsLoading] = useState(false);
   const [ExpenseCategory, setExpenseCategory] = useState<ExpenseCategory[]>([]);
-  const [ExpenseData, setExpenseData] = useState<any[]>([]); // State to store Expense data
+  const [ExpenseData, setExpenseData] = useState<ExpenseDataItem[]>([]); // State to store Expense data
 
   useEffect(() => {
     getCategories();
@@ -34,9 +46,9 @@ const ViewExpense = () => {
   const getCategories = async () => {
     setIsLoading(true);
     try {
-      const res: any = await API.GetExpenseCategory();
+      const res = await API.GetExpenseCategory();
       setExpenseCategory(res.data);
-    console.log("Expense categories:", res.data);
+      console.log("Expense categories:", res.data);
     } catch (error) {
       console.error("Error fetching Expense categories:", error);
       setExpenseCategory([]);
@@ -48,7 +60,7 @@ const ViewExpense = () => {
   const getExpense = async (CategoryId: number) => {
     setIsLoading(true);
     try {
-      const res: any = await API.GetExpenseData(CategoryId); // Pass CategoryId to the API
+      const res = await API.GetExpenseData(CategoryId); // Pass CategoryId to the API
       setExpenseData(res.data); // Store the Expense data in state
     } catch (error) {
       console.error("Error fetching Expense data:", error);
