@@ -81,12 +81,10 @@ app = FastAPI(
     # docs_url="/docs",
     # redoc_url="/redoc",
     lifespan=lifespan,
-    root_path="/auth",
-    responses={404: {"Description": "MMS-GENERAL page not found :-("}},
 )
 
 # Explicitly tell Swagger UI about the OAuth2 flow
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login-swagger")
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login-swagger")
 
 
 logger.info("Starting application...")
@@ -121,34 +119,47 @@ async def root():
 
 
 # 1️⃣ Swagger UI Login (OAuth2PasswordRequestForm expects form-data)
-@app.post("/auth/login-swagger", response_model=LoginResponse, tags=["User"])
+@app.post("/login-swagger", response_model=LoginResponse, tags=["User"])
 async def login_for_swagger(
     form_data: OAuth2PasswordRequestForm = Depends(),
     db: Session = Depends(get_session)
 ):
     return user_login(db, form_data)
 
-@app.post("/frontend/login", response_model=LoginResponse, tags=["User"])
-# @app.post("/auth/login", response_model=LoginResponse, tags=["User"])
+@app.post("/login", response_model=LoginResponse, tags=["User"])
 async def login_for_frontend(
     login_data: UserLogin,
     db: Session = Depends(get_session)
 ):
-    return user_login(db, login_data)
-@app.post("/signup", response_model=User, tags=["User"])
-
-async def signup(
-    db: Annotated[Session, Depends(get_session)], 
-    user: UserCreate
-):
     try:
-        return await signup_user(user, db)
+        return user_login(db, login_data)
     except HTTPException as e:
-        raise
+        raise e
     except Exception as e:
         raise HTTPException(
-            status_code=500,
-            detail=f"Internal server error during signup: {str(e)}"
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Login failed: {str(e)}"
+        )
+
+@app.post("/signup", response_model=UserResponse, tags=["User"])
+async def signup(
+    user: UserCreate,
+    db: Session = Depends(get_session)
+):
+    try:
+        new_user = await signup_user(user, db)
+        return UserResponse(
+            username=new_user.username,
+            email=new_user.email,
+            role=new_user.role,
+            id=new_user.id
+        )
+    except HTTPException as e:
+        raise e
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Signup failed: {str(e)}"
         )
 # 4️⃣ Get current user
 @app.get("/users/me", response_model=User, tags=["User"])
@@ -254,4 +265,4 @@ async def logout(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Error during logout: {str(e)}"
         )
-    
+

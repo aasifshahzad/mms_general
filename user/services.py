@@ -26,18 +26,14 @@ credentials_exception = HTTPException(
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login-swagger")  
+# Update OAuth2 scheme to use correct path
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login-swagger")  
 
 
 def verify_password(plain_password, hashed_password):
-    """
-    Verify the password using the hash stored in the database.
-    Args:
-        plain_password (str): The password entered by the user.
-        hashed_password (str): The password stored in the database.
-    Returns:
-        bool: True if the password is correct, False otherwise.
-    """
+    """Verify the password using the hash stored in the database."""
+    if not plain_password or not hashed_password:
+        return False
     return pwd_context.verify(plain_password, hashed_password)
 
 def get_password_hash(password):
@@ -50,22 +46,21 @@ def get_password_hash(password):
     """
     return pwd_context.hash(password)
 
-def get_user_by_username(db:Session,username:str) -> User:
-    """
-    Get the user by username.
-    Args:
-        db (Session): The database session.
-        username (str): The username of the user.
-    Returns:
-        User: The user object.
-        """
-    if username is None:
-        raise  HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,headers={"WWW-Authenticate": 'Bearer'},detail={"error": "invalid_token", "error_description": "The access token expired"})
+def get_user_by_username(db: Session, username: str) -> User:
+    """Get the user by username."""
+    if not username:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            headers={"WWW-Authenticate": "Bearer"},
+            detail="Invalid credentials"
+        )
 
     user = db.exec(select(User).where(User.username == username)).first()
-
     if not user:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,detail="User not found")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="User not found"
+        )
     return user
 
 def get_user_by_id(db: Session, userid: int) -> User:
@@ -159,14 +154,17 @@ def authenticate_user(db, username: str, password: str) -> User:
     return user
 
 def create_access_token(data: dict, expires_delta: Optional[timedelta] = None) -> str:
-    """
-    Create an access token with expiration.
-    """
+    """Create an access token with expiration."""
     to_encode = data.copy()
-    expire = datetime.now(timezone.utc) + (expires_delta if expires_delta else timedelta(minutes=30))
+    expire = datetime.now(timezone.utc) + (expires_delta or timedelta(minutes=15))
     to_encode.update({"exp": expire})
-    
-    return jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
+    try:
+        return jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error creating access token: {str(e)}"
+        )
 
 def create_refresh_token(data: Union[str, Any], expires_delta: int = None) -> str:
 

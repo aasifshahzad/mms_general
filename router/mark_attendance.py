@@ -217,9 +217,10 @@ def filter_attendance_by_ids(
     attendance_value_id: Optional[int] = Query(None, description="Filter by Attendance Value ID"),
 ):
     """Filter attendance with role-based access"""
-    query = session.exec(Attendance)
+    # Start with a base select statement
+    query = select(Attendance)
 
-    # Apply role-based filters first
+    # Add role-based filters first
     if current_user.role == UserRole.USER:
         raise HTTPException(
             status_code=403,
@@ -232,29 +233,34 @@ def filter_attendance_by_ids(
         ).first()
         if not teacher:
             raise HTTPException(status_code=404, detail="Teacher record not found")
-        query = query.filter(Attendance.teacher_name_id == teacher.teacher_name_id)
+        query = query.where(Attendance.teacher_name_id == teacher.teacher_name_id)
 
     # Apply the rest of the filters
     if attendance_date:
-        query = query.filter(Attendance.attendance_date == attendance_date)
+        query = query.where(Attendance.attendance_date == attendance_date)
     if attendance_time_id:
-        query = query.filter(Attendance.attendance_time_id == attendance_time_id)
+        query = query.where(Attendance.attendance_time_id == attendance_time_id)
     if class_name_id:
-        query = query.filter(Attendance.class_name_id == class_name_id)
+        query = query.where(Attendance.class_name_id == class_name_id)
     if teacher_name_id:
-        query = query.filter(Attendance.teacher_name_id == teacher_name_id)
+        query = query.where(Attendance.teacher_name_id == teacher_name_id)
     if student_id:
-        query = query.filter(Attendance.student_id == student_id)
+        query = query.where(Attendance.student_id == student_id)
     if father_name:
-        query = query.join(Students).filter(Students.father_name == father_name)
+        query = query.join(Students).where(Students.father_name == father_name)
     if attendance_value_id:
-        query = query.filter(Attendance.attendance_value_id == attendance_value_id)
+        query = query.where(Attendance.attendance_value_id == attendance_value_id)
 
-    filtered_attendance = query.all()
+    # Execute the query
+    filtered_attendance = session.exec(query).all()
 
     if not filtered_attendance:
-        raise HTTPException(status_code=404, detail="No attendance records found matching the criteria")
+        raise HTTPException(
+            status_code=404,
+            detail="No attendance records found matching the criteria"
+        )
 
+    # Rest of the function remains the same
     filtered_responses = [
         FilteredAttendanceResponse(
             attendance_id=att.attendance_id,

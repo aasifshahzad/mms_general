@@ -62,26 +62,26 @@ def user_login(db: Session, form_data: UserLogin | OAuth2PasswordRequestForm) ->
 async def signup_user(user: UserCreate, db: Session) -> User:
     """Create a new user with proper transaction handling."""
     try:
-        # Convert role to uppercase and validate
+        # Validate role
         try:
-            if isinstance(user.role, str):
-                normalized_role = UserRole(user.role.upper())
-            else:
-                normalized_role = user.role
-        except ValueError: 
+            normalized_role = UserRole(user.role.upper()) if isinstance(user.role, str) else user.role
+        except ValueError:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail=f"Invalid role: {user.role}. Must be one of: {[r.value for r in UserRole]}"
             )
         
-        # Check existing email/username
-        if db.exec(select(User).where(User.email == user.email)).first():
+        # Check if email exists
+        existing_email = db.exec(select(User).where(User.email == user.email)).first()
+        if existing_email:
             raise HTTPException(
                 status_code=status.HTTP_409_CONFLICT,
                 detail="Email already registered"
             )
         
-        if db.exec(select(User).where(User.username == user.username)).first():
+        # Check if username exists
+        existing_username = db.exec(select(User).where(User.username == user.username)).first()
+        if existing_username:
             raise HTTPException(
                 status_code=status.HTTP_409_CONFLICT,
                 detail="Username already exists"
@@ -101,9 +101,11 @@ async def signup_user(user: UserCreate, db: Session) -> User:
         db.refresh(new_user)
         return new_user
         
+    except HTTPException as e:
+        db.rollback()
+        raise e
     except Exception as e:
         db.rollback()
-        print(f"Error during signup: {str(e)}")  # For debugging
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Error creating user: {str(e)}"
