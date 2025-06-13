@@ -12,7 +12,7 @@ interface LoginResponse {
   export async function LoginAPI(loginData: LoginData) {
     try {
       const response = await axiosIntance.post<LoginResponse >(
-        "/auth/frontend/login",
+        "/frontend/login",
         JSON.stringify(loginData),
         {
           headers: {
