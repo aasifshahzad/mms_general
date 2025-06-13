@@ -41,7 +41,7 @@ export const IncomeAPI = {
   GetIncomeCategory: async () => {
     try {
       const response = await AxiosInstance.get(
-        "/auth/income_cat_names/income-cat-names-all/",
+        "/income_cat_names/income-cat-names-all/",
         { headers: getHeaders() }
       );
       // console.log("API Response:", response.data);

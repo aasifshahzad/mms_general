@@ -1,5 +1,6 @@
 import AxiosInstance from "@/api/axiosInterceptorInstance";
-import {AddFeeModel, GetFeeModel} from "@/models/Fees/Fee";
+import { AddFeeModel } from "@/models/Fees/Fee";
+import { AxiosResponse } from "axios";
 
 // Helper function to get standard headers
 const getHeaders = () => ({
@@ -9,26 +10,28 @@ const getHeaders = () => ({
 
 // Export as a single API object
 export const FeeAPI = {
-  Create: async (AddFee: AddFeeModel) => {
+  Create: async (AddFee: AddFeeModel): Promise<AxiosResponse<AddFeeModel>> => {
     try {
-      const response = await AxiosInstance.post<AddFeeModel>(
+      const response = await AxiosInstance.post(
         "/fee/add_fee/",
         JSON.stringify(AddFee),
         { headers: getHeaders() }
       );
       console.log("API Response:", response);
       return response;
-    } catch (error) {
+    } catch (error: unknown) {
       console.error("API Error:", error);
-      throw error; 
+      throw error;
     }
   },
-  
-  GetFeebyFilter: async (GetFee: GetFeeModel) => {
+  GetClassFeeStatus: async (
+    classId: number,
+    feeMonth: string,
+    feeYear: number
+  ): Promise<AxiosResponse<any>> => {
     try {
-      const response = await AxiosInstance.post<GetFeeModel>(
-        `/fee/filter/?student_id=${GetFee.student_id}&class_name_id=${GetFee.class_id}&fee_month=${GetFee.fee_month}&fee_year=${GetFee.fee_year}&fee_status=${GetFee.fee_status}`,
-        JSON.stringify(GetFee),
+      const response = await AxiosInstance.get(
+        `/fee/class-fee-status/${classId}?fee_month=${feeMonth}&fee_year=${feeYear}`,
         { headers: getHeaders() }
       );
       console.log("API Response:", response);
@@ -37,8 +40,8 @@ export const FeeAPI = {
       console.error("API Error:", error);
       throw error;
     }
-  }
+  },
 };
 
 // For backward compatibility, also export individual functions
-export const { Create, GetFeebyFilter } = FeeAPI;
+export const { Create, GetClassFeeStatus } = FeeAPI;

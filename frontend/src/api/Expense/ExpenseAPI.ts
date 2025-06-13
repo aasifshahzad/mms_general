@@ -56,7 +56,7 @@ export const ExpenseAPI = {
   GetExpenseCategory: async () => {
     try {
       const response = await AxiosInstance.get(
-        "/auth/expense_cat_names/expense-cat-names-all/",
+        "/expense_cat_names/expense-cat-names-all/",
         { headers: getHeaders() }
       );
       console.log("API Response:", response.data);

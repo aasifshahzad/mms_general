@@ -4,7 +4,7 @@ import AxiosInstance from "@/api/axiosInterceptorInstance";
 export namespace DashboardAPI {
   export const GetUserRoles = async () => {
     try {
-      const response = await AxiosInstance.get("/auth/dashboard/user-roles", {
+      const response = await AxiosInstance.get("/dashboard/user-roles", {
         headers: {
           Authorization: `Bearer ${localStorage.getItem("access_token")}`,
         },
@@ -18,7 +18,7 @@ export namespace DashboardAPI {
   export const GetStudentSummary = async (date: string) => {
     try {
       const response = await AxiosInstance.get(
-        `/auth/dashboard/student-summary?date=${date}`,
+        `/dashboard/student-summary?date=${date}`,
         {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("access_token")}`,
@@ -34,7 +34,7 @@ export namespace DashboardAPI {
   export const GetAttendanceSummary = async () => {
     try {
       const response = await AxiosInstance.get(
-        "/auth/dashboard/attendance-summary",
+        "/dashboard/attendance-summary",
         {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("access_token")}`,
@@ -50,7 +50,7 @@ export namespace DashboardAPI {
   export const GetIncomeExpenseSummary = async (year: number) => {
     try {
       const response = await AxiosInstance.get(
-        `/auth/dashboard/income-expense-summary?year=${year}`,
+        `/dashboard/income-expense-summary?year=${year}`,
         {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("access_token")}`,
@@ -66,7 +66,7 @@ export namespace DashboardAPI {
   export const GetFeeSummary = async (year: number) => {
     try {
       const response = await AxiosInstance.get(
-        `/auth/dashboard/fee-summary?year=${year}`,
+        `/dashboard/fee-summary?year=${year}`,
         {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("access_token")}`,
@@ -81,7 +81,7 @@ export namespace DashboardAPI {
   };
   export const GetIncomeSummary = async (year: number, month?: number) => {
     try {
-      let url = `/auth/dashboard/income-summary?year=${year}`;
+      let url = `/dashboard/income-summary?year=${year}`;
       if (month) {
         url += `&month=${month}`;
       }
@@ -102,7 +102,7 @@ export namespace DashboardAPI {
   }
   export const GetExpenseSummary = async (year: number, month?: number) => {
     try {
-      let url = `/auth/dashboard/expense-summary?year=${year}`;
+      let url = `/dashboard/expense-summary?year=${year}`;
       if (month) {
         url += `&month=${month}`;
       }
