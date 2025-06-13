@@ -126,7 +126,7 @@ async def login_for_swagger(
 ):
     return user_login(db, form_data)
 
-@app.post("/login", response_model=LoginResponse, tags=["User"])
+@app.post("/frontend/login", response_model=LoginResponse, tags=["User"])
 async def login_for_frontend(
     login_data: UserLogin,
     db: Session = Depends(get_session)
