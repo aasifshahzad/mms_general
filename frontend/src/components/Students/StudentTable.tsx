@@ -246,7 +246,7 @@ export default function ModernStudentTable() {
       <Pagination
         className="flex mt-4"
         currentPage={table.getState().pagination.pageIndex + 1}
-        totalPages={Math.ceil((table.getFilteredRowModel()?.rows.length || 0) / table.getState().pagination.pageSize)}
+        totalPages={Math.ceil((table?.getFilteredRowModel()?.rows.length || 0) / table.getState().pagination.pageSize)}
         onPageChange={(page) => {
           table.setPageIndex(page - 1);
         }}

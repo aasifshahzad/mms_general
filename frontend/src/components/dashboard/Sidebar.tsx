@@ -226,7 +226,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
             className="dark:invert"
           />
           <h2 className="text-sm font-semibold text-gray-700 dark:text-gray-200">
-            MADRESSA ZAID BIN HARIS (R.A)
+            MADRESSA ZAID BIN SABIT (R.A)
           </h2>
         </div>
 

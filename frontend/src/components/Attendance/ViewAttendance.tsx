@@ -434,7 +434,7 @@ const AttendanceTable: React.FC = () => {
   });
 
   return (
-    <div className="container mx-auto px-2 sm:px-4 py-4 sm:py-6">
+    <div className="container mx-auto h-screen px-2 sm:px-4 py-4 sm:py-6">
       <form
         onSubmit={handleSubmit((data) =>
           HandleSubmitForStudentGet(data as FilteredAttendance)
@@ -602,8 +602,8 @@ const AttendanceTable: React.FC = () => {
       </form>
 
       {/* Table Section */}
-      <div className="mt-4 bg-white dark:bg-background rounded-xl shadow-sm border border-gray-200 dark:border-secondary overflow-hidden">
-        <div className="overflow-x-auto">
+      <div className="mt-4 bg-white dark:bg-background rounded-xl shadow-sm border border-gray-200 dark:border-secondary overflow-x-auto overflow-y-auto max-h-[60vh]">
+        <div className="overflow-x-auto overflow-y-auto">
           <Table>
             <TableHeader>
               {table.getHeaderGroups().map((headerGroup) => (

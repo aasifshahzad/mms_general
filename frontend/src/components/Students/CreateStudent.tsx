@@ -108,8 +108,8 @@ const AddNewStudent = ({ onClassAdded }: { onClassAdded: () => void }) => {
         </Button>
       </div>
       {/* Dialog for the form */}
-      <Dialog open={open}>
-        <DialogContent className="max-h-[90vh] overflow-y-auto">
+      <Dialog open={open} onOpenChange={setOpen}>
+        <DialogContent className="max-h-[90vh] overflow-y-auto max-w-md">
           <DialogHeader>
             {/* Dialog Title */}
             <DialogTitle className="text-xl sm:text-2xl font-semibold text-gray-800 dark:text-gray-100">
@@ -121,11 +121,11 @@ const AddNewStudent = ({ onClassAdded }: { onClassAdded: () => void }) => {
               {/* Form starts here */}
               <form
                 onSubmit={handleSubmit(handleFormSubmit)}
-                className="dark:bg-card dark:text-card-foreground mx-auto space-y-2 sm:space-y-3"
+                className="dark:bg-card dark:text-card-foreground mx-auto space-y-1 sm:space-y-2"
               >
-                <div className="py-1 sm:py-2 w-full sm:w-36">
+                <div className="py-0.5 sm:py-1 w-full sm:w-36">
                   <Select
-                    label={useIsMobile() ? "null" : "Class Name"}
+                    label={useIsMobile() ? "" : "Class Name"}
                     options={classNameList}
                     {...register("class_name")}
                     onChange={(event: React.ChangeEvent<HTMLSelectElement>) => {
@@ -141,13 +141,13 @@ const AddNewStudent = ({ onClassAdded }: { onClassAdded: () => void }) => {
                   </p>
                 </div>
                 {/* Student Name and Father Name Fields */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-4">
-                  <div className="py-1 sm:py-2">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-1 sm:gap-2">
+                  <div className="py-0.5 sm:py-1">
                     <label className="hidden sm:block text-sm text-gray-700 dark:text-gray-400">
                       Student Name
                     </label>
                     <Input
-                      className="border-gray-300 focus:border-blue-500 focus:ring-blue-500 mt-1 h-8 sm:h-10"
+                      className="border-gray-300 focus:border-blue-500 focus:ring-blue-500 mt-1 h-7 sm:h-8"
                       placeholder="Enter Student Name"
                       {...register("student_name", {
                         required: "Field is required",
@@ -158,12 +158,12 @@ const AddNewStudent = ({ onClassAdded }: { onClassAdded: () => void }) => {
                     </p>
                   </div>
 
-                  <div className="py-1 sm:py-2">
+                  <div className="py-0.5 sm:py-1">
                     <label className="hidden sm:block text-sm text-gray-700 dark:text-gray-400">
                       Father Name
                     </label>
                     <Input
-                      className="border-gray-300 focus:border-blue-500 focus:ring-blue-500 mt-1 h-8 sm:h-10"
+                      className="border-gray-300 focus:border-blue-500 focus:ring-blue-500 mt-1 h-7 sm:h-8"
                       placeholder="Enter Father Name"
                       {...register("father_name", {
                         required: "Field is required",
@@ -176,14 +176,14 @@ const AddNewStudent = ({ onClassAdded }: { onClassAdded: () => void }) => {
                 </div>
 
                 {/* Age and Date of Birth Fields */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-4">
-                  <div className="py-1 sm:py-2">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-1 sm:gap-2">
+                  <div className="py-0.5 sm:py-1">
                     <label className="hidden sm:block text-sm text-gray-700 dark:text-gray-400">
                       Age
                     </label>
                     <Input
                       type="number"
-                      className="border-gray-300 focus:border-blue-500 focus:ring-blue-500 mt-1 h-8 sm:h-10"
+                      className="border-gray-300 focus:border-blue-500 focus:ring-blue-500 mt-1 h-7 sm:h-8"
                       placeholder="Enter Age"
                       {...register("student_age", {
                         required: "Field is required",
@@ -194,14 +194,13 @@ const AddNewStudent = ({ onClassAdded }: { onClassAdded: () => void }) => {
                     </p>
                   </div>
 
-                  <div className="py-1 sm:py-2">
-                    <label className="hidden sm:block text-sm text-gray-700 dark:text-gray-400">
+                  <div className="py-0.5 sm:py-1">
+                    <label className="block text-sm !text-left text-gray-700 dark:text-gray-400">
                       Date of Birth
                     </label>
                     <Input
                       type="date"
-                      className="border-gray-300 focus:border-blue-500 focus:ring-blue-500 mt-1 h-8 sm:h-10"
-                      placeholder="Date of Birth"
+                      className="border-gray-300 focus:border-blue-500 focus:ring-blue-500 mt-1 h-7 sm:h-8"
                       {...register("student_date_of_birth", {
                         required: "Field is required",
                       })}
@@ -213,13 +212,13 @@ const AddNewStudent = ({ onClassAdded }: { onClassAdded: () => void }) => {
                 </div>
 
                 {/* Cast and City Fields */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-4">
-                  <div className="py-1 sm:py-2">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-1 sm:gap-2">
+                  <div className="py-0.5 sm:py-1">
                     <label className="hidden sm:block text-sm text-gray-700 dark:text-gray-400">
                       Father Cast
                     </label>
                     <Input
-                      className="border-gray-300 focus:border-blue-500 focus:ring-blue-500 mt-1 h-8 sm:h-10"
+                      className="border-gray-300 focus:border-blue-500 focus:ring-blue-500 mt-1 h-7 sm:h-8"
                       placeholder="Enter Father Cast"
                       {...register("father_cast_name", {
                         required: "Field is required",
@@ -230,12 +229,12 @@ const AddNewStudent = ({ onClassAdded }: { onClassAdded: () => void }) => {
                     </p>
                   </div>
 
-                  <div className="py-1 sm:py-2">
+                  <div className="py-0.5 sm:py-1">
                     <label className="hidden sm:block text-sm text-gray-700 dark:text-gray-400">
                       City
                     </label>
                     <Input
-                      className="border-gray-300 focus:border-blue-500 focus:ring-blue-500 mt-1 h-8 sm:h-10"
+                      className="border-gray-300 focus:border-blue-500 focus:ring-blue-500 mt-1 h-7 sm:h-8"
                       placeholder="Enter City"
                       {...register("student_city", {
                         required: "Field is required",
@@ -248,28 +247,36 @@ const AddNewStudent = ({ onClassAdded }: { onClassAdded: () => void }) => {
                 </div>
 
                 {/* Gender and CNIC Fields */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-4">
-                  <div className="py-1 sm:py-2">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-1 sm:gap-2">
+                  <div className="py-0.5 sm:py-1">
                     <label className="hidden sm:block text-sm text-gray-700 dark:text-gray-400">
                       Gender
                     </label>
-                    <Input
-                      className="border-gray-300 focus:border-blue-500 focus:ring-blue-500 mt-1 h-8 sm:h-10"
-                      placeholder="Enter Gender"
+                    {/* Changed from Input to Select */}
+                    <select
+                      className="border border-gray-300 focus:border-blue-500 focus:ring-blue-500 mt-1 h-7 sm:h-8 rounded w-full bg-white dark:bg-zinc-900 dark:text-white"
                       {...register("student_gender", {
                         required: "Field is required",
                       })}
-                    />
+                      defaultValue=""
+                    >
+                      <option value="" disabled>
+                        Select Gender
+                      </option>
+                      <option value="Male">Male</option>
+                      <option value="Female">Female</option>
+                      <option value="Other">Other</option>
+                    </select>
                     <p className="text-red-500 text-xs">
                       {errors.student_gender?.message}
                     </p>
                   </div>
-                  <div className="py-1 sm:py-2">
+                  <div className="py-0.5 sm:py-1">
                     <label className="hidden sm:block text-sm text-gray-700 dark:text-gray-400">
                       Father&apos;s Cnic
                     </label>
                     <Input
-                      className="border-gray-300 focus:border-blue-500 focus:ring-blue-500 mt-1 h-8 sm:h-10"
+                      className="border-gray-300 focus:border-blue-500 focus:ring-blue-500 mt-1 h-7 sm:h-8"
                       placeholder="Enter Father's CNIC"
                       {...register("father_cnic", {
                         required: "Field is required",
@@ -280,13 +287,13 @@ const AddNewStudent = ({ onClassAdded }: { onClassAdded: () => void }) => {
                     </p>
                   </div>
                 </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-4">
-                  <div className="py-1 sm:py-2">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-1 sm:gap-2">
+                  <div className="py-0.5 sm:py-1">
                     <label className="hidden sm:block text-sm text-gray-700 dark:text-gray-400">
                       Education
                     </label>
                     <Input
-                      className="border-gray-300 focus:border-blue-500 focus:ring-blue-500 mt-1 h-8 sm:h-10"
+                      className="border-gray-300 focus:border-blue-500 focus:ring-blue-500 mt-1 h-7 sm:h-8"
                       placeholder="Enter Education"
                       {...register("student_education", {
                         required: "Field is required",
@@ -297,13 +304,13 @@ const AddNewStudent = ({ onClassAdded }: { onClassAdded: () => void }) => {
                     </p>
                   </div>
 
-                  <div className="py-1 sm:py-2">
+                  <div className="py-0.5 sm:py-1">
                     <label className="hidden sm:block text-sm text-gray-700 dark:text-gray-400">
                       Father Contact
                     </label>
                     <Input
                       type="number"
-                      className="border-gray-300 focus:border-blue-500 focus:ring-blue-500 mt-1 h-8 sm:h-10"
+                      className="border-gray-300 focus:border-blue-500 focus:ring-blue-500 mt-1 h-7 sm:h-8"
                       placeholder="Enter Father Contact"
                       {...register("father_contact", {
                         required: "Field is required",
@@ -315,13 +322,13 @@ const AddNewStudent = ({ onClassAdded }: { onClassAdded: () => void }) => {
                   </div>
                 </div>
                 {/* Father's Occupation and Address Fields */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-4">
-                  <div className="py-1 sm:py-2">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-1 sm:gap-2">
+                  <div className="py-0.5 sm:py-1">
                     <label className="hidden sm:block text-sm text-gray-700 dark:text-gray-400">
                       Father Occupation
                     </label>
                     <Input
-                      className="border-gray-300 focus:border-blue-500 focus:ring-blue-500 mt-1 h-8 sm:h-10"
+                      className="border-gray-300 focus:border-blue-500 focus:ring-blue-500 mt-1 h-7 sm:h-8"
                       placeholder="Enter Father Occupation"
                       {...register("father_occupation", {
                         required: "Field is required",
@@ -332,12 +339,12 @@ const AddNewStudent = ({ onClassAdded }: { onClassAdded: () => void }) => {
                     </p>
                   </div>
 
-                  <div className="py-1 sm:py-2">
+                  <div className="py-0.5 sm:py-1">
                     <label className="hidden sm:block text-sm text-gray-700 dark:text-gray-400">
                       Address
                     </label>
                     <Input
-                      className="border-gray-300 focus:border-blue-500 focus:ring-blue-500 mt-1 h-8 sm:h-10"
+                      className="border-gray-300 focus:border-blue-500 focus:ring-blue-500 mt-1 h-7 sm:h-8"
                       placeholder="Enter Address"
                       {...register("student_address", {
                         required: "Field is required",
@@ -350,19 +357,19 @@ const AddNewStudent = ({ onClassAdded }: { onClassAdded: () => void }) => {
                 </div>
 
                 {/* Form Buttons: Cancel and Save */}
-                <div className="flex justify-end gap-2 sm:gap-4 mt-3 sm:mt-5">
+                <div className="flex justify-end gap-1 sm:gap-2 mt-2 sm:mt-3">
                   <Button
                     type="button"
                     onClick={() => setOpen(false)}
                     variant="ghost"
-                    className="bg-gray-200 text-gray-700 dark:text-gray-200 hover:bg-gray-300 dark:bg-secondary dark:hover:bg-gray-800 text-sm h-8 sm:h-10"
+                    className="bg-gray-200 text-gray-700 dark:text-gray-200 hover:bg-gray-300 dark:bg-secondary dark:hover:bg-gray-800 text-sm h-7 sm:h-8"
                   >
                     Cancel
                   </Button>
                   <Button
                     type="submit"
                     disabled={loading}
-                    className="bg-primary dark:bg-transparent dark:border dark:border-white text-white hover:bg-blue-600 dark:hover:bg-zinc-900 text-sm h-8 sm:h-10"
+                    className="bg-primary dark:bg-transparent dark:border dark:border-white text-white hover:bg-blue-600 dark:hover:bg-zinc-900 text-sm h-7 sm:h-8"
                   >
                     {loading ? <LoaderIcon className="animate-spin" /> : "Save"}
                   </Button>

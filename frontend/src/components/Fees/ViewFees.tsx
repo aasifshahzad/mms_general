@@ -139,11 +139,14 @@ const handleGetFees = async (data: GetFeeModel) => {
 };
 
   return (
-    <div className="container mx-auto px-4">
-            <Header value="View Fees" />
+    <div className="container mx-auto px-2 sm:px-4">
+      <Header value="View Fees" />
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 mt-3">
-        <form onSubmit={handleSubmit(handleGetFees)} className="flex p-3 gap-6">
-          <div className="space-y-2">
+        <form
+          onSubmit={handleSubmit(handleGetFees)}
+          className="flex flex-col gap-4 sm:flex-row sm:gap-6 p-2 sm:p-3"
+        >
+          <div className="space-y-2 w-full sm:w-auto">
             <label className="text-sm text-gray-700 dark:text-gray-300 font-bold">
               Student
             </label>
@@ -215,52 +218,66 @@ const handleGetFees = async (data: GetFeeModel) => {
             </Popover>
             <p className="text-red-500 text-xs">{errors.student_id?.message}</p>
           </div>
-          <Select
-            label="Class Name"
-            options={classNameList}
-            {...register("class_id")}
-          />
-          <Select
-            label="Fee Month"
-            options={[
-              { id: "January", title: "January" },
-              { id: "February", title: "February" },
-              { id: "March", title: "March" },
-              { id: "April", title: "April" },
-              { id: "May", title: "May" },
-              { id: "June", title: "June" },
-              { id: "July", title: "July" },
-              { id: "August", title: "August" },
-              { id: "September", title: "September" },
-              { id: "October", title: "October" },
-              { id: "November", title: "November" },
-              { id: "December", title: "December" },
-            ]}
-            {...register("fee_month")}
-          />
-          <Select
-            label="Fee Year"
-            options={[
-              { id: "2023", title: "2023" },
-              { id: "2024", title: "2024" },
-              { id: "2025", title: "2025" },
-            ]}
-            {...register("fee_year")}
-          />
-          <Select
-            label="Fee Status"
-            options={[
-              { id: "Paid", title: "Paid" },
-              { id: "Unpaid", title: "Unpaid" },
-            ]}
-            {...register("fee_status")}
-          />
-          <Button className="mt-6" type="submit">Get</Button>
+          <div className="w-full sm:w-auto">
+            <Select
+              label="Class Name"
+              options={classNameList}
+              {...register("class_id")}
+              className="w-full"
+            />
+          </div>
+          <div className="w-full sm:w-auto">
+            <Select
+              label="Fee Month"
+              options={[
+                { id: "January", title: "January" },
+                { id: "February", title: "February" },
+                { id: "March", title: "March" },
+                { id: "April", title: "April" },
+                { id: "May", title: "May" },
+                { id: "June", title: "June" },
+                { id: "July", title: "July" },
+                { id: "August", title: "August" },
+                { id: "September", title: "September" },
+                { id: "October", title: "October" },
+                { id: "November", title: "November" },
+                { id: "December", title: "December" },
+              ]}
+              {...register("fee_month")}
+              className="w-full"
+            />
+          </div>
+          <div className="w-full sm:w-auto">
+            <Select
+              label="Fee Year"
+              options={[
+                { id: "2023", title: "2023" },
+                { id: "2024", title: "2024" },
+                { id: "2025", title: "2025" },
+              ]}
+              {...register("fee_year")}
+              className="w-full"
+            />
+          </div>
+          <div className="w-full sm:w-auto">
+            <Select
+              label="Fee Status"
+              options={[
+                { id: "Paid", title: "Paid" },
+                { id: "Unpaid", title: "Unpaid" },
+              ]}
+              {...register("fee_status")}
+              className="w-full"
+            />
+          </div>
+          <Button className="mt-2 sm:mt-6 w-full sm:w-auto" type="submit">
+            Get
+          </Button>
         </form>
-        
+
         {feesData.length > 0 && (
-          <div className="p-4">
-            <Table>
+          <div className="p-2 sm:p-4 overflow-x-auto">
+            <Table className="min-w-[700px]">
               <TableHeader>
                 <TableRow>
                   <TableHead>Student Name</TableHead>
