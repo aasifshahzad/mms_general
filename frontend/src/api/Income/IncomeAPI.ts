@@ -13,9 +13,14 @@ export const IncomeAPI = {
     try {
       const response = await AxiosInstance.get(
         `/income/filter_income?category_id=${category_id}`,
-        { headers: getHeaders() }
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("access_token")}`,
+          },
+        }
       );
-      console.log("API Response:", response.data);
+      console.log("API Response:", response.data)
       return response;
     } catch (error) {
       console.error("API Error:", error);
@@ -28,7 +33,12 @@ export const IncomeAPI = {
       const response = await AxiosInstance.post<AddIncomeModel>(
         "/income/",
         JSON.stringify(AddFee),
-        { headers: getHeaders() }
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("access_token")}`,
+          },
+        }
       );
       console.log("API Response:", response);
       return response;
@@ -42,7 +52,12 @@ export const IncomeAPI = {
     try {
       const response = await AxiosInstance.get(
         "/income_cat_names/income-cat-names-all/",
-        { headers: getHeaders() }
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("access_token")}`,
+          },
+        }
       );
       // console.log("API Response:", response.data);
       return response;
@@ -57,7 +72,12 @@ export const IncomeAPI = {
       const response = await AxiosInstance.post<CreateIncomeCat>(
         "/income_cat_names/add_income_cat_name/",
         JSON.stringify(AddIncomeCat),
-        { headers: getHeaders() }
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("access_token")}`,
+          },
+        }
       );
       console.log("API Response:", response);
       return response;

@@ -365,9 +365,9 @@ const AddFees = () => {
                 type="number"
                 className="w-full focus:ring-primary"
                 {...register("fee_year", {
-                  valueAsNumber: true,
                   required: "Year is required",
                   min: { value: 2000, message: "Year must be after 2000" },
+                  setValueAs: (v) => v === undefined || v === null ? "" : String(v),
                 })}
                 placeholder="e.g. 2024"
               />
