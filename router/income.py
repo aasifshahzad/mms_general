@@ -22,7 +22,7 @@ async def root():
 @income_router.get("/all", response_model=List[IncomeResponse])
 def get_all_incomes(
     session: Session = Depends(get_session),
-    # user: User = Depends(check_admin)
+    user: User = Depends(check_admin)
 ):
     """Get all income records."""
     try:
@@ -58,7 +58,7 @@ def get_all_incomes(
 def create_income(
     income: IncomeCreate,
     session: Session = Depends(get_session),
-    # user: User = Depends(check_admin)
+    user: User = Depends(check_admin)
 ):
     # Ensure the category exists
     category = session.get(IncomeCatNames, income.category_id)
@@ -167,7 +167,7 @@ def update_income(
 def delete_income(
     income_id: int,
     session: Session = Depends(get_session),
-    # user: User = Depends(check_admin)
+    user: User = Depends(check_admin)
 ):
     db_income = session.get(Income, income_id)
     if not db_income:
@@ -183,7 +183,7 @@ def delete_income(
 def filter_income(
     category_id: int,
     session: Session = Depends(get_session),
-    # user: User = Depends(check_admin)
+    user: User = Depends(check_admin)
 ):
     """Filter income records based on the provided category ID."""
     try:
