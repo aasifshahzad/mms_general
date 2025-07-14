@@ -1,11 +1,6 @@
 import AxiosInstance from "@/api/axiosInterceptorInstance";
 import { AddExpenseModel, ExpenseCategory } from "@/models/expense/expense";
 
-// Helper function to get standard headers
-const getHeaders = () => ({
-  "Content-Type": "application/json",
-  Authorization: `Bearer ${localStorage.getItem("access_token")}`,
-});
 
 // Export as a single API object
 export const ExpenseAPI = {

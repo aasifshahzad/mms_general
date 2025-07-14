@@ -120,18 +120,22 @@ const ViewFees: React.FC = () => {
 
 const handleGetFees = async (data: GetFeeModel) => {
   try {
-    const response = await API3.GetFeebyFilter(data);
+    // Use new API: class_id, fee_month, fee_year
+    const response = await API3.GetClassFeeStatus({
+      class_id: data.class_id,
+      fee_month: data.fee_month,
+      fee_year: data.fee_year,
+    });
 
     if (Array.isArray(response.data) && response.data.length === 0) {
       toast.error("No data found");
-      setFeesData([]); // Optional: clear old data
+      setFeesData([]);
     } else if (Array.isArray(response.data)) {
       setFeesData(response.data as FeeData[]);
       toast.success("Fees data fetched successfully");
     } else {
       toast.error("Unexpected response format");
     }
-
   } catch (error) {
     console.error("Error fetching fees:", error);
     toast.error("Failed to fetch fees");

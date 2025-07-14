@@ -1,5 +1,5 @@
 import AxiosInstance from "@/api/axiosInterceptorInstance";
-import {AddFeeModel, GetFeeModel} from "@/models/Fees/Fee";
+import {AddFeeModel} from "@/models/Fees/Fee";
 
 // Helper function to get standard headers
 const getHeaders = () => ({
@@ -28,27 +28,31 @@ export const FeeAPI = {
       throw error; 
     }
   },
-  
-  GetFeebyFilter: async (GetFee: GetFeeModel) => {
+
+  // New API for class fee status
+  GetClassFeeStatus: async ({
+    class_id,
+    fee_month,
+    fee_year,
+  }: {
+    class_id: number | string;
+    fee_month: string;
+    fee_year: string | number;
+  }) => {
     try {
-      const response = await AxiosInstance.post<GetFeeModel>(
-        `/fee/filter/?student_id=${GetFee.student_id}&class_name_id=${GetFee.class_id}&fee_month=${GetFee.fee_month}&fee_year=${GetFee.fee_year}&fee_status=${GetFee.fee_status}`,
-        JSON.stringify(GetFee),
+      const response = await AxiosInstance.get(
+        `/fee/class-fee-status/${class_id}?fee_month=${fee_month}&fee_year=${fee_year}`,
         {
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${localStorage.getItem("access_token")}`,
-          },
+          headers: getHeaders(),
         }
       );
-      console.log("API Response:", response);
       return response;
     } catch (error) {
       console.error("API Error:", error);
       throw error;
     }
-  }
+  },
 };
 
 // For backward compatibility, also export individual functions
-export const { Create, GetFeebyFilter } = FeeAPI;
+export const { Create, GetClassFeeStatus } = FeeAPI;

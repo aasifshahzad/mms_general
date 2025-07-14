@@ -15,6 +15,7 @@ import {
   ResponsiveContainer,
   LineChart,
   Line,
+  Area,
 } from "recharts";
 import { DashboardAPI } from "@/api/Dashboard/dashboardAPI";
 import { useEffect } from "react";
@@ -24,6 +25,7 @@ import {
   Skeleton,
 } from "@/components/dashboard/Skeleton";
 import { Header } from "@/components/dashboard/Header";
+import { motion } from "framer-motion";
 
 // API Response Type Definitions
 interface ApiResponse<T> {
@@ -187,6 +189,24 @@ const getTodayDate = () => {
   const today = new Date();
   return today.toISOString().split("T")[0];
 };
+
+// Custom tooltip styles
+const CustomTooltip = ({ active, payload, label }: any) => {
+  if (active && payload && payload.length) {
+    return (
+      <div className="bg-white p-4 rounded-lg shadow-lg border border-gray-100">
+        <p className="font-medium text-gray-700">{label}</p>
+        {payload.map((entry: any, index: number) => (
+          <p key={index} style={{ color: entry.color || entry.fill }}>
+            {`${entry.name}: ${entry.value}`}
+          </p>
+        ))}
+      </div>
+    );
+  }
+  return null;
+};
+
 export default function AdminDashboard() {
   // Add state for user roles data
   const [userRolesData, setUserRolesData] = useState<UserRolesData | null>(
@@ -380,22 +400,27 @@ export default function AdminDashboard() {
     })) || [];
 
   return (
-    <div className="min-h-screen bg-gray-100">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
       <Header value="Dashboard" />
 
       {/* Main Content */}
-      <main className="mx-auto px-4 py-6 sm:px-6 lg:px-8">
-        <div>
-          <div className="bg-white p-6 rounded-lg shadow mb-8">
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-lg font-semibold">
-                {studentSummaryData?.graph.title ||
-                  "Student Attendance Summary"}
+      <main className="container mx-auto px-4 py-6 sm:px-6 lg:px-8">
+        <div className="grid grid-cols-1 gap-8">
+          {/* Student Attendance Summary Card */}
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+            className="bg-white p-6 rounded-xl shadow-md border border-gray-100 hover:shadow-lg transition-shadow duration-300"
+          >
+            <div className="flex justify-between items-center mb-6">
+              <h2 className="text-xl font-bold text-gray-800">
+                {studentSummaryData?.graph.title || "Student Attendance Summary"}
               </h2>
-              <div className="flex items-center">
+              <div className="flex items-center bg-gray-100 p-2 rounded-lg">
                 <label
                   htmlFor="date-select"
-                  className="mr-2 text-sm text-gray-600"
+                  className="mr-2 text-sm font-medium text-gray-600"
                 >
                   Select Date:
                 </label>
@@ -404,73 +429,123 @@ export default function AdminDashboard() {
                   type="date"
                   value={selectedDate}
                   onChange={(e) => setSelectedDate(e.target.value)}
-                  className="border rounded-md px-2 py-1 text-sm"
+                  className="bg-white border border-gray-300 rounded-md px-3 py-1.5 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
                 />
               </div>
             </div>
+            
             {studentSummaryData && (
-              <div className="mt-4 grid grid-cols-3 md:grid-cols-6 gap-4">
-                <div className="bg-blue-50 p-3 rounded-md text-center">
-                  <p className="text-sm text-gray-600">Total</p>
-                  <p className="font-bold">
+              <div className="mt-4 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-4 mb-8">
+                <div className="bg-gradient-to-r from-blue-50 to-blue-100 p-4 rounded-xl shadow-sm">
+                  <div className="flex items-center justify-center mb-2 text-blue-500">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                    </svg>
+                  </div>
+                  <p className="text-sm text-gray-600 text-center">Total</p>
+                  <p className="font-bold text-xl text-center text-gray-800">
                     {studentSummaryData.summary.total_students}
                   </p>
                 </div>
-                <div className="bg-green-50 p-3 rounded-md text-center">
-                  <p className="text-sm text-gray-600">Present</p>
-                  <p className="font-bold">
+                <div className="bg-gradient-to-r from-green-50 to-green-100 p-4 rounded-xl shadow-sm">
+                  <div className="flex items-center justify-center mb-2 text-green-500">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                  </div>
+                  <p className="text-sm text-gray-600 text-center">Present</p>
+                  <p className="font-bold text-xl text-center text-gray-800">
                     {studentSummaryData.summary.present}
                   </p>
                 </div>
-                <div className="bg-red-50 p-3 rounded-md text-center">
-                  <p className="text-sm text-gray-600">Absent</p>
-                  <p className="font-bold">
+                <div className="bg-gradient-to-r from-red-50 to-red-100 p-4 rounded-xl shadow-sm">
+                  <div className="flex items-center justify-center mb-2 text-red-500">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                  </div>
+                  <p className="text-sm text-gray-600 text-center">Absent</p>
+                  <p className="font-bold text-xl text-center text-gray-800">
                     {studentSummaryData.summary.absent}
                   </p>
                 </div>
-                <div className="bg-yellow-50 p-3 rounded-md text-center">
-                  <p className="text-sm text-gray-600">Late</p>
-                  <p className="font-bold">{studentSummaryData.summary.late}</p>
+                <div className="bg-gradient-to-r from-yellow-50 to-yellow-100 p-4 rounded-xl shadow-sm">
+                  <div className="flex items-center justify-center mb-2 text-yellow-500">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                  </div>
+                  <p className="text-sm text-gray-600 text-center">Late</p>
+                  <p className="font-bold text-xl text-center text-gray-800">
+                    {studentSummaryData.summary.late}
+                  </p>
                 </div>
-                <div className="bg-purple-50 p-3 rounded-md text-center">
-                  <p className="text-sm text-gray-600">Sick</p>
-                  <p className="font-bold">{studentSummaryData.summary.sick}</p>
+                <div className="bg-gradient-to-r from-purple-50 to-purple-100 p-4 rounded-xl shadow-sm">
+                  <div className="flex items-center justify-center mb-2 text-purple-500">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                    </svg>
+                  </div>
+                  <p className="text-sm text-gray-600 text-center">Sick</p>
+                  <p className="font-bold text-xl text-center text-gray-800">
+                    {studentSummaryData.summary.sick}
+                  </p>
                 </div>
-                <div className="bg-orange-50 p-3 rounded-md text-center">
-                  <p className="text-sm text-gray-600">Leave</p>
-                  <p className="font-bold">
+                <div className="bg-gradient-to-r from-orange-50 to-orange-100 p-4 rounded-xl shadow-sm">
+                  <div className="flex items-center justify-center mb-2 text-orange-500">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                  </div>
+                  <p className="text-sm text-gray-600 text-center">Leave</p>
+                  <p className="font-bold text-xl text-center text-gray-800">
                     {studentSummaryData.summary.leave}
                   </p>
                 </div>
               </div>
             )}
-            <div className="h-64">
+            
+            <div className="h-64 mt-4">
               {studentSummaryLoading ? (
                 <div className="flex items-center justify-center h-full">
                   <ChartSkeleton />
                 </div>
               ) : (
                 <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={transformedBarData}>
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="name" />
-                    <YAxis />
-                    <Tooltip />
-                    <Legend />
-                    <Bar dataKey="value" name="Count" fill="#8884d8">
+                  <BarChart data={transformedBarData} barSize={40}>
+                    <defs>
                       {transformedBarData.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={entry.color} />
+                        <linearGradient key={`gradient-${index}`} id={`colorValue${index}`} x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="5%" stopColor={entry.color} stopOpacity={0.8}/>
+                          <stop offset="95%" stopColor={entry.color} stopOpacity={0.4}/>
+                        </linearGradient>
+                      ))}
+                    </defs>
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f0f0f0" />
+                    <XAxis dataKey="name" axisLine={false} tickLine={false} />
+                    <YAxis axisLine={false} tickLine={false} />
+                    <Tooltip content={<CustomTooltip />} />
+                    <Legend iconType="circle" />
+                    <Bar dataKey="value" name="Count" radius={[4, 4, 0, 0]}>
+                      {transformedBarData.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={`url(#colorValue${index})`} />
                       ))}
                     </Bar>
                   </BarChart>
                 </ResponsiveContainer>
               )}
             </div>
-          </div>
-          <div className="grid gap-6 mb-8 md:grid-cols-2">
-            {/* Leave Status Chart */}
-            <div className="bg-white p-6 rounded-lg shadow">
-              <h2 className="text-lg font-semibold mb-4">
+          </motion.div>
+          
+          <div className="grid gap-8 md:grid-cols-2">
+            {/* User Roles Overview Card */}
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.1 }}
+              className="bg-white p-6 rounded-xl shadow-md border border-gray-100 hover:shadow-lg transition-shadow duration-300"
+            >
+              <h2 className="text-xl font-bold text-gray-800 mb-6">
                 {userRolesData?.graph.title || "User Roles Overview"}
               </h2>
               <div className="h-64">
@@ -481,6 +556,14 @@ export default function AdminDashboard() {
                 ) : (
                   <ResponsiveContainer width="100%" height="100%">
                     <PieChart>
+                      <defs>
+                        {transformedPieData.map((entry, index) => (
+                          <linearGradient key={`pieGradient-${index}`} id={`pieColorGradient${index}`} x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="0%" stopColor={entry.color} stopOpacity={1}/>
+                            <stop offset="100%" stopColor={entry.color} stopOpacity={0.7}/>
+                          </linearGradient>
+                        ))}
+                      </defs>
                       <Pie
                         data={transformedPieData}
                         cx="50%"
@@ -489,28 +572,36 @@ export default function AdminDashboard() {
                         outerRadius={80}
                         fill="#8884d8"
                         dataKey="value"
+                        animationBegin={0}
+                        animationDuration={1500}
                       >
                         {transformedPieData.map((entry, index) => (
-                          <Cell key={`cell-${index}`} fill={entry.color} />
+                          <Cell key={`cell-${index}`} fill={`url(#pieColorGradient${index})`} stroke="#fff" strokeWidth={2} />
                         ))}
                       </Pie>
-                      <Tooltip />
-                      <Legend />
+                      <Tooltip content={<CustomTooltip />} />
+                      <Legend iconType="circle" />
                     </PieChart>
                   </ResponsiveContainer>
                 )}
               </div>
-            </div>
-            {/* Fee Summary Chart (replacing Leave Trends) */}
-            <div className="bg-white p-6 rounded-lg shadow">
-              <div className="flex justify-between items-center mb-4">
-                <h2 className="text-lg font-semibold">
+            </motion.div>
+            
+            {/* Fee Collection Trends Card */}
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.2 }}
+              className="bg-white p-6 rounded-xl shadow-md border border-gray-100 hover:shadow-lg transition-shadow duration-300"
+            >
+              <div className="flex justify-between items-center mb-6">
+                <h2 className="text-xl font-bold text-gray-800">
                   {feeSummaryData?.graph.title || "Fee Collection Trends"}
                 </h2>
-                <div className="flex items-center">
+                <div className="flex items-center bg-gray-100 p-2 rounded-lg">
                   <label
                     htmlFor="fee-year-select"
-                    className="mr-2 text-sm text-gray-600"
+                    className="mr-2 text-sm font-medium text-gray-600"
                   >
                     Year:
                   </label>
@@ -518,9 +609,8 @@ export default function AdminDashboard() {
                     id="fee-year-select"
                     value={selectedYear}
                     onChange={(e) => setSelectedYear(parseInt(e.target.value))}
-                    className="border rounded-md px-2 py-1 text-sm"
+                    className="bg-white border border-gray-300 rounded-md px-3 py-1.5 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
                   >
-                    {/* Generate options for last 5 years and next 2 years */}
                     {Array.from(
                       { length: 7 },
                       (_, i) => currentYear - 4 + i
@@ -535,11 +625,20 @@ export default function AdminDashboard() {
 
               {/* Fee summary total */}
               {!feeSummaryLoading && feeSummaryData && (
-                <div className="mb-4 bg-blue-50 p-3 rounded-md">
-                  <p className="text-sm text-gray-600">Total Fee Collection</p>
-                  <p className="text-xl font-bold text-blue-600">
-                    Rs.{feeSummaryData.total.toLocaleString()}
-                  </p>
+                <div className="mb-6 bg-gradient-to-r from-blue-50 to-blue-100 p-5 rounded-xl shadow-sm">
+                  <div className="flex items-center">
+                    <div className="p-3 rounded-full bg-blue-500 text-white mr-4">
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                    </div>
+                    <div>
+                      <p className="text-sm text-gray-600">Total Fee Collection</p>
+                      <p className="text-xl font-bold text-blue-600">
+                        Rs.{feeSummaryData.total.toLocaleString()}
+                      </p>
+                    </div>
+                  </div>
                 </div>
               )}
 
@@ -559,11 +658,17 @@ export default function AdminDashboard() {
                       }
                       margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
                     >
-                      <CartesianGrid strokeDasharray="3 3" />
-                      <XAxis dataKey="name" />
-                      <YAxis />
-                      <Tooltip formatter={(value) => `Rs.${value}`} />
-                      <Legend />
+                      <defs>
+                        <linearGradient id="colorAmount" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.8}/>
+                          <stop offset="95%" stopColor="#3b82f6" stopOpacity={0.1}/>
+                        </linearGradient>
+                      </defs>
+                      <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f0f0f0" />
+                      <XAxis dataKey="name" axisLine={false} tickLine={false} />
+                      <YAxis axisLine={false} tickLine={false} />
+                      <Tooltip content={<CustomTooltip />} />
+                      <Legend iconType="circle" />
                       <Line
                         type="monotone"
                         dataKey="amount"
@@ -571,29 +676,30 @@ export default function AdminDashboard() {
                           feeSummaryData?.graph.datasets[0].label ||
                           "Fee Collection"
                         }
-                        stroke={
-                          feeSummaryData?.graph.datasets[0].borderColor ||
-                          "#8884d8"
-                        }
-                        activeDot={{ r: 8 }}
+                        stroke="#3b82f6"
+                        activeDot={{ r: 8, strokeWidth: 0, fill: "#2563eb" }}
                         strokeWidth={2}
+                        dot={{ r: 4, strokeWidth: 2, fill: "#fff", stroke: "#3b82f6" }}
                       />
+                      <Area type="monotone" dataKey="amount" stroke="none" fillOpacity={1} fill="url(#colorAmount)" />
                     </LineChart>
                   </ResponsiveContainer>
                 )}
               </div>
-            </div>
+            </motion.div>
           </div>
 
-          {/* Department Attendance */}
-
-          <div className="bg-white p-6 rounded-lg shadow mb-8">
-            <h2 className="text-lg font-semibold mb-4">
+          {/* Class Attendance Summary Card */}
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.3 }}
+            className="bg-white p-6 rounded-xl shadow-md border border-gray-100 hover:shadow-lg transition-shadow duration-300"
+          >
+            <h2 className="text-xl font-bold text-gray-800 mb-6">
               {attendanceSummaryData?.graph.title || "Class Attendance Summary"}
             </h2>
             <div className="h-80">
-              {" "}
-              {/* Increased height for better visibility with multiple bars */}
               {attendanceSummaryLoading ? (
                 <div className="flex items-center justify-center h-full">
                   <ChartSkeleton height="h-80" />
@@ -604,33 +710,39 @@ export default function AdminDashboard() {
                     data={
                       attendanceSummaryData?.graph.labels.map(
                         (label, index) => {
-                          // Define a proper type with string index signature
                           const dataPoint: { name: string; [key: string]: string | number } = { name: label };
-
-                          // Add each attendance type as a property
                           attendanceSummaryData.graph.datasets.forEach(
                             (dataset) => {
                               dataPoint[dataset.label] = dataset.data[index];
                             }
                           );
-
                           return dataPoint;
                         }
                       ) || []
                     }
                     margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
+                    barSize={20}
                   >
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="name" />
-                    <YAxis />
-                    <Tooltip />
-                    <Legend />
-                    {attendanceSummaryData?.graph.datasets.map((dataset) => (
+                    <defs>
+                      {attendanceSummaryData?.graph.datasets.map((dataset, index) => (
+                        <linearGradient key={`gradientAttendance-${index}`} id={`colorAttendance${index}`} x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="5%" stopColor={dataset.backgroundColor} stopOpacity={0.8}/>
+                          <stop offset="95%" stopColor={dataset.backgroundColor} stopOpacity={0.4}/>
+                        </linearGradient>
+                      ))}
+                    </defs>
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f0f0f0" />
+                    <XAxis dataKey="name" axisLine={false} tickLine={false} />
+                    <YAxis axisLine={false} tickLine={false} />
+                    <Tooltip content={<CustomTooltip />} />
+                    <Legend iconType="circle" />
+                    {attendanceSummaryData?.graph.datasets.map((dataset, index) => (
                       <Bar
                         key={dataset.label}
                         dataKey={dataset.label}
                         stackId="a"
-                        fill={dataset.backgroundColor}
+                        fill={`url(#colorAttendance${index})`}
+                        radius={[0, 0, 0, 0]}
                       />
                     ))}
                   </BarChart>
@@ -638,52 +750,52 @@ export default function AdminDashboard() {
               )}
             </div>
 
-            {/* Optional: Add a table view for detailed numbers */}
+            {/* Optional: Add a table view for detailed numbers with improved styling */}
             {!attendanceSummaryLoading && attendanceSummaryData && (
-              <div className="mt-6 overflow-x-auto">
-                <table className="min-w-full divide-y divide-gray-200">
+              <div className="mt-8 overflow-x-auto">
+                <table className="min-w-full divide-y divide-gray-200 rounded-lg overflow-hidden">
                   <thead className="bg-gray-50">
                     <tr>
-                      <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                         Class
                       </th>
-                      <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                         Present
                       </th>
-                      <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                         Absent
                       </th>
-                      <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                         Late
                       </th>
-                      <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                         Sick
                       </th>
-                      <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                         Leave
                       </th>
                     </tr>
                   </thead>
                   <tbody className="bg-white divide-y divide-gray-200">
                     {attendanceSummaryData.summary.map((item, index) => (
-                      <tr key={index}>
-                        <td className="px-3 py-2 whitespace-nowrap text-sm font-medium text-gray-900">
+                      <tr key={index} className="hover:bg-gray-50 transition-colors duration-150">
+                        <td className="px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-900">
                           {item.class_name}
                         </td>
-                        <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-500">
-                          {item.attendance_values.Present}
+                        <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-700">
+                          <span className="px-2 py-1 rounded-full bg-green-100 text-green-800">{item.attendance_values.Present}</span>
                         </td>
-                        <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-500">
-                          {item.attendance_values.Absent}
+                        <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-700">
+                          <span className="px-2 py-1 rounded-full bg-red-100 text-red-800">{item.attendance_values.Absent}</span>
                         </td>
-                        <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-500">
-                          {item.attendance_values.Late}
+                        <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-700">
+                          <span className="px-2 py-1 rounded-full bg-yellow-100 text-yellow-800">{item.attendance_values.Late}</span>
                         </td>
-                        <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-500">
-                          {item.attendance_values.Sick}
+                        <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-700">
+                          <span className="px-2 py-1 rounded-full bg-purple-100 text-purple-800">{item.attendance_values.Sick}</span>
                         </td>
-                        <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-500">
-                          {item.attendance_values.Leave}
+                        <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-700">
+                          <span className="px-2 py-1 rounded-full bg-orange-100 text-orange-800">{item.attendance_values.Leave}</span>
                         </td>
                       </tr>
                     ))}
@@ -691,16 +803,23 @@ export default function AdminDashboard() {
                 </table>
               </div>
             )}
-          </div>
-          <div className="bg-white p-6 rounded-lg shadow mb-8">
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-lg font-semibold">
+          </motion.div>
+          
+          {/* Financial Summary Card */}
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.4 }}
+            className="bg-white p-6 rounded-xl shadow-md border border-gray-100 hover:shadow-lg transition-shadow duration-300"
+          >
+            <div className="flex justify-between items-center mb-6">
+              <h2 className="text-xl font-bold text-gray-800">
                 {incomeExpenseSummaryData?.graph.title || "Financial Summary"}
               </h2>
-              <div className="flex items-center">
+              <div className="flex items-center bg-gray-100 p-2 rounded-lg">
                 <label
                   htmlFor="year-select"
-                  className="mr-2 text-sm text-gray-600"
+                  className="mr-2 text-sm font-medium text-gray-600"
                 >
                   Select Year:
                 </label>
@@ -708,9 +827,8 @@ export default function AdminDashboard() {
                   id="year-select"
                   value={selectedYear}
                   onChange={(e) => setSelectedYear(parseInt(e.target.value))}
-                  className="border rounded-md px-2 py-1 text-sm"
+                  className="bg-white border border-gray-300 rounded-md px-3 py-1.5 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
                 >
-                  {/* Generate options for last 5 years and next 2 years */}
                   {Array.from({ length: 7 }, (_, i) => currentYear - 4 + i).map(
                     (year) => (
                       <option key={year} value={year}>
@@ -722,41 +840,57 @@ export default function AdminDashboard() {
               </div>
             </div>
 
-            {/* Financial summary cards */}
+            {/* Financial summary cards with improved styling */}
             {!incomeExpenseLoading && incomeExpenseSummaryData && (
-              <div className="grid grid-cols-3 gap-4 mb-6">
-                <div className="bg-green-50 p-4 rounded-lg">
-                  <h3 className="text-sm font-medium text-gray-500">
-                    Total Income
-                  </h3>
-                  <p className="text-2xl font-bold text-green-600">
-                    Rs.
-                    {incomeExpenseSummaryData.totals.income.toLocaleString()}
-                  </p>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                <div className="bg-gradient-to-r from-green-50 to-green-100 p-5 rounded-xl shadow-sm">
+                  <div className="flex items-center">
+                    <div className="p-3 rounded-full bg-green-500 text-white mr-4">
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-gray-600">Total Income</p>
+                      <p className="text-2xl font-bold text-green-600">
+                        Rs.{incomeExpenseSummaryData.totals.income.toLocaleString()}
+                      </p>
+                    </div>
+                  </div>
                 </div>
-                <div className="bg-red-50 p-4 rounded-lg">
-                  <h3 className="text-sm font-medium text-gray-500">
-                    Total Expense
-                  </h3>
-                  <p className="text-2xl font-bold text-red-600">
-                    Rs.
-                    {incomeExpenseSummaryData.totals.expense.toLocaleString()}
-                  </p>
+                
+                <div className="bg-gradient-to-r from-red-50 to-red-100 p-5 rounded-xl shadow-sm">
+                  <div className="flex items-center">
+                    <div className="p-3 rounded-full bg-red-500 text-white mr-4">
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+                      </svg>
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-gray-600">Total Expense</p>
+                      <p className="text-2xl font-bold text-red-600">
+                        Rs.{incomeExpenseSummaryData.totals.expense.toLocaleString()}
+                      </p>
+                    </div>
+                  </div>
                 </div>
-                <div className="bg-blue-50 p-4 rounded-lg">
-                  <h3 className="text-sm font-medium text-gray-500">
-                    Net Profit/Loss
-                  </h3>
-                  <p
-                    className={`text-2xl font-bold ${
-                      incomeExpenseSummaryData.totals.profit >= 0
-                        ? "text-blue-600"
-                        : "text-red-600"
-                    }`}
-                  >
-                    Rs.
-                    {incomeExpenseSummaryData.totals.profit.toLocaleString()}
-                  </p>
+                
+                <div className="bg-gradient-to-r from-blue-50 to-blue-100 p-5 rounded-xl shadow-sm">
+                  <div className="flex items-center">
+                    <div className={`p-3 rounded-full ${incomeExpenseSummaryData.totals.profit >= 0 ? 'bg-blue-500' : 'bg-red-500'} text-white mr-4`}>
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={incomeExpenseSummaryData.totals.profit >= 0 
+                          ? "M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" 
+                          : "M13 17h8m0 0V9m0 8l-8-8-4 4-6-6"} />
+                      </svg>
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-gray-600">Net Profit/Loss</p>
+                      <p className={`text-2xl font-bold ${incomeExpenseSummaryData.totals.profit >= 0 ? "text-blue-600" : "text-red-600"}`}>
+                        Rs.{incomeExpenseSummaryData.totals.profit.toLocaleString()}
+                      </p>
+                    </div>
+                  </div>
                 </div>
               </div>
             )}
@@ -789,35 +923,42 @@ export default function AdminDashboard() {
                       ) || []
                     }
                     margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
+                    barSize={20}
+                    barGap={8}
                   >
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="name" />
-                    <YAxis />
-                    <Tooltip formatter={(value) => `Rs.${value}`} />
-                    <Legend />
+                    <defs>
+                      <linearGradient id="colorIncome" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="rgba(0, 200, 83, 0.8)" stopOpacity={0.8}/>
+                        <stop offset="95%" stopColor="rgba(0, 200, 83, 0.8)" stopOpacity={0.4}/>
+                      </linearGradient>
+                      <linearGradient id="colorExpense" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="rgba(244, 67, 54, 0.8)" stopOpacity={0.8}/>
+                        <stop offset="95%" stopColor="rgba(244, 67, 54, 0.8)" stopOpacity={0.4}/>
+                      </linearGradient>
+                      <linearGradient id="colorProfit" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="rgba(33, 150, 243, 0.8)" stopOpacity={0.8}/>
+                        <stop offset="95%" stopColor="rgba(33, 150, 243, 0.8)" stopOpacity={0.4}/>
+                      </linearGradient>
+                    </defs>
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f0f0f0" />
+                    <XAxis dataKey="name" axisLine={false} tickLine={false} />
+                    <YAxis axisLine={false} tickLine={false} />
+                    <Tooltip content={<CustomTooltip />} />
+                    <Legend iconType="circle" />
                     <Bar
                       dataKey="Income"
-                      fill={
-                        typeof incomeExpenseSummaryData?.graph.datasets[0]
-                          .backgroundColor === "string"
-                          ? incomeExpenseSummaryData?.graph.datasets[0]
-                              .backgroundColor
-                          : "rgba(0, 200, 83, 0.7)"
-                      }
+                      fill="url(#colorIncome)"
+                      radius={[4, 4, 0, 0]}
                     />
                     <Bar
                       dataKey="Expense"
-                      fill={
-                        typeof incomeExpenseSummaryData?.graph.datasets[1]
-                          .backgroundColor === "string"
-                          ? incomeExpenseSummaryData?.graph.datasets[1]
-                              .backgroundColor
-                          : "rgba(244, 67, 54, 0.7)"
-                      }
+                      fill="url(#colorExpense)"
+                      radius={[4, 4, 0, 0]}
                     />
                     <Bar
                       dataKey="Profit"
-                      fill="rgba(33, 150, 243, 0.7)"
+                      fill="url(#colorProfit)"
+                      radius={[4, 4, 0, 0]}
                       // Handle array of colors for profit/loss bars
                       {...(Array.isArray(
                         incomeExpenseSummaryData?.graph.datasets[2]
@@ -846,17 +987,24 @@ export default function AdminDashboard() {
                 </ResponsiveContainer>
               )}
             </div>
-          </div>
-          <div className="bg-white p-6 rounded-lg shadow mb-8">
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4">
-              <h2 className="text-lg font-semibold mb-2 sm:mb-0">
+          </motion.div>
+          
+          {/* Income Category Details Card */}
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.5 }}
+            className="bg-white p-6 rounded-xl shadow-md border border-gray-100 hover:shadow-lg transition-shadow duration-300"
+          >
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6">
+              <h2 className="text-xl font-bold text-gray-800 mb-2 sm:mb-0">
                 {incomeSummaryData?.graph.title || "Income Category Details"}
               </h2>
               <div className="flex flex-wrap items-center gap-4">
-                <div className="flex items-center">
+                <div className="flex items-center bg-gray-100 p-2 rounded-lg">
                   <label
                     htmlFor="income-year-select"
-                    className="mr-2 text-sm text-gray-600"
+                    className="mr-2 text-sm font-medium text-gray-600"
                   >
                     Year:
                   </label>
@@ -864,7 +1012,7 @@ export default function AdminDashboard() {
                     id="income-year-select"
                     value={selectedYear}
                     onChange={(e) => setSelectedYear(parseInt(e.target.value))}
-                    className="border rounded-md px-2 py-1 text-sm"
+                    className="bg-white border border-gray-300 rounded-md px-3 py-1.5 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
                   >
                     {Array.from(
                       { length: 7 },
@@ -877,10 +1025,10 @@ export default function AdminDashboard() {
                   </select>
                 </div>
 
-                <div className="flex items-center">
+                <div className="flex items-center bg-gray-100 p-2 rounded-lg">
                   <label
                     htmlFor="income-month-select"
-                    className="mr-2 text-sm text-gray-600"
+                    className="mr-2 text-sm font-medium text-gray-600"
                   >
                     Month:
                   </label>
@@ -891,7 +1039,7 @@ export default function AdminDashboard() {
                       const value = parseInt(e.target.value);
                       setSelectedMonth(value === 0 ? null : value);
                     }}
-                    className="border rounded-md px-2 py-1 text-sm"
+                    className="bg-white border border-gray-300 rounded-md px-3 py-1.5 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
                   >
                     {monthNames.map((month, index) => (
                       <option key={index} value={index}>
@@ -905,15 +1053,24 @@ export default function AdminDashboard() {
 
             {/* Income summary total */}
             {!incomeSummaryLoading && incomeSummaryData && (
-              <div className="mb-4 bg-green-50 p-3 rounded-md">
-                <p className="text-sm text-gray-600">
-                  Total Income{" "}
-                  {selectedMonth ? `for ${monthNames[selectedMonth]}` : ""}{" "}
-                  {selectedYear}
-                </p>
-                <p className="text-xl font-bold text-green-600">
-                  Rs.{incomeSummaryData.total.toLocaleString()}
-                </p>
+              <div className="mb-6 bg-gradient-to-r from-green-50 to-green-100 p-5 rounded-xl shadow-sm">
+                <div className="flex items-center">
+                  <div className="p-3 rounded-full bg-green-500 text-white mr-4">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-gray-600">
+                      Total Income{" "}
+                      {selectedMonth ? `for ${monthNames[selectedMonth]}` : ""}{" "}
+                      {selectedYear}
+                    </p>
+                    <p className="text-2xl font-bold text-green-600">
+                      Rs.{incomeSummaryData.total.toLocaleString()}
+                    </p>
+                  </div>
+                </div>
               </div>
             )}
 
@@ -935,37 +1092,49 @@ export default function AdminDashboard() {
                       ) || []
                     }
                     margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
+                    barSize={40}
                   >
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="name" />
-                    <YAxis />
-                    <Tooltip formatter={(value) => `Rs.${value}`} />
-                    <Legend />
+                    <defs>
+                      <linearGradient id="colorIncomeAmount" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="rgba(0, 200, 83, 0.8)" stopOpacity={0.8}/>
+                        <stop offset="95%" stopColor="rgba(0, 200, 83, 0.8)" stopOpacity={0.4}/>
+                      </linearGradient>
+                    </defs>
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f0f0f0" />
+                    <XAxis dataKey="name" axisLine={false} tickLine={false} />
+                    <YAxis axisLine={false} tickLine={false} />
+                    <Tooltip content={<CustomTooltip />} />
+                    <Legend iconType="circle" />
                     <Bar
                       dataKey="amount"
                       name={
                         incomeSummaryData?.graph.datasets[0].label || "Income"
                       }
-                      fill={
-                        incomeSummaryData?.graph.datasets[0].backgroundColor ||
-                        "rgba(0, 200, 83, 0.7)"
-                      }
+                      fill="url(#colorIncomeAmount)"
+                      radius={[4, 4, 0, 0]}
                     />
                   </BarChart>
                 </ResponsiveContainer>
               )}
             </div>
-          </div>
-          <div className="bg-white p-6 rounded-lg shadow mb-8">
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4">
-              <h2 className="text-lg font-semibold mb-2 sm:mb-0">
+          </motion.div>
+          
+          {/* Expense Category Details Card */}
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.6 }}
+            className="bg-white p-6 rounded-xl shadow-md border border-gray-100 hover:shadow-lg transition-shadow duration-300"
+          >
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6">
+              <h2 className="text-xl font-bold text-gray-800 mb-2 sm:mb-0">
                 {expenseSummaryData?.graph.title || "Expense Category Details"}
               </h2>
               <div className="flex flex-wrap items-center gap-4">
-                <div className="flex items-center">
+                <div className="flex items-center bg-gray-100 p-2 rounded-lg">
                   <label
                     htmlFor="expense-year-select"
-                    className="mr-2 text-sm text-gray-600"
+                    className="mr-2 text-sm font-medium text-gray-600"
                   >
                     Year:
                   </label>
@@ -973,7 +1142,7 @@ export default function AdminDashboard() {
                     id="expense-year-select"
                     value={selectedYear}
                     onChange={(e) => setSelectedYear(parseInt(e.target.value))}
-                    className="border rounded-md px-2 py-1 text-sm"
+                    className="bg-white border border-gray-300 rounded-md px-3 py-1.5 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
                   >
                     {Array.from(
                       { length: 7 },
@@ -986,10 +1155,10 @@ export default function AdminDashboard() {
                   </select>
                 </div>
 
-                <div className="flex items-center">
+                <div className="flex items-center bg-gray-100 p-2 rounded-lg">
                   <label
                     htmlFor="expense-month-select"
-                    className="mr-2 text-sm text-gray-600"
+                    className="mr-2 text-sm font-medium text-gray-600"
                   >
                     Month:
                   </label>
@@ -1002,7 +1171,7 @@ export default function AdminDashboard() {
                       const value = parseInt(e.target.value);
                       setSelectedExpenseMonth(value === 0 ? null : value);
                     }}
-                    className="border rounded-md px-2 py-1 text-sm"
+                    className="bg-white border border-gray-300 rounded-md px-3 py-1.5 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
                   >
                     {monthNames.map((month, index) => (
                       <option key={index} value={index}>
@@ -1016,17 +1185,26 @@ export default function AdminDashboard() {
 
             {/* Expense summary total */}
             {!expenseSummaryLoading && expenseSummaryData && (
-              <div className="mb-4 bg-red-50 p-3 rounded-md">
-                <p className="text-sm text-gray-600">
-                  Total Expenses{" "}
-                  {selectedExpenseMonth
-                    ? `for ${monthNames[selectedExpenseMonth]}`
-                    : ""}{" "}
-                  {selectedYear}
-                </p>
-                <p className="text-xl font-bold text-red-600">
-                  Rs.{expenseSummaryData.total.toLocaleString()}
-                </p>
+              <div className="mb-6 bg-gradient-to-r from-red-50 to-red-100 p-5 rounded-xl shadow-sm">
+                <div className="flex items-center">
+                  <div className="p-3 rounded-full bg-red-500 text-white mr-4">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+                    </svg>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-gray-600">
+                      Total Expenses{" "}
+                      {selectedExpenseMonth
+                        ? `for ${monthNames[selectedExpenseMonth]}`
+                        : ""}{" "}
+                      {selectedYear}
+                    </p>
+                    <p className="text-2xl font-bold text-red-600">
+                      Rs.{expenseSummaryData.total.toLocaleString()}
+                    </p>
+                  </div>
+                </div>
               </div>
             )}
 
@@ -1048,27 +1226,32 @@ export default function AdminDashboard() {
                       ) || []
                     }
                     margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
+                    barSize={40}
                   >
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="name" />
-                    <YAxis />
-                    <Tooltip formatter={(value) => `Rs.${value}`} />
-                    <Legend />
+                    <defs>
+                      <linearGradient id="colorExpenseAmount" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="rgba(244, 67, 54, 0.8)" stopOpacity={0.8}/>
+                        <stop offset="95%" stopColor="rgba(244, 67, 54, 0.8)" stopOpacity={0.4}/>
+                      </linearGradient>
+                    </defs>
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f0f0f0" />
+                    <XAxis dataKey="name" axisLine={false} tickLine={false} />
+                    <YAxis axisLine={false} tickLine={false} />
+                    <Tooltip content={<CustomTooltip />} />
+                    <Legend iconType="circle" />
                     <Bar
                       dataKey="amount"
                       name={
                         expenseSummaryData?.graph.datasets[0].label || "Expense"
                       }
-                      fill={
-                        expenseSummaryData?.graph.datasets[0].backgroundColor ||
-                        "rgba(244, 67, 54, 0.7)"
-                      }
+                      fill="url(#colorExpenseAmount)"
+                      radius={[4, 4, 0, 0]}
                     />
                   </BarChart>
                 </ResponsiveContainer>
               )}
             </div>
-          </div>
+          </motion.div>
         </div>
       </main>
     </div>
