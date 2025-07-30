@@ -2,6 +2,7 @@ from asyncio.log import logger
 from typing import Annotated, List, Optional
 from fastapi import APIRouter, Depends, HTTPException
 from sqlmodel import Session, select
+from sqlalchemy.exc import IntegrityError  # <-- Add this import
 
 from db import get_session
 from schemas.class_names_model import ClassNames, ClassNamesCreate, ClassNamesResponse
@@ -28,12 +29,22 @@ def create_classnames(user: Annotated[User, Depends(check_admin)],classnames: Cl
     try:
         session.commit()
         session.refresh(db_classnames)
+    except IntegrityError as e:
+        session.rollback()
+        logger.error(f"Integrity error: {e}")
+        if "unique constraint" in str(e.orig).lower() or "duplicate key" in str(e.orig).lower():
+            raise HTTPException(
+                status_code=400, detail="Class name or ID must be unique."
+            )
+        raise HTTPException(
+            status_code=400, detail="Database integrity error."
+        )
     except Exception as e:
         session.rollback()
         # Log any other unexpected errors
         logger.error(f"Unexpected error: {e}")
         raise HTTPException(
-            status_code=500, detail="Class name must be unique."
+            status_code=500, detail="Internal server error."
         )
 
     return db_classnames
@@ -62,10 +73,16 @@ def read_classname(current_user: Annotated[User, Depends(check_authenticated_use
 def delete_classnames(user: Annotated[User, Depends(check_admin)],class_name: str, session: Session = Depends(get_session)):
     classnames = session.exec(select(ClassNames).where(
         ClassNames.class_name == class_name)).first()
-    print(classnames)
+    # Check for related records (adjust model and field as needed)
+    related_records = []  # <-- Replace with actual query if you have related records
     if not classnames:
         raise HTTPException(
             status_code=404, detail="Class Name not found")
+    if related_records:
+        raise HTTPException(
+            status_code=400,
+            detail="Cannot delete: There are records using this class name."
+        )
     session.delete(classnames)
     session.commit()
     return {"message": "Class Name deleted successfully"}
@@ -78,12 +95,18 @@ def delete_classnames_by_id(
 ):
     """Delete a class name by its ID"""
     classname = session.get(ClassNames, class_name_id)
+    # Check for related records (adjust model and field as needed)
+    related_records = []  # <-- Replace with actual query if you have related records
     if not classname:
         raise HTTPException(
             status_code=404, 
             detail=f"Class Name with ID {class_name_id} not found"
         )
-    
+    if related_records:
+        raise HTTPException(
+            status_code=400,
+            detail="Cannot delete: There are records using this class name."
+        )
     try:
         session.delete(classname)
         session.commit()

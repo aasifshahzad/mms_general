@@ -10,7 +10,7 @@ from datetime import datetime
 
 
 class TeacherNamesBase(SQLModel):
-    teacher_name_id: int = Field(primary_key=True)
+    teacher_name_id: Optional[int] = Field(default=None, primary_key=True)
     created_at: datetime = Field(default=datetime.now(), nullable=False)
 
 
@@ -23,8 +23,6 @@ class TeacherNames(TeacherNamesBase, table=True):
 
 
 class TeacherNamesCreate(SQLModel):
-    teacher_name_id: int = Field(primary_key=True)
-    created_at: datetime = Field(default=datetime.now(), nullable=False)
     teacher_name: str = Field(index=True, unique=True)
 
 

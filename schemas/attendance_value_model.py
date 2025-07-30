@@ -10,7 +10,7 @@ from datetime import datetime
 
 
 class AttendanceValueBase(SQLModel):
-    attendance_value_id: int = Field(primary_key=True)
+    attendance_value_id: Optional[int] = Field(default=None, primary_key=True)
     created_at: datetime = Field(default=datetime.now(), nullable=False)
 
 
@@ -23,8 +23,6 @@ class AttendanceValue(AttendanceValueBase, table=True):
 
 
 class AttendanceValueCreate(SQLModel):
-    attendance_value_id: int = Field(primary_key=True)
-    created_at: datetime = Field(default=datetime.now(), nullable=False)
     attendance_value: str = Field(index=True, unique=True)
 
 

@@ -2,12 +2,14 @@ from asyncio.log import logger
 from typing import Annotated, List
 from fastapi import APIRouter, Depends, HTTPException
 from sqlmodel import Session, select
+from sqlalchemy.exc import IntegrityError  # <-- Add this import
 
 from db import get_session
 
 from schemas.income_cat_names_model import IncomeCatNames, IncomeCatNamesCreate, IncomeCatNamesResponse
 from user.user_crud import check_admin, check_authenticated_user
 from user.user_models import User
+from schemas.income_model import Income  # <-- Add this import
 
 income_cat_names_router = APIRouter(
     prefix="/income_cat_names",
@@ -29,12 +31,24 @@ def create_income_cat_name( user: Annotated[User, Depends(check_admin)], income_
     try:
         session.commit()
         session.refresh(db_income_cat_name)
+    # sqlmodel uses SQLAlchemy exceptions for integrity errors
+    except IntegrityError as e:
+        session.rollback()
+        logger.error(f"Integrity error: {e}")
+        # Check if it's a duplicate category name or primary key
+        if "unique constraint" in str(e.orig).lower() or "duplicate key" in str(e.orig).lower():
+            raise HTTPException(
+                status_code=400, detail="Income category name or ID must be unique."
+            )
+        raise HTTPException(
+            status_code=400, detail="Database integrity error."
+        )
     except Exception as e:
         session.rollback()
         # Log any other unexpected errors
         logger.error(f"Unexpected error: {e}")
         raise HTTPException(
-            status_code=500, detail="Income category name must be unique."
+            status_code=500, detail="Internal server error."
         )
 
     return db_income_cat_name
@@ -65,6 +79,13 @@ def delete_income_cat_name(user: Annotated[User, Depends(check_admin)], income_c
     if not income_cat_name:
         raise HTTPException(
             status_code=404, detail="Income category name not found")
+    # Check for related income records
+    related_incomes = session.exec(select(Income).where(Income.category_id == income_cat_id)).all()
+    if related_incomes:
+        raise HTTPException(
+            status_code=400,
+            detail="Cannot delete: There are income records using this category."
+        )
     session.delete(income_cat_name)
     session.commit()
     return {"message": "Income Category Name deleted successfully"}

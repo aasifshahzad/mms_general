@@ -2,7 +2,6 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from fastapi.responses import HTMLResponse
 from sqlmodel import Session, select, func
 from datetime import datetime, date, timedelta
-from typing import List
 from db import get_session
 from schemas.dashboard_model import (
     UserLoginSummary, AttendanceSummary, StudentSummary,
@@ -14,7 +13,10 @@ from schemas.attendance_model import Attendance, AttendanceValue
 from schemas.students_model import Students
 from schemas.income_model import Income
 from schemas.expense_model import Expense
-from schemas.fee_model import Fee  # Add this import at the top
+from schemas.fee_model import Fee  
+from user.user_crud import check_admin, check_authenticated_user
+from user.user_models import User
+from typing import Annotated, List
 
 dashboard_router = APIRouter(
     prefix="/dashboard",
@@ -23,7 +25,7 @@ dashboard_router = APIRouter(
 )
 
 @dashboard_router.get("/user-roles", response_model=LoginGraphData)
-def get_user_role_summary(session: Session = Depends(get_session)):
+def get_user_role_summary(user: Annotated[User, Depends(check_admin)],session: Session = Depends(get_session)):
     """Fetch user role distribution summary."""
     try:
         # Query the database for role counts
@@ -79,7 +81,7 @@ def get_user_role_summary(session: Session = Depends(get_session)):
         )
 
 @dashboard_router.get("/attendance-summary", response_model=AttendanceGraphData)
-def get_attendance_summary(session: Session = Depends(get_session)):
+def get_attendance_summary(user: Annotated[User, Depends(check_admin)],session: Session = Depends(get_session)):
     """Fetch today's attendance summary with graph visualization."""
     try:
         # Get today's date at start and end of day to ensure we catch all records
@@ -187,6 +189,7 @@ def get_attendance_summary(session: Session = Depends(get_session)):
 
 @dashboard_router.get("/student-summary", response_model=StudentGraphData)
 def get_student_summary(
+    user: Annotated[User, Depends(check_admin)],
     date: date = Query(default=None),
     session: Session = Depends(get_session)
 ):
@@ -273,6 +276,7 @@ def get_student_summary(
 
 @dashboard_router.get("/income-summary", response_model=CategoryGraphData)
 def get_income_summary(
+    user: Annotated[User, Depends(check_admin)],
     year: int = Query(default=datetime.now().year),
     month: int = Query(default=None),
     session: Session = Depends(get_session)
@@ -344,6 +348,7 @@ def get_income_summary(
 
 @dashboard_router.get("/expense-summary", response_model=CategoryGraphData)
 def get_expense_summary(
+    user: Annotated[User, Depends(check_admin)],
     year: int = Query(default=datetime.now().year),
     month: int = Query(default=None),
     session: Session = Depends(get_session)
@@ -414,7 +419,9 @@ def get_expense_summary(
         )
 
 @dashboard_router.get("/total-students", response_model=int)
-def get_total_students(session: Session = Depends(get_session)):
+def get_total_students(
+    user: Annotated[User, Depends(check_admin)],
+    session: Session = Depends(get_session)):
     """Get total number of students by ID range."""
     try:
         first_id = session.exec(select(func.min(Students.student_id))).first() or 0
@@ -429,6 +436,7 @@ def get_total_students(session: Session = Depends(get_session)):
 
 @dashboard_router.get("/unmarked-students", response_model=List[int])
 def get_unmarked_students(
+    user: Annotated[User, Depends(check_admin)],
     date: date = Query(default=None),
     session: Session = Depends(get_session)
 ):
@@ -464,7 +472,9 @@ def get_unmarked_students(
         )
 
 @dashboard_router.get("/income-expense-summary")
-def get_income_expense_summary(year: int = datetime.now().year, session: Session = Depends(get_session)):
+def get_income_expense_summary(
+    user: Annotated[User, Depends(check_admin)],
+    year: int = datetime.now().year, session: Session = Depends(get_session)):
     """Get combined income and expense summary for comparison."""
     try:
         # Get income by month
@@ -572,7 +582,9 @@ def get_income_expense_summary(year: int = datetime.now().year, session: Session
         )
 
 @dashboard_router.get("/fee-summary")
-def get_fee_summary(year: int = datetime.now().year, session: Session = Depends(get_session)):
+def get_fee_summary(
+    user: Annotated[User, Depends(check_admin)],
+    year: int = datetime.now().year, session: Session = Depends(get_session)):
     """Get monthly fee collection summary."""
     try:
         current_year = datetime.now().year
@@ -651,7 +663,7 @@ def get_fee_summary(year: int = datetime.now().year, session: Session = Depends(
         )
 
 @dashboard_router.get("/graph-test", response_class=HTMLResponse)
-async def get_graph_test():
+async def get_graph_test(user: Annotated[User, Depends(check_admin)], session: Session = Depends(get_session)):
     return """
     <!DOCTYPE html>
     <html>

@@ -1,6 +1,6 @@
 from datetime import datetime
 from sqlmodel import Relationship, SQLModel, Field # type: ignore
-from typing import List
+from typing import List, Optional
 # from schemas.attendance_model import Attendance
 # from schemas.fee_model import Fee
 
@@ -8,7 +8,7 @@ from typing import List
 # Class Names
 
 class ClassNamesBase(SQLModel):
-    class_name_id: int = Field(primary_key=True)
+    class_name_id: Optional[int] = Field(default=None, primary_key=True)
     created_at: datetime = Field(default=datetime.now(), nullable=False)
 
 
@@ -21,8 +21,6 @@ class ClassNames(ClassNamesBase, table=True):
 
 
 class ClassNamesCreate(SQLModel):
-    class_name_id: int = Field(primary_key=True)
-    created_at: datetime = Field(default=datetime.now(), nullable=False)
     class_name: str = Field(index=True, unique=True)
 
 

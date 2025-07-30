@@ -96,18 +96,18 @@ app.add_middleware(
     allow_methods=["GET", "POST", "PUT", "DELETE", "PATCH"],  # Specify needed methods
     allow_headers=["Authorization", "Content-Type"],  # Specify needed headers
 )
+app.include_router(income_cat_names_router)
 
 # Include the grouped router in the FastAPI app
-app.include_router(dashboard_router, tags=["Dashboard"])
 app.include_router(expense_cat_names_router)
-app.include_router(expense_router)
-app.include_router(fee_router)
-app.include_router(income_router)
-app.include_router(income_cat_names_router)
 app.include_router(attendancevalue_router)
 app.include_router(attendance_time_router)
 app.include_router(teachernames_router)
 app.include_router(classnames_router)
+app.include_router(dashboard_router, tags=["Dashboard"])
+app.include_router(expense_router)
+app.include_router(fee_router)
+app.include_router(income_router)
 app.include_router(students_router)
 app.include_router(mark_attendance_router)
 app.include_router(adm_del_router)

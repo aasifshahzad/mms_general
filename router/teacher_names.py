@@ -2,6 +2,7 @@ from asyncio.log import logger
 from typing import Annotated, List
 from fastapi import APIRouter, Depends, HTTPException
 from sqlmodel import Session, select
+from sqlalchemy.exc import IntegrityError  # <-- Add this import
 
 from db import get_session
 
@@ -29,12 +30,22 @@ def create_teachernames( user: Annotated[User, Depends(check_admin)],teachername
     try:
         session.commit()
         session.refresh(db_teachernames)
+    except IntegrityError as e:
+        session.rollback()
+        logger.error(f"Integrity error: {e}")
+        if "unique constraint" in str(e.orig).lower() or "duplicate key" in str(e.orig).lower():
+            raise HTTPException(
+                status_code=400, detail="Teacher name or ID must be unique."
+            )
+        raise HTTPException(
+            status_code=400, detail="Database integrity error."
+        )
     except Exception as e:
         session.rollback()
         # Log any other unexpected errors
         logger.error(f"Unexpected error: {e}")
         raise HTTPException(
-            status_code=500, detail="Teacher name must be unique."
+            status_code=500, detail="Internal server error."
         )
 
     return db_teachernames
@@ -60,13 +71,24 @@ def read_teachernames(current_user: Annotated[User, Depends(check_authenticated_
 
 
 @teachernames_router.delete("/del/{teacher_name}", response_model=dict)
-def delete_teachernames(user: Annotated[User, Depends(check_admin)],teacher_name: str, session: Session = Depends(get_session)):
+def delete_teachernames(
+    user: Annotated[User, Depends(check_admin)],
+    teacher_name: str,
+    session: Session = Depends(get_session)
+):
     teachernames = session.exec(select(TeacherNames).where(
         TeacherNames.teacher_name == teacher_name)).first()
-    print(teachernames)
     if not teachernames:
         raise HTTPException(
             status_code=404, detail="Teacher Name not found")
+    # Check for related records (adjust model and field as needed)
+    # related_records = session.exec(select(SomeRelatedModel).where(SomeRelatedModel.teacher_name == teacher_name)).all()
+    related_records = []  # <-- Replace with actual query if you have related records
+    if related_records:
+        raise HTTPException(
+            status_code=400,
+            detail="Cannot delete: There are records using this teacher names."
+        )
     session.delete(teachernames)
     session.commit()
     return {"message": "Teacher Name deleted successfully"}
@@ -84,7 +106,14 @@ def delete_teacher_by_id(
             status_code=404, 
             detail=f"Teacher with ID {teacher_id} not found"
         )
-    
+    # Check for related records (adjust model and field as needed)
+    # related_records = session.exec(select(SomeRelatedModel).where(SomeRelatedModel.teacher_id == teacher_id)).all()
+    related_records = []  # <-- Replace with actual query if you have related records
+    if related_records:
+        raise HTTPException(
+            status_code=400,
+            detail="Cannot delete: There are records using this teacher names."
+        )
     try:
         session.delete(teacher)
         session.commit()

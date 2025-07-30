@@ -1,6 +1,6 @@
 from datetime import datetime
 from sqlmodel import Relationship, SQLModel, Field # type: ignore
-from typing import List
+from typing import List, Optional
 from datetime import datetime
 
 
@@ -9,7 +9,7 @@ from datetime import datetime
 
 
 class IncomeCatNamesBase(SQLModel):
-    income_cat_name_id: int = Field(primary_key=True)
+    income_cat_name_id: Optional[int] = Field(default=None, primary_key=True)
     created_at: datetime = Field(default=datetime.now(), nullable=False)
 
 
@@ -22,8 +22,6 @@ class IncomeCatNames(IncomeCatNamesBase, table=True):
 
 
 class IncomeCatNamesCreate(SQLModel):
-    income_cat_name_id: int = Field(primary_key=True)
-    created_at: datetime = Field(default=datetime.now(), nullable=False)
     income_cat_name: str = Field(index=True, unique=True)
 
 
