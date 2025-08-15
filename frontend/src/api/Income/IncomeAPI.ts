@@ -2,10 +2,10 @@ import AxiosInstance from "@/api/axiosInterceptorInstance";
 import { AddIncomeModel, CreateIncomeCat } from "@/models/income/income";
 
 // Helper function to get standard headers
-const getHeaders = () => ({
-  "Content-Type": "application/json",
-  Authorization: `Bearer ${localStorage.getItem("access_token")}`,
-});
+// const getHeaders = () => ({
+//   "Content-Type": "application/json",
+//   Authorization: `Bearer ${localStorage.getItem("access_token")}`,
+// });
 
 // Export as a single API object
 export const IncomeAPI = {
