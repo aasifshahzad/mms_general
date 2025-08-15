@@ -19,13 +19,15 @@ class TokenData(SQLModel):
     exp: Optional[int] = None
 
 class UserBase(SQLModel):
-    id: Optional[int] = Field(default=None, primary_key=True)
-
+    username: str = Field(nullable=False)
+    email: str = Field(index=True, unique=True, nullable=False)
+    password: str = Field(nullable=False)
+    role: UserRole = Field(default=UserRole.USER)
 
 class UserLogin(SQLModel):
     username: str
     password: str
-    grant_type: Optional[str] = "password"  # Default value
+    grant_type: Optional[str] = "password"
     scope: Optional[str] = ""
     client_id: Optional[str] = None
     client_secret: Optional[str] = None
@@ -36,12 +38,6 @@ class UserUpdate(SQLModel):
 
 class AdminUserUpdate(SQLModel):
     role: UserRole = Field(description="Must be one of: ADMIN, TEACHER, USER")
-
-class User(UserBase, table=True):
-    username: str = Field(nullable=False)
-    email: str = Field(index=True, unique=True, nullable=False)
-    password: str = Field(nullable=False)
-    role: UserRole = Field(default=UserRole.USER)
 
 class UserCreate(SQLModel):
     username: str
@@ -55,15 +51,6 @@ class UserResponse(SQLModel):
     role: UserRole
     id: int
 
-class LoginResponse(SQLModel):
-    access_token: str
-    refresh_token: str
-    token_type: str = "bearer"
-    expires_in: int
-    user: UserResponse
+# Remove or comment out the User class since it's defined in user/user_models.py
 
-class RefreshToken(SQLModel, table=True):
-    id: int = Field(primary_key=True)
-    user_id: int = Field(index=True, nullable=False)
-    token: str = Field(nullable=False, unique=True)
-    expires_at: datetime = Field(nullable=False)
+

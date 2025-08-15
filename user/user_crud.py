@@ -1,5 +1,4 @@
 from datetime import timedelta
-from uuid import uuid4
 from jose import JWTError, jwt
 from typing import Annotated
 from fastapi import Depends, HTTPException, status
@@ -19,7 +18,9 @@ from user.user_models import (
     UserRole,
     AdminUserUpdate
 )
+from passlib.context import CryptContext
 
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 def user_login(db: Session, form_data: UserLogin | OAuth2PasswordRequestForm) -> LoginResponse:
     username = form_data.username
@@ -59,57 +60,29 @@ def user_login(db: Session, form_data: UserLogin | OAuth2PasswordRequestForm) ->
     )
 
 
-async def signup_user(user: UserCreate, db: Session) -> User:
-    """Create a new user with proper transaction handling."""
+async def signup_user(user_data: UserCreate, db: Session) -> User:
+    """
+    Create a new user in the database
+    """
+    # Hash the password
+    hashed_password = pwd_context.hash(user_data.password)
+    
+    # Create new user instance without specifying the ID (let DB auto-increment)
+    db_user = User(
+        username=user_data.username,
+        email=user_data.email,
+        password=hashed_password,
+        role=user_data.role
+    )
+    
     try:
-        # Validate role
-        try:
-            normalized_role = UserRole(user.role.upper()) if isinstance(user.role, str) else user.role
-        except ValueError:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail=f"Invalid role: {user.role}. Must be one of: {[r.value for r in UserRole]}"
-            )
-        
-        # Check if email exists
-        existing_email = db.exec(select(User).where(User.email == user.email)).first()
-        if existing_email:
-            raise HTTPException(
-                status_code=status.HTTP_409_CONFLICT,
-                detail="Email already registered"
-            )
-        
-        # Check if username exists
-        existing_username = db.exec(select(User).where(User.username == user.username)).first()
-        if existing_username:
-            raise HTTPException(
-                status_code=status.HTTP_409_CONFLICT,
-                detail="Username already exists"
-            )
-           
-        # Create new user    
-        new_user = User(
-            id=uuid4(),
-            username=user.username,
-            email=user.email,
-            password=get_password_hash(user.password),
-            role=normalized_role
-        )
-        
-        db.add(new_user)
+        db.add(db_user)
         db.commit()
-        db.refresh(new_user)
-        return new_user
-        
-    except HTTPException as e:
-        db.rollback()
-        raise e
+        db.refresh(db_user)
+        return db_user
     except Exception as e:
         db.rollback()
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Error creating user: {str(e)}"
-        )
+        raise e
 
 def update_user(user: UserUpdate, session: Session, current_user: User) -> User:
     updated_user = session.exec(select(User).where(User.id == current_user.id)).first()

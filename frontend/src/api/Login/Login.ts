@@ -12,8 +12,8 @@ interface LoginResponse {
   export async function LoginAPI(loginData: LoginData) {
     try {
       const response = await axiosIntance.post<LoginResponse >(
-        "/frontend/login",
-        JSON.stringify(loginData),
+        "/login",
+        loginData,
         {
           headers: {
             "Content-Type": "application/json",

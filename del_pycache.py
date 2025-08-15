@@ -19,3 +19,9 @@ if __name__ == "__main__":
     root_directory = "./"
     delete_pycache_folders(root_directory)
     print("All __pycache__ folders have been deleted.")
+    
+    
+
+
+# del /s /q *.pyc
+# del /s /q __pycache__

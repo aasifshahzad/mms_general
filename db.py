@@ -17,6 +17,7 @@ engine = get_engine(CONN_STRING=CONN_STRING)
 SessionLocal = Session
 
 def create_db_and_tables():
+    # SQLModel.metadata.drop_all(engine)  # Drop existing tables
     SQLModel.metadata.create_all(engine)
 
 @asynccontextmanager
