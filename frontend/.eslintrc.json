@@ -1,3 +1,23 @@
 {
-  "extends": ["next/core-web-vitals", "next/typescript"]
+  "extends": ["next/core-web-vitals", "next/typescript"],
+  "rules": {
+    // Disable specific rules
+    "@typescript-eslint/no-unused-vars": "off",
+    "@typescript-eslint/no-explicit-any": "off",
+    
+    // Or set rule severity levels
+    "react/no-unescaped-entities": "warn",
+    "react/prop-types": "off",
+    
+    // Common rules you might want to adjust
+    "no-console": "warn",
+    "quotes": ["error", "single"],
+    "semi": ["error", "always"]
+  },
+  "ignorePatterns": [
+    "node_modules/",
+    ".next/",
+    "out/",
+    "build/"
+  ]
 }
