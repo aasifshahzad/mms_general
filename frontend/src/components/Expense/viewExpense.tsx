@@ -11,13 +11,20 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table"; // Adjust the import path based on your project structure
+} from "@/components/ui/table";
 import { Header } from "../dashboard/Header";
 import Loader from "../Loader";
 
 // Form values interface
 interface ExpenseFormValues {
   category_id: number;
+}
+
+// Generic API response interface
+interface ApiResponse<T> {
+  data: T;
+  status: number;
+  message?: string;
 }
 
 // Interface for expense data items
@@ -36,19 +43,22 @@ const ViewExpense = () => {
     formState: { errors },
   } = useForm<ExpenseFormValues>();
   const [isLoading, setIsLoading] = useState(false);
-  const [ExpenseCategory, setExpenseCategory] = useState<ExpenseCategory[]>([]);
-  const [ExpenseData, setExpenseData] = useState<ExpenseDataItem[]>([]); // State to store Expense data
+  const [expenseCategory, setExpenseCategory] = useState<ExpenseCategory[]>([]);
+  const [expenseData, setExpenseData] = useState<ExpenseDataItem[]>([]);
 
+  // Load categories + all expenses on first mount
   useEffect(() => {
     getCategories();
+    getAllExpense();
   }, []);
 
   const getCategories = async () => {
     setIsLoading(true);
     try {
-      const res = await API.GetExpenseCategory();
+      const res = (await API.GetExpenseCategory()) as ApiResponse<
+        ExpenseCategory[]
+      >;
       setExpenseCategory(res.data);
-      console.log("Expense categories:", res.data);
     } catch (error) {
       console.error("Error fetching Expense categories:", error);
       setExpenseCategory([]);
@@ -57,11 +67,58 @@ const ViewExpense = () => {
     }
   };
 
-  const getExpense = async (CategoryId: number) => {
+  const getAllExpense = async () => {
     setIsLoading(true);
     try {
-      const res = await API.GetExpenseData(CategoryId); // Pass CategoryId to the API
-      setExpenseData(res.data); // Store the Expense data in state
+      // Try wrapper first (existing behavior)
+      const res = (await API.GetExpenseData(0)) as ApiResponse<ExpenseDataItem[]>;
+      if (res && Array.isArray(res.data) && res.data.length > 0) {
+        setExpenseData(res.data);
+        return;
+      }
+
+      // Fallback: call backend endpoint directly to verify wrapper behavior
+      const fallbackUrl = `/expenses/filter_expense?category_id=0`;
+      const fallbackRes = await fetch(fallbackUrl, { credentials: "include" });
+      if (!fallbackRes.ok) {
+        console.error("Fallback request failed:", fallbackRes.status, await fallbackRes.text());
+        setExpenseData([]);
+        return;
+      }
+      const fallbackJson = await fallbackRes.json();
+      setExpenseData(Array.isArray(fallbackJson) ? fallbackJson : []);
+    } catch (error) {
+      console.error("Error fetching all Expense data:", error);
+      setExpenseData([]);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const getExpense = async (CategoryId: number) => {
+    if (CategoryId === 0) {
+      getAllExpense();
+      return;
+    }
+    setIsLoading(true);
+    try {
+      // Try wrapper first
+      const res = (await API.GetExpenseData(CategoryId)) as ApiResponse<ExpenseDataItem[]>;
+      if (res && Array.isArray(res.data)) {
+        setExpenseData(res.data);
+        return;
+      }
+
+      // Fallback to direct fetch with query param
+      const fallbackUrl = `/expenses/filter_expense?category_id=${CategoryId}`;
+      const fallbackRes = await fetch(fallbackUrl, { credentials: "include" });
+      if (!fallbackRes.ok) {
+        console.error("Fallback request failed:", fallbackRes.status, await fallbackRes.text());
+        setExpenseData([]);
+        return;
+      }
+      const fallbackJson = await fallbackRes.json();
+      setExpenseData(Array.isArray(fallbackJson) ? fallbackJson : []);
     } catch (error) {
       console.error("Error fetching Expense data:", error);
       setExpenseData([]);
@@ -80,23 +137,17 @@ const ViewExpense = () => {
             Category:{" "}
           </label>
           <select
-            {...register("category_id", {
-              valueAsNumber: true,
-              required: "Category is required",
-            })}
+            {...register("category_id", { valueAsNumber: true })}
             className="w-[14rem] border bg-white rounded-md px-3 py-2 focus:ring focus:ring-indigo-300 dark:bg-background dark:text-gray-300"
-            onChange={(e) => getExpense(Number(e.target.value))} // Call getExpense with selected Expense_cat_name_id
-            defaultValue="" // Set default value for the dropdown
+            onChange={(e) => getExpense(Number(e.target.value))}
           >
-            <option disabled value="">
-              Select Category
-            </option>
-            {ExpenseCategory.map((category) => (
+            <option value={0}>All</option>
+            {expenseCategory.map((category) => (
               <option
-                key={category.expense_cat_name_id} // Use unique key
-                value={category.expense_cat_name_id} // Set value to expense_cat_name_id
+                key={category.expense_cat_name_id}
+                value={category.expense_cat_name_id}
               >
-                {category.expense_cat_name} {/* Display category name */}
+                {category.expense_cat_name}
               </option>
             ))}
           </select>
@@ -109,7 +160,7 @@ const ViewExpense = () => {
 
       {/* Table to display Expense data */}
       <div className="mt-4 bg-white dark:bg-background rounded-md">
-        {ExpenseData.length > 0 ? (
+        {expenseData.length > 0 ? (
           <Table>
             <TableHeader className="bg-primary dark:bg-secondary hover:bg-none">
               <TableRow>
@@ -122,7 +173,7 @@ const ViewExpense = () => {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {ExpenseData.map((item) => (
+              {expenseData.map((item) => (
                 <TableRow className="h-[1rem]" key={item.id}>
                   <TableCell>{item.id}</TableCell>
                   <TableCell>{item.date}</TableCell>
@@ -135,7 +186,7 @@ const ViewExpense = () => {
             </TableBody>
           </Table>
         ) : (
-          <p>No Expense data available.</p>
+          <p>No expense records available.</p>
         )}
       </div>
     </div>

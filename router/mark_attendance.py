@@ -15,6 +15,7 @@ from sqlmodel import Session, select
 from typing import Annotated, List, Optional
 from user.user_models import User, UserRole
 from user.user_crud import get_current_user
+from sqlalchemy.exc import IntegrityError
 
 from db import get_session
 from user.user_models import User
@@ -87,10 +88,34 @@ def add_attendance(
             detail="Users cannot add attendance records"
         )
 
-    db_attendance = Attendance(**create_attendance.model_dump())
-    session.add(db_attendance)
-    session.commit()
-    session.refresh(db_attendance)
+    data = create_attendance.model_dump()
+    student_id = data.get("student_id")
+    attendance_date = data.get("attendance_date")
+    attendance_time_id = data.get("attendance_time_id", None)
+
+    # Prevent duplicates: student + date (+ time if provided)
+    where_clause = [Attendance.student_id == student_id, Attendance.attendance_date == attendance_date]
+    if attendance_time_id is not None:
+        where_clause.append(Attendance.attendance_time_id == attendance_time_id)
+
+    existing = session.exec(select(Attendance).where(*where_clause)).first()
+    if existing:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Attendance already marked for student {student_id} on {attendance_date}"
+        )
+
+    db_attendance = Attendance(**data)
+    try:
+        session.add(db_attendance)
+        session.commit()
+        session.refresh(db_attendance)
+    except IntegrityError:
+        session.rollback()
+        raise HTTPException(
+            status_code=400,
+            detail=f"Attendance already marked for student {student_id} on {attendance_date}"
+        )
 
     return FilteredAttendanceResponse(
         attendance_id=db_attendance.attendance_id,
@@ -103,48 +128,74 @@ def add_attendance(
         attendance_value=db_attendance.attendance_value.attendance_value,
     )
 
-@mark_attendance_router.post("/add_bulk_attendance/", response_model=List[FilteredAttendanceResponse])
+from datetime import date
+from fastapi import HTTPException
+
+@mark_attendance_router.post("/add_bulk_attendance/", response_model=dict)
 def add_bulk_attendance(
-    bulk_attendance: BulkAttendanceCreate,
-    current_user: Annotated[User, Depends(get_current_user)],
+    bulk: BulkAttendanceCreate,
     session: Session = Depends(get_session)
 ):
-    """Add bulk attendance with admin-only permissions"""
-    # Check if user is admin
-    if current_user.role not in [UserRole.ADMIN, UserRole.TEACHER]:
-        raise HTTPException(
-            status_code=403,
-            detail="Only Administrators or Teachers can add bulk attendance records"
-        )
+    saved = []
+    skipped = []
 
-    filtered_responses = []
+    today = date.today()
+
+    for attendance in bulk.attendances:
+        # ✅ 1. Prevent marking attendance for future dates
+        if attendance.attendance_date > today:
+            skipped.append({
+                "student_id": attendance.student_id,
+                "reason": f"Future date {attendance.attendance_date} not allowed"
+            })
+            continue
+
+        # ✅ 2. Check for duplicates
+        exists = session.query(Attendance).filter(
+            Attendance.student_id == attendance.student_id,
+            Attendance.attendance_date == attendance.attendance_date,
+            Attendance.attendance_time_id == attendance.attendance_time_id,
+            Attendance.teacher_name_id == attendance.teacher_name_id,
+        ).first()
+
+        if exists:
+            skipped.append({
+                "student_id": attendance.student_id,
+                "reason": "Already marked for this date & time"
+            })
+            continue
+
+        # ✅ 3. Save valid record
+        db_attendance = Attendance(
+            student_id=attendance.student_id,
+            attendance_date=attendance.attendance_date,
+            attendance_time_id=attendance.attendance_time_id,
+            teacher_name_id=attendance.teacher_name_id,
+            class_name_id=attendance.class_name_id,
+            attendance_value_id=attendance.attendance_value_id,
+        )
+        session.add(db_attendance)
+        saved.append({
+            "student_id": attendance.student_id,
+            "status": "Saved"
+        })
+
     try:
-        for attendance_data in bulk_attendance.attendances:
-            db_attendance = Attendance(**attendance_data.model_dump())
-            session.add(db_attendance)
-            session.commit()
-            session.refresh(db_attendance)
-
-            filtered_response = FilteredAttendanceResponse(
-                attendance_id=db_attendance.attendance_id,
-                attendance_date=db_attendance.attendance_date,
-                attendance_time=db_attendance.attendance_time.attendance_time,
-                attendance_class=db_attendance.attendance_class.class_name,
-                attendance_teacher=db_attendance.attendance_teacher.teacher_name,
-                attendance_student=db_attendance.attendance_student.student_name,
-                attendance_std_fname=db_attendance.attendance_student.father_name,
-                attendance_value=db_attendance.attendance_value.attendance_value,
-            )
-            filtered_responses.append(filtered_response)
-
-        return filtered_responses
-
-    except Exception as e:
+        session.commit()
+    except IntegrityError as e:
         session.rollback()
-        raise HTTPException(
-            status_code=500,
-            detail=f"Error adding bulk attendance records: {str(e)}"
-        )
+        raise HTTPException(status_code=400, detail=str(e.orig))
+
+    return {
+        "saved": saved,
+        "skipped": skipped,
+        "summary": {
+            "total": len(bulk.attendances),
+            "saved": len(saved),
+            "skipped": len(skipped),
+        }
+    }
+
 
 @mark_attendance_router.delete("/delete_attendance/{attendance_id}", response_model=str)
 def delete_attendance(

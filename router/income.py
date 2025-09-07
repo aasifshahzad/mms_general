@@ -1,7 +1,7 @@
 from datetime import datetime
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlmodel import Session
-from typing import List  # Import List for response model
+from typing import List, Optional  # Import List and Optional for response model
 
 from db import get_session
 from schemas.income_model import Income, IncomeCreate, IncomeResponse, IncomeUpdate
@@ -181,14 +181,17 @@ def delete_income(
 
 @income_router.get("/filter_income", response_model=List[IncomeResponse])
 def filter_income(
-    category_id: int,
+    category_id: Optional[int] = None,
     session: Session = Depends(get_session),
     user: User = Depends(check_admin)
 ):
-    """Filter income records based on the provided category ID."""
+    """Filter income records by category_id, or return all if None or 0."""
     try:
-        # Query to filter income records by category_id
-        incomes = session.query(Income).filter(Income.category_id == category_id).all()
+        # Return all when category_id is omitted or 0 (frontend uses 0 for "All")
+        if category_id is None or category_id == 0:
+            incomes = session.query(Income).all()
+        else:
+            incomes = session.query(Income).filter(Income.category_id == category_id).all()
 
         # Prepare the response
         filtered_response = []
@@ -197,10 +200,10 @@ def filter_income(
             filtered_response.append(
                 IncomeResponse(
                     id=income.id,  # type: ignore
-                    created_at=income.created_at or datetime.utcnow(),  # Ensure created_at is not None
+                    created_at=income.created_at or datetime.utcnow(),
                     recipt_number=income.recipt_number,
                     date=income.date,  # type: ignore
-                    category=category.income_cat_name if category else None,  # Convert category to string
+                    category=category.income_cat_name if category else None,
                     source=income.source,
                     description=income.description,
                     contact=income.contact,
@@ -214,3 +217,42 @@ def filter_income(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Error filtering income records: {str(e)}"
         )
+
+
+# @income_router.get("/filter_income", response_model=List[IncomeResponse])
+# def filter_income(
+#     category_id: Optional[int] = None,   # <-- make it optional
+#     session: Session = Depends(get_session),
+#     user: User = Depends(check_admin)
+# ):
+#     """Filter income records by category_id, or return all if None."""
+#     try:
+#         if category_id is None:  # <-- if no category_id passed, fetch all
+#             incomes = session.query(Income).all()
+#         else:
+#             incomes = session.query(Income).filter(Income.category_id == category_id).all()
+
+#         # Prepare the response
+#         response = []
+#         for income in incomes:
+#             category = session.get(IncomeCatNames, income.category_id)
+#             response.append(
+#                 IncomeResponse(
+#                     id=income.id,  # type: ignore
+#                     created_at=income.created_at or datetime.utcnow(),
+#                     recipt_number=income.recipt_number,
+#                     date=income.date,  # type: ignore
+#                     category=category.income_cat_name if category else None,
+#                     source=income.source,
+#                     description=income.description,
+#                     contact=income.contact,
+#                     amount=income.amount
+#                 )
+#             )
+
+#         return response
+#     except Exception as e:
+#         raise HTTPException(
+#             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+#             detail=f"Error filtering income records: {str(e)}"
+#         )

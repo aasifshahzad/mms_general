@@ -1,7 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, Cookie, Response, status
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from sqlmodel import Session, select
-from typing import Annotated
 from datetime import timedelta
 
 from .user_models import (
@@ -17,6 +16,7 @@ from .services import (
     revoke_refresh_token, ACCESS_TOKEN_EXPIRE_MINUTES
 )
 from db import get_session
+from typing import Annotated, List
 
 # Create separate routers for auth and public endpoints
 public_router = APIRouter(
@@ -138,6 +138,56 @@ async def logout(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Logout failed: {str(e)}"
         )
+        
+
+@public_router.post("/signup/bulk", response_model=List[UserResponse])
+async def bulk_signup(
+    users_data: List[UserCreate],
+    db: Session = Depends(get_session)
+):
+    """Create multiple user accounts at once"""
+    created_users = []
+    try:
+        for user_data in users_data:
+            # Check if user already exists
+            existing_user = db.exec(
+                select(User).where(
+                    (User.username == user_data.username) |
+                    (User.email == user_data.email)
+                )
+            ).first()
+
+            if existing_user:
+                # Skip existing user (or raise error if you want strict behavior)
+                continue
+
+            # Create user
+            new_user = await signup_user(user_data, db)
+            created_users.append(
+                UserResponse(
+                    id=new_user.id,
+                    username=new_user.username,
+                    email=new_user.email,
+                    role=new_user.role
+                )
+            )
+
+        if not created_users:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="No new users created (all already exist)."
+            )
+
+        return created_users
+
+    except HTTPException as e:
+        raise e
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Bulk signup failed: {str(e)}"
+        )
+
 
 @user_router.post("/refresh", response_model=LoginResponse)
 async def refresh_token(

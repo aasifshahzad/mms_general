@@ -1,4 +1,4 @@
-from typing import List, Annotated
+from typing import List, Annotated, Optional
 from datetime import datetime
 from fastapi import APIRouter, Depends, HTTPException
 
@@ -18,7 +18,7 @@ expense_router = APIRouter(
 
 @expense_router.get("/", response_model=dict)
 async def root():
-    return {"message": "MMS-General service is running", "status": "Expense Router Page running :-)"}
+    return {"message": "Expense Router Page running :-)"}
 
 @expense_router.post("/add_expense/", response_model=ExpenseResponse)
 def create_expense(
@@ -142,22 +142,38 @@ def delete_expense(user: Annotated[User, Depends(check_admin)],expense_id: int, 
     return {"message": "Expense deleted successfully"}
 
 @expense_router.get("/filter-by-category/{category_id}", response_model=List[ExpenseResponse])
-def filter_expenses_by_category(user: Annotated[User, Depends(check_admin)], category_id: int, session: Session = Depends(get_session)):
-    expenses = session.exec(select(Expense).where(Expense.category_id == category_id)).all()
-    if not expenses:
-        raise HTTPException(
-            status_code=404, detail="No expenses found for the given category")
-    # Map category to its string representation
-    return [
-        ExpenseResponse(
-            id=expense.id,
-            created_at=expense.created_at,
-            recipt_number=expense.recipt_number,
-            date=expense.date,
-            category=expense.category.expense_cat_name if expense.category else None,
-            to_whom=expense.to_whom,
-            description=expense.description,
-            amount=expense.amount,
-        )
-        for expense in expenses
-    ]
+def filter_expense_by_category(
+    category_id: int,
+    session: Session = Depends(get_session),
+    user: User = Depends(check_admin),
+):
+    """Compatibility endpoint for older frontend callers (/filter-by-category/{id})."""
+    try:
+        if category_id == 0:
+            expenses = session.exec(select(Expense)).all()
+        else:
+            expenses = session.exec(
+                select(Expense).where(Expense.category_id == category_id)
+            ).all()
+
+        if not expenses:
+            return []
+
+        result = []
+        for expense in expenses:
+            category = session.get(ExpenseCatNames, expense.category_id)
+            result.append(
+                ExpenseResponse(
+                    id=expense.id,
+                    created_at=expense.created_at or datetime.utcnow(),
+                    recipt_number=expense.recipt_number,
+                    date=expense.date,
+                    category=category.expense_cat_name if category else None,
+                    to_whom=expense.to_whom,
+                    description=expense.description,
+                    amount=expense.amount,
+                )
+            )
+        return result
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error filtering expense records: {str(e)}")

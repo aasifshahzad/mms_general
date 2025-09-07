@@ -24,61 +24,70 @@ dashboard_router = APIRouter(
     responses={404: {"description": "Not found"}},
 )
 
+
 @dashboard_router.get("/user-roles", response_model=LoginGraphData)
-def get_user_role_summary(user: Annotated[User, Depends(check_admin)],session: Session = Depends(get_session)):
-    """Fetch user role distribution summary."""
+def get_user_role_summary(user: Annotated[User, Depends(check_admin)], session: Session = Depends(get_session)):
+    """Fetch user role distribution summary (dynamic role mapping from DB, zero-fill using UserRole enum)."""
     try:
-        # Query the database for role counts
+        # counts from DB
         stmt = select(User.role, func.count(User.role).label("role_count")).group_by(User.role)
         result = session.exec(stmt).all()
-        
-        role_counts = {
-            str(row.role).split('.')[-1]: row.role_count 
-            for row in result
-        }
-        
-        # Define role mapping
-        role_mapping = {
-            "ADMIN": "Admin",
-            "TEACHER": "Teacher",
-            "USER": "User"
-        }
-        
-        # Create summary using fixed counts
-        summary = [
-            UserLoginSummary(
-                Roll=role_mapping[role],
-                Total=count
-            ) for role, count in role_counts.items()
+
+        role_counts = {}
+        for role_obj, cnt in result:
+            if role_obj is None:
+                continue
+            raw = role_obj.name if hasattr(role_obj, "name") else str(role_obj)
+            key = raw.split(".")[-1].upper()
+            role_counts[key] = int(cnt)
+
+        # Ensure every defined enum role appears (zero if absent)
+        from user.user_models import UserRole
+        for r in UserRole:
+            role_counts.setdefault(r.name, 0)
+
+        # Human friendly labels with optional overrides
+        overrides = {"FEE_MANAGER": "Fee Manager"}
+        def human_label(k: str) -> str:
+            if k in overrides:
+                return overrides[k]
+            return k.replace("_", " ").title()
+
+        role_mapping = {k: human_label(k) for k in role_counts.keys()}
+
+        # Prepare summary and graph (sorted by count desc)
+        sorted_roles = sorted(role_counts.items(), key=lambda x: x[1], reverse=True)
+        summary = [UserLoginSummary(Roll=role_mapping[k], Total=count) for k, count in sorted_roles]
+        labels = [role_mapping[k] for k, _ in sorted_roles]
+        values = [count for _, count in sorted_roles]
+
+        palette = [
+            "rgba(255, 99, 132, 1)",
+            "rgba(54, 162, 235, 1)",
+            "rgba(75, 192, 192, 1)",
+            "rgba(255, 159, 64, 1)",
+            "rgba(153, 102, 255, 1)",
+            "rgba(201, 203, 207, 1)"
         ]
-        
-        # Use the same labels as before
-        labels = ["Admin", "Teacher", "User"]
-        values = [role_counts["ADMIN"], role_counts["TEACHER"], role_counts["USER"]]
-        
+        bg_colors = [palette[i % len(palette)] for i in range(len(labels))]
+
         graph_data = GraphData(
             labels=labels,
             datasets=[Dataset(
                 label="Total",
                 data=values,
-                backgroundColor=[
-                    "rgba(255, 99, 132, 1)",  # Red for Admin
-                    "rgba(54, 162, 235, 1)",  # Blue for Teacher
-                    "rgba(75, 192, 192, 1)",  # Green for User
-                ],
+                backgroundColor=bg_colors,
                 borderColor="rgba(0, 0, 0, 1)",
                 borderWidth=2
             )],
             title="Total Users Role Wise",
         )
-        
+
         return LoginGraphData(summary=summary, graph=graph_data)
-        
+
     except Exception as e:
-        raise HTTPException(
-            status_code=500,
-            detail=f"Error fetching user role summary: {str(e)}"
-        )
+        raise HTTPException(status_code=500, detail=f"Error fetching user role summary: {str(e)}")
+
 
 @dashboard_router.get("/attendance-summary", response_model=AttendanceGraphData)
 def get_attendance_summary(user: Annotated[User, Depends(check_admin)],session: Session = Depends(get_session)):

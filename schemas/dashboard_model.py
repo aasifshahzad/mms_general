@@ -55,3 +55,6 @@ class CategoryGraphData(BaseModel):
     summary: List[IncomeExpenseCategorySummary]
     graph: GraphData
     total: float
+
+
+

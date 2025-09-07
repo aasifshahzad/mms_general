@@ -7,6 +7,9 @@ class UserRole(str, enum.Enum):
     ADMIN = "ADMIN"
     TEACHER = "TEACHER"
     USER = "USER"
+    ACCOUNTANT = "ACCOUNTANT"
+    FEE_MANAGER = "FEE_MANAGER"
+    PRINCIPAL = "PRINCIPAL"
 
 class Token(SQLModel):
     access_token: str
