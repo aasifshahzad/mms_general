@@ -234,9 +234,6 @@ from user.user_models import (
     UserRole,
     AdminUserUpdate
 )
-from passlib.context import CryptContext
-
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 def user_login(db: Session, form_data: UserLogin | OAuth2PasswordRequestForm) -> LoginResponse:
     username = form_data.username

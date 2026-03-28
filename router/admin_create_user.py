@@ -12,6 +12,7 @@ from user.user_models import (
     AdminUserUpdate
 )
 from user.user_crud import require_admin as check_admin
+from user.services import get_password_hash
 
 admin_create_user_router = APIRouter(
     prefix="/admin",
@@ -29,7 +30,16 @@ def create_user(
     user_create: UserCreate, 
     session: Session = Depends(get_session)
 ):
-    db_user = User(**user_create.model_dump())
+    # Hash the password before storing (SECURITY FIX)
+    hashed_password = get_password_hash(user_create.password)
+    
+    # Create user with hashed password
+    db_user = User(
+        username=user_create.username,
+        email=user_create.email,
+        password=hashed_password,
+        role=user_create.role
+    )
     session.add(db_user)
 
     try:

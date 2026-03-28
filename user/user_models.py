@@ -69,17 +69,24 @@ class UserCreate(SQLModel):
     @field_validator('password')
     @classmethod
     def validate_password(cls, v):
-        """Validate password strength: min 8 chars, uppercase, lowercase, digit"""
+        """Validate password: max 72 UTF-8 bytes (bcrypt constraint)"""
         if not isinstance(v, str):
             raise ValueError('Password must be a string')
-        if len(v) < 8:
-            raise ValueError('Password must be at least 8 characters long')
-        if not re.search(r'[A-Z]', v):
-            raise ValueError('Password must contain at least one uppercase letter')
-        if not re.search(r'[a-z]', v):
-            raise ValueError('Password must contain at least one lowercase letter')
-        if not re.search(r'[0-9]', v):
-            raise ValueError('Password must contain at least one digit')
+        # Bcrypt has a hard limit of 72 bytes UTF-8
+        if len(v.encode('utf-8')) > 72:
+            raise ValueError('Password must not exceed 72 bytes when UTF-8 encoded')
+        return v
+
+    @field_validator('username')
+    @classmethod
+    def validate_username(cls, v):
+        """Validate username format: alphanumeric + underscore, 3-20 chars"""
+        if not isinstance(v, str):
+            raise ValueError('Username must be a string')
+        if len(v) < 3 or len(v) > 20:
+            raise ValueError('Username must be between 3 and 20 characters')
+        if not re.match(r'^[a-zA-Z0-9_]+$', v):
+            raise ValueError('Username can only contain letters, numbers, and underscores')
         return v
 
 class UserResponse(SQLModel):

@@ -31,27 +31,44 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login-swagger")
 
 
 def verify_password(plain_password, hashed_password):
-    """Verify the password using the hash stored in the database."""
+    """
+    Verify a plain password against its bcrypt hash.
+    
+    Handles bcrypt's 72-byte UTF-8 limit by truncating if necessary.
+    Note: Passwords should be validated at the Pydantic model level
+    to ensure they don't exceed 72 bytes.
+    """
     if not plain_password or not hashed_password:
         return False
-    # Bcrypt has a 72-byte limit - truncate password if it exceeds 72 bytes when encoded
-    if isinstance(plain_password, str):
-        # Truncate at 72 UTF-8 bytes
-        plain_password = plain_password.encode('utf-8')[:72].decode('utf-8', errors='ignore')
-    return pwd_context.verify(plain_password, hashed_password)
+    
+    if not isinstance(plain_password, str):
+        return False
+    
+    # Safely handle bcrypt's 72-byte limit (same truncation as hashing)
+    password_bytes = plain_password.encode('utf-8')
+    if len(password_bytes) > 72:
+        plain_password = password_bytes[:72].decode('utf-8', errors='ignore')
+    
+    try:
+        return pwd_context.verify(plain_password, hashed_password)
+    except Exception:
+        return False
 
 def get_password_hash(password):
     """
     Hash the password before storing it in the database.
-    Args:
-        password (str): The password entered by the user.
-    Returns:
-        str: The hashed password.
+    
+    Password length is validated at the Pydantic model level to ensure
+    it doesn't exceed bcrypt's 72-byte UTF-8 limit.
     """
-    # Bcrypt has a 72-byte limit - truncate password if it exceeds 72 bytes when encoded
-    if isinstance(password, str):
-        # Truncate at 72 UTF-8 bytes
-        password = password.encode('utf-8')[:72].decode('utf-8', errors='ignore')
+    if not isinstance(password, str):
+        raise ValueError('Password must be a string')
+    
+    # Defensive measure: truncate if somehow a password exceeds 72 bytes
+    password_bytes = password.encode('utf-8')
+    if len(password_bytes) > 72:
+        password = password_bytes[:72].decode('utf-8', errors='ignore')
+    
     return pwd_context.hash(password)
 
 def get_user_by_username(db: Session, username: str) -> User:
