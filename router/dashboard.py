@@ -14,7 +14,7 @@ from schemas.students_model import Students
 from schemas.income_model import Income
 from schemas.expense_model import Expense
 from schemas.fee_model import Fee  
-from user.user_crud import check_admin, check_authenticated_user
+from user.user_crud import require_admin as check_admin
 from user.user_models import User
 from typing import Annotated, List
 
@@ -90,7 +90,7 @@ def get_user_role_summary(user: Annotated[User, Depends(check_admin)], session: 
 
 
 @dashboard_router.get("/attendance-summary", response_model=AttendanceGraphData)
-def get_attendance_summary(user: Annotated[User, Depends(check_admin)],session: Session = Depends(get_session)):
+def get_attendance_summary(User: Annotated[User, Depends(check_admin)],session: Session = Depends(get_session)):
     """Fetch today's attendance summary with graph visualization."""
     try:
         # Get today's date at start and end of day to ensure we catch all records
@@ -198,7 +198,7 @@ def get_attendance_summary(user: Annotated[User, Depends(check_admin)],session: 
 
 @dashboard_router.get("/student-summary", response_model=StudentGraphData)
 def get_student_summary(
-    user: Annotated[User, Depends(check_admin)],
+    User: Annotated[User, Depends(check_admin)],
     date: date = Query(default=None),
     session: Session = Depends(get_session)
 ):
@@ -285,7 +285,7 @@ def get_student_summary(
 
 @dashboard_router.get("/income-summary", response_model=CategoryGraphData)
 def get_income_summary(
-    user: Annotated[User, Depends(check_admin)],
+    User: Annotated[User, Depends(check_admin)],
     year: int = Query(default=datetime.now().year),
     month: int = Query(default=None),
     session: Session = Depends(get_session)
@@ -357,7 +357,7 @@ def get_income_summary(
 
 @dashboard_router.get("/expense-summary", response_model=CategoryGraphData)
 def get_expense_summary(
-    user: Annotated[User, Depends(check_admin)],
+    User: Annotated[User, Depends(check_admin)],
     year: int = Query(default=datetime.now().year),
     month: int = Query(default=None),
     session: Session = Depends(get_session)
@@ -429,7 +429,7 @@ def get_expense_summary(
 
 @dashboard_router.get("/total-students", response_model=int)
 def get_total_students(
-    user: Annotated[User, Depends(check_admin)],
+    User: Annotated[User, Depends(check_admin)],
     session: Session = Depends(get_session)):
     """Get total number of students by ID range."""
     try:
@@ -445,7 +445,7 @@ def get_total_students(
 
 @dashboard_router.get("/unmarked-students", response_model=List[int])
 def get_unmarked_students(
-    user: Annotated[User, Depends(check_admin)],
+    User: Annotated[User, Depends(check_admin)],
     date: date = Query(default=None),
     session: Session = Depends(get_session)
 ):
@@ -482,7 +482,7 @@ def get_unmarked_students(
 
 @dashboard_router.get("/income-expense-summary")
 def get_income_expense_summary(
-    user: Annotated[User, Depends(check_admin)],
+    User: Annotated[User, Depends(check_admin)],
     year: int = datetime.now().year, session: Session = Depends(get_session)):
     """Get combined income and expense summary for comparison."""
     try:
@@ -592,7 +592,7 @@ def get_income_expense_summary(
 
 @dashboard_router.get("/fee-summary")
 def get_fee_summary(
-    user: Annotated[User, Depends(check_admin)],
+    User: Annotated[User, Depends(check_admin)],
     year: int = datetime.now().year, session: Session = Depends(get_session)):
     """Get monthly fee collection summary."""
     try:
@@ -672,7 +672,7 @@ def get_fee_summary(
         )
 
 @dashboard_router.get("/graph-test", response_class=HTMLResponse)
-async def get_graph_test(user: Annotated[User, Depends(check_admin)], session: Session = Depends(get_session)):
+async def get_graph_test(User: Annotated[User, Depends(check_admin)], session: Session = Depends(get_session)):
     return """
     <!DOCTYPE html>
     <html>

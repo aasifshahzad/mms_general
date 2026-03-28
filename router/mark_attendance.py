@@ -131,6 +131,8 @@ def add_attendance(
 from datetime import date
 from fastapi import HTTPException
 
+from datetime import date
+
 @mark_attendance_router.post("/add_bulk_attendance/", response_model=dict)
 def add_bulk_attendance(
     bulk: BulkAttendanceCreate,
@@ -142,11 +144,14 @@ def add_bulk_attendance(
     today = date.today()
 
     for attendance in bulk.attendances:
+        # Ensure both are date objects
+        att_date = attendance.attendance_date.date() if hasattr(attendance.attendance_date, "date") else attendance.attendance_date
+
         # ✅ 1. Prevent marking attendance for future dates
-        if attendance.attendance_date > today:
+        if att_date > today:
             skipped.append({
                 "student_id": attendance.student_id,
-                "reason": f"Future date {attendance.attendance_date} not allowed"
+                "reason": f"Future date {att_date} not allowed"
             })
             continue
 
@@ -195,7 +200,6 @@ def add_bulk_attendance(
             "skipped": len(skipped),
         }
     }
-
 
 @mark_attendance_router.delete("/delete_attendance/{attendance_id}", response_model=str)
 def delete_attendance(

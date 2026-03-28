@@ -40,9 +40,10 @@ export default function LoginForm() {
     setIsLoading(true)
     try {
       const response: LoginResponse = await LoginAPI(data)
-      if (response?.access_token) {
-        localStorage.setItem("access_token", response.access_token)
-        localStorage.setItem("user", JSON.stringify(response.user))
+      if (response?.user) {
+        // Security: Tokens are now in HTTPOnly cookies (not accessible here)
+        // Store only non-sensitive user info in sessionStorage (cleared on browser close)
+        sessionStorage.setItem("user", JSON.stringify(response.user))
         toast.success("Login Successfully!")
         router.push("/dashboard")
       } else {

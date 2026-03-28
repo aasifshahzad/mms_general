@@ -7,7 +7,7 @@ from sqlalchemy.exc import IntegrityError  # <-- Add this import
 from db import get_session
 
 from schemas.teacher_names_model import TeacherNames, TeacherNamesCreate, TeacherNamesResponse
-from user.user_crud import check_admin, check_authenticated_user
+from user.user_crud import require_admin, require_admin_teacher_principal
 from user.user_models import User
 
 teachernames_router = APIRouter(
@@ -23,7 +23,7 @@ async def root():
 
 
 @teachernames_router.post("/add_teacher_name/", response_model=TeacherNamesResponse)
-def create_teachernames( user: Annotated[User, Depends(check_admin)],teachernames: TeacherNamesCreate, session: Session = Depends(get_session),):
+def create_teachernames( user: Annotated[User, Depends(require_admin())],teachernames: TeacherNamesCreate, session: Session = Depends(get_session),):
     db_teachernames = TeacherNames(**teachernames.model_dump())
     session.add(db_teachernames)
 
@@ -54,7 +54,7 @@ def create_teachernames( user: Annotated[User, Depends(check_admin)],teachername
 
 
 @teachernames_router.get("/teacher-names-all/", response_model=List[TeacherNamesResponse])
-def read_teachernames(current_user: Annotated[User, Depends(check_authenticated_user)],session: Session = Depends(get_session)):
+def read_teachernames(current_user: Annotated[User, Depends(require_admin_teacher_principal())],session: Session = Depends(get_session)):
     teachernames = session.exec(select(TeacherNames)).all()
     return teachernames
 
@@ -62,7 +62,7 @@ def read_teachernames(current_user: Annotated[User, Depends(check_authenticated_
 
 
 @teachernames_router.get("/{teacher_name_id}", response_model=TeacherNamesResponse)
-def read_teachernames(current_user: Annotated[User, Depends(check_authenticated_user)],teacher_name_id: int, session: Session = Depends(get_session)):
+def read_teachernames(current_user: Annotated[User, Depends(require_admin_teacher_principal())],teacher_name_id: int, session: Session = Depends(get_session)):
     teachernames = session.get(TeacherNames, teacher_name_id)
     if not teachernames:
         raise HTTPException(
@@ -72,7 +72,7 @@ def read_teachernames(current_user: Annotated[User, Depends(check_authenticated_
 
 @teachernames_router.delete("/del/{teacher_name}", response_model=dict)
 def delete_teachernames(
-    user: Annotated[User, Depends(check_admin)],
+    user: Annotated[User, Depends(require_admin())],
     teacher_name: str,
     session: Session = Depends(get_session)
 ):
@@ -95,7 +95,7 @@ def delete_teachernames(
 
 @teachernames_router.delete("/{teacher_id}", response_model=dict)
 def delete_teacher_by_id(
-    user: Annotated[User, Depends(check_admin)],
+    user: Annotated[User, Depends(require_admin())],
     teacher_id: int, 
     session: Session = Depends(get_session)
 ):

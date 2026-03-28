@@ -18,6 +18,8 @@ import {
 import { RiCashLine } from "react-icons/ri";
 import { BsCashCoin } from "react-icons/bs";
 import { GiExpense } from "react-icons/gi";
+import { useRole } from "@/context/RoleContext";
+import { canAccessSection } from "@/utils/rolePermissions";
 
 type MenuItem = {
   id: number;
@@ -167,9 +169,22 @@ const menuList: MenuItem[] = [
   { id: 5, name: "Logout", icon: LogOut, path: "/login" },
 ];
 
+// Map menu item paths to role access sections
+const getMenuItemSection = (path: string): string => {
+  if (path.includes("/students")) return "students";
+  if (path.includes("/attendance")) return "attendance";
+  if (path.includes("/fees")) return "fees";
+  if (path.includes("/income")) return "income";
+  if (path.includes("/expense")) return "expenses";
+  if (path.includes("/setup") || path.includes("/settings")) return "teachers"; // Setup requires teacher/admin access
+  if (path.includes("/dashboard")) return "dashboard";
+  return "dashboard";
+};
+
 const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
   const pathname = usePathname();
   const router = useRouter();
+  const { role, isLoading } = useRole();
   const [openSubmenu, setOpenSubmenu] = useState<number | null>(null);
   const [isDarkMode, setIsDarkMode] = useState(true);
   const [userData, setUserData] = useState<string | null>(null);
@@ -180,11 +195,22 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
     setUserData(storedUser);
   }, []);
 
+  // Filter menu items based on user role
+  const visibleMenuItems = menuList.filter((item) => {
+    // Logout is always visible
+    if (item.name === "Logout") return true;
+
+    // Check if role can access this section
+    const section = getMenuItemSection(item.path);
+    return canAccessSection(role, section);
+  });
+
   const toggleSubmenu = (id: number) =>
     setOpenSubmenu(openSubmenu === id ? null : id);
 
   const handleLogout = () => {
     localStorage.clear();
+    sessionStorage.clear();
     router.push("/login");
   };
 
@@ -247,7 +273,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
         </div>
 
         <nav className="flex-1">
-          {menuList.map((item) => (
+          {visibleMenuItems.map((item) => (
             <div key={item.id}>
               {item.hasSubmenu ? (
                 <button
@@ -291,9 +317,15 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
               )}
               {item.hasSubmenu && openSubmenu === item.id && (
                 <div className="ml-6 mt-1 space-y-1">
-                  {item.submenu?.map((subItem) => (
-                    <Link
-                      key={subItem.id}
+                  {item.submenu
+                    ?.filter((subItem) => {
+                      // Filter submenu items by role
+                      const section = getMenuItemSection(subItem.path);
+                      return canAccessSection(role, section);
+                    })
+                    .map((subItem) => (
+                      <Link
+                        key={subItem.id}
                       href={subItem.path}
                       className="flex p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-neutral-800"
                     >

@@ -1,11 +1,15 @@
-from fastapi import FastAPI, Depends, HTTPException, Cookie
+from fastapi import FastAPI, Depends, HTTPException, Cookie, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.middleware.httpsredirect import HTTPSRedirectMiddleware
+from fastapi.middleware.trustedhost import TrustedHostMiddleware
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
+from fastapi.responses import JSONResponse
 from sqlmodel import select, Session, SQLModel
 from typing import Annotated
 from contextlib import asynccontextmanager
 from utils.logging import logger, cleanup_old_logs
 from db import engine, SessionLocal, lifespan
+from slowapi.errors import RateLimitExceeded
 import asyncio
 from fastapi.openapi.utils import get_openapi
 
@@ -72,9 +76,9 @@ app = FastAPI(
     title="MMS-GENERAL", 
     description="Manages all API for MMS-GENERAL",
     version="0.1.0",
-    # openapi_url="/docs/json",
-    # docs_url="/docs",
-    # redoc_url="/redoc",
+    openapi_url="/docs/json",
+    docs_url="/docs",
+    redoc_url="/redoc",
     lifespan=lifespan,
 )
 
@@ -82,13 +86,38 @@ app = FastAPI(
 
 logger.info("Starting application...")
 
+# Security: Exception handler for rate limiting
+@app.exception_handler(RateLimitExceeded)
+async def rate_limit_handler(request: Request, exc: RateLimitExceeded):
+    logger.warning(f"Rate limit exceeded for IP: {request.client.host}")
+    return JSONResponse(
+        status_code=429,
+        content={"detail": "Too many requests. Please try again later."}
+    )
+# Security: Add HTTPS redirect middleware for production
+# This forces all HTTP requests to redirect to HTTPS
+# Only active when HTTPS is available (production)
+# Disabled for development - enable only in production with SSL certificates
+# try:
+#     app.add_middleware(HTTPSRedirectMiddleware)
+# except Exception:
+#     logger.warning("HTTPSRedirectMiddleware not available, skipping")
+
+# Security: Add trusted hosts middleware to prevent Host header attacks
+app.add_middleware(
+    TrustedHostMiddleware,
+    allowed_hosts=["localhost", "127.0.0.1", "mzbs.vercel.app", "*.vercel.app"]
+)
+
+# Security: Restrict CORS to specific methods and headers
 app.add_middleware(
     CORSMiddleware,
     allow_origins=origins,
     allow_credentials=True,
-    allow_methods=["*"],  # Allow all methods
-    allow_headers=["*"],  # Allow all headers
-    expose_headers=["*"]  # Expose all headers
+    allow_methods=["GET", "POST", "PUT", "DELETE"],  # Specific methods only
+    allow_headers=["Content-Type", "Authorization"],  # Specific headers only
+    expose_headers=["Content-Type"],  # Only expose necessary headers
+    max_age=3600  # Cache preflight requests for 1 hour
 )
 
 # Include routers

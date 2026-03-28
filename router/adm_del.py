@@ -17,7 +17,7 @@ from typing import Annotated, List
 
 
 from db import get_session
-from user.user_crud import check_admin
+from user.user_crud import require_admin
 from user.user_models import User
 
 
@@ -28,7 +28,7 @@ adm_del_router = APIRouter(
 
 
 @adm_del_router.post("/admission_create/", response_model=AdmissionResponse)
-def add_admission(user: Annotated[User, Depends(check_admin)],create_admission: AdmissionCreate, session: Session = Depends(get_session)):
+def add_admission(user: Annotated[User, Depends(require_admin())],create_admission: AdmissionCreate, session: Session = Depends(get_session)):
     # Create a new Admission record using dictionary unpacking
     db_admission = Admission(**create_admission.model_dump())
 
@@ -46,7 +46,7 @@ def add_admission(user: Annotated[User, Depends(check_admin)],create_admission: 
 
 
 @adm_del_router.delete("/admission_del/{admission_id}", response_model=str)
-def delete_attendance(user: Annotated[User, Depends(check_admin)],admission_id: int, session: Session = Depends(get_session)):
+def delete_attendance(user: Annotated[User, Depends(require_admin())],admission_id: int, session: Session = Depends(get_session)):
     # Query to find the attendance record by ID
     db_admission = session.get(Admission, admission_id)
     if not db_admission:
@@ -111,7 +111,7 @@ def delete_attendance(user: Annotated[User, Depends(check_admin)],admission_id: 
 
 @adm_del_router.post("/termination/", response_model=TerminationResponse)
 def terminate_student(
-    user: Annotated[User, Depends(check_admin)],
+    user: Annotated[User, Depends(require_admin())],
     admission_id: int,
     termination_reason: str,
     session: Session = Depends(get_session)

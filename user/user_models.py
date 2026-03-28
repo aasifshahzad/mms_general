@@ -2,6 +2,8 @@ from sqlmodel import SQLModel, Field, Enum, Column
 from typing import Optional
 from datetime import timedelta, datetime
 import enum
+import re
+from pydantic import field_validator
 
 class UserRole(str, enum.Enum):
     ADMIN = "ADMIN"
@@ -41,7 +43,7 @@ class AdminUserUpdate(SQLModel):
     role: UserRole = Field(description="Must be one of: ADMIN, TEACHER, USER")
 
 class User(UserBase, table=True):
-    username: str = Field(nullable=False)
+    username: str = Field(unique=True, nullable=False)
     email: str = Field(index=True, unique=True, nullable=False)
     password: str = Field(nullable=False)
     role: UserRole = Field(default=UserRole.USER)
@@ -51,6 +53,34 @@ class UserCreate(SQLModel):
     email: str
     password: str
     role: UserRole = UserRole.USER
+
+    @field_validator('username')
+    @classmethod
+    def validate_username(cls, v):
+        """Validate username format: alphanumeric + underscore, 3-20 chars"""
+        if not isinstance(v, str):
+            raise ValueError('Username must be a string')
+        if len(v) < 3 or len(v) > 20:
+            raise ValueError('Username must be between 3 and 20 characters')
+        if not re.match(r'^[a-zA-Z0-9_]+$', v):
+            raise ValueError('Username can only contain letters, numbers, and underscores')
+        return v
+
+    @field_validator('password')
+    @classmethod
+    def validate_password(cls, v):
+        """Validate password strength: min 8 chars, uppercase, lowercase, digit"""
+        if not isinstance(v, str):
+            raise ValueError('Password must be a string')
+        if len(v) < 8:
+            raise ValueError('Password must be at least 8 characters long')
+        if not re.search(r'[A-Z]', v):
+            raise ValueError('Password must contain at least one uppercase letter')
+        if not re.search(r'[a-z]', v):
+            raise ValueError('Password must contain at least one lowercase letter')
+        if not re.search(r'[0-9]', v):
+            raise ValueError('Password must contain at least one digit')
+        return v
 
 class UserResponse(SQLModel):
     username: str
@@ -66,7 +96,18 @@ class LoginResponse(SQLModel):
     user: UserResponse
 
 class RefreshToken(SQLModel, table=True):
-    id: int = Field(primary_key=True)
+    """Stores refresh tokens for server-side revocation and tracking"""
+    id: Optional[int] = Field(default=None, primary_key=True)
     user_id: int = Field(index=True, nullable=False)
-    token: str = Field(nullable=False, unique=True)
+    token: str = Field(nullable=False, unique=True, index=True)
     expires_at: datetime = Field(nullable=False)
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+    revoked_at: Optional[datetime] = None
+    
+    def is_expired(self) -> bool:
+        """Check if token has expired"""
+        return datetime.utcnow() > self.expires_at
+    
+    def is_revoked(self) -> bool:
+        """Check if token has been revoked"""
+        return self.revoked_at is not None

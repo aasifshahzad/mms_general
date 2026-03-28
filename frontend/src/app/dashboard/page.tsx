@@ -1,6 +1,9 @@
 "use client";
-// pages/admin/dashboard.js
 import React, { useState, useEffect } from "react";
+import { useRole } from "@/context/RoleContext";
+import { TeacherDashboard } from "@/components/dashboard/TeacherDashboard";
+import { AccountantDashboard } from "@/components/dashboard/AccountantDashboard";
+import { StudentDashboard } from "@/components/dashboard/StudentDashboard";
 import {
   PieChart,
   Pie,
@@ -25,7 +28,6 @@ import {
 } from "@/components/dashboard/Skeleton";
 import { Header } from "@/components/dashboard/Header";
 import { motion } from "framer-motion";
-// import { toast } from "sonner";
 
 // API Response Type Definitions
 interface ApiResponse<T> {
@@ -207,8 +209,50 @@ const CustomTooltip = ({ active, payload, label }: any) => {
   return null;
 };
 
-export default function AdminDashboard() {
-  // Add state for user roles data
+export default function DashboardRouter() {
+  const { role, isLoading } = useRole();
+  
+  // Show loading state while role is being determined
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="inline-block">
+            <div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+            <p className="mt-4 text-gray-600">Loading...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Route to appropriate dashboard based on role
+  switch (role) {
+    case "ADMIN":
+    case "PRINCIPAL":
+      return <AdminDashboardView />;
+    case "TEACHER":
+      return <TeacherDashboard />;
+    case "ACCOUNTANT":
+    case "FEE_MANAGER":
+      return <AccountantDashboard />;
+    case "USER":
+      return <StudentDashboard />;
+    default:
+      return (
+        <div className="min-h-screen flex items-center justify-center">
+          <div className="text-center">
+            <p className="text-xl text-gray-600">Unknown role. Please log in again.</p>
+          </div>
+        </div>
+      );
+  }
+}
+
+/**
+ * Full Admin/Principal Dashboard with all statistics
+ */
+function AdminDashboardView() {
   const [userRolesData, setUserRolesData] = useState<UserRolesData | null>(
     null
   );
@@ -402,6 +446,13 @@ export default function AdminDashboard() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
       <Header value="Dashboard" />
+
+      {/* Role Context Badge */}
+      <div className="px-4 sm:px-6 lg:px-8 py-2">
+        <div className="inline-block bg-purple-100 text-purple-800 px-4 py-2 rounded-full text-sm font-medium">
+          👑 Administrator - Full System Access
+        </div>
+      </div>
 
       {/* Main Content */}
       <main className="container mx-auto px-4 py-6 sm:px-6 lg:px-8">

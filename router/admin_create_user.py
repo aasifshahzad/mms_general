@@ -11,7 +11,7 @@ from user.user_models import (
     UserResponse, 
     AdminUserUpdate
 )
-from user.user_crud import check_admin
+from user.user_crud import require_admin as check_admin
 
 admin_create_user_router = APIRouter(
     prefix="/admin",

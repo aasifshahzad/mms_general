@@ -34,6 +34,10 @@ def verify_password(plain_password, hashed_password):
     """Verify the password using the hash stored in the database."""
     if not plain_password or not hashed_password:
         return False
+    # Bcrypt has a 72-byte limit - truncate password if it exceeds 72 bytes when encoded
+    if isinstance(plain_password, str):
+        # Truncate at 72 UTF-8 bytes
+        plain_password = plain_password.encode('utf-8')[:72].decode('utf-8', errors='ignore')
     return pwd_context.verify(plain_password, hashed_password)
 
 def get_password_hash(password):
@@ -44,6 +48,10 @@ def get_password_hash(password):
     Returns:
         str: The hashed password.
     """
+    # Bcrypt has a 72-byte limit - truncate password if it exceeds 72 bytes when encoded
+    if isinstance(password, str):
+        # Truncate at 72 UTF-8 bytes
+        password = password.encode('utf-8')[:72].decode('utf-8', errors='ignore')
     return pwd_context.hash(password)
 
 def get_user_by_username(db: Session, username: str) -> User:
@@ -188,32 +196,80 @@ def create_refresh_token(data: Union[str, Any], expires_delta: int = None) -> st
 def verify_refresh_token(db: Session, token: str) -> User:
     """
     Validates the refresh token and returns the associated user if valid.
+    Security: Checks revocation status and expiration.
     """
     try:
         payload = jwt.decode(token, JWT_REFRESH_SECRET_KEY, algorithms=[ALGORITHM])
         user_id = payload.get("sub")
 
         if not user_id:
-            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token")
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Invalid token"
+            )
 
-        # Check if the token exists in the database
-        stored_token = db.exec(select(RefreshToken).where(RefreshToken.token == token)).first()
-        if not stored_token or stored_token.expires_at < datetime.now():
-            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Refresh token expired or invalid")
+        # Use parameterized query to prevent SQL injection
+        stored_token = db.exec(
+            select(RefreshToken).where(RefreshToken.token == token)
+        ).first()
+        
+        if not stored_token:
+            logger.warning(f"Token not found in database for user_id: {user_id}")
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Token not found"
+            )
+        
+        # Check if expired
+        if stored_token.is_expired():
+            logger.warning(f"Token expired for user_id: {user_id}")
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Refresh token expired"
+            )
+        
+        # Check if revoked
+        if stored_token.is_revoked():
+            logger.warning(f"Token was revoked for user_id: {user_id}")
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Token has been revoked"
+            )
 
         return get_user_by_username(db, user_id)
 
-    except JWTError:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token")
+    except JWTError as e:
+        logger.error(f"JWT decode error: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid token"
+        )
 
-def revoke_refresh_token(db: Session, token: str):
+def revoke_refresh_token(db: Session, token: str) -> bool:
     """
     Revokes a refresh token (used for logout).
+    Security: Marks token as revoked instead of deleting (audit trail).
     """
-    stored_token = db.exec(select(RefreshToken).where(RefreshToken.token == token)).first()
-    if stored_token:
-        db.delete(stored_token)
-        db.commit()
+    try:
+        # Use parameterized query to prevent SQL injection
+        stored_token = db.exec(
+            select(RefreshToken).where(RefreshToken.token == token)
+        ).first()
+        
+        if stored_token and not stored_token.is_revoked():
+            stored_token.revoked_at = datetime.utcnow()
+            db.add(stored_token)
+            db.commit()
+            logger.info(f"Token revoked for user_id: {stored_token.user_id}")
+            return True
+        return False
+    except Exception as e:
+        db.rollback()
+        logger.error(f"Error revoking token: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Error revoking token"
+        )
 
 def verify_token(token: str):
     try:

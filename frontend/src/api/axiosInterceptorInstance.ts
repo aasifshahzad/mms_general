@@ -1,19 +1,21 @@
 import axios from "axios";
 
+// Security: Tokens are now in HTTPOnly cookies, not localStorage
+// This interceptor no longer manages tokens directly
+
 const axiosInterceptorInstance = axios.create({
   baseURL: process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000",
   headers: {
     "Content-Type": "application/json",
   },
+  withCredentials: true,  // Security: Include HTTPOnly cookies in requests
 });
 
-// Add interceptors if needed
+// Request interceptor
 axiosInterceptorInstance.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem("access_token");
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
+    // No need to manually add token - it's in the HTTPOnly cookie
+    // and sent automatically via withCredentials
     return config;
   },
   (error) => {
@@ -21,7 +23,7 @@ axiosInterceptorInstance.interceptors.request.use(
   }
 );
 
-// Add response interceptor
+// Response interceptor: Handle 401 and refresh token
 axiosInterceptorInstance.interceptors.response.use(
   (response) => response,
   async (error) => {
@@ -31,16 +33,19 @@ axiosInterceptorInstance.interceptors.response.use(
       originalRequest._retry = true;
 
       try {
-        // Attempt to refresh token
-        const response = await axios.post("/auth/refresh");
-        const { access_token } = response.data;
+        // Refresh token endpoint - tokens in cookies
+        const baseURL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+        const response = await axios.post(
+          `${baseURL}/auth/refresh`,
+          {},
+          { withCredentials: true }  // Include cookies
+        );
 
-        localStorage.setItem("access_token", access_token);
-        originalRequest.headers.Authorization = `Bearer ${access_token}`;
-
+        // After refresh, retry original request
+        // New access token is now in HTTPOnly cookie
         return axiosInterceptorInstance(originalRequest);
       } catch (refreshError) {
-        // Redirect to login if refresh fails
+        // Refresh failed - clear authentication and redirect to login
         window.location.href = "/login";
         return Promise.reject(refreshError);
       }

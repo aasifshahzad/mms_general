@@ -5,7 +5,7 @@ from typing import List, Optional  # Import List and Optional for response model
 
 from db import get_session
 from schemas.income_model import Income, IncomeCreate, IncomeResponse, IncomeUpdate
-from user.user_crud import check_admin
+from user.user_crud import require_admin_accountant
 from user.user_models import User
 from schemas.income_cat_names_model import IncomeCatNames  # Import IncomeCatNames
 
@@ -22,7 +22,7 @@ async def root():
 @income_router.get("/all", response_model=List[IncomeResponse])
 def get_all_incomes(
     session: Session = Depends(get_session),
-    user: User = Depends(check_admin)
+    user: User = Depends(require_admin_accountant())
 ):
     """Get all income records."""
     try:
@@ -58,7 +58,7 @@ def get_all_incomes(
 def create_income(
     income: IncomeCreate,
     session: Session = Depends(get_session),
-    user: User = Depends(check_admin)
+    user: User = Depends(require_admin_accountant())
 ):
     # Ensure the category exists
     category = session.get(IncomeCatNames, income.category_id)
@@ -110,7 +110,7 @@ def update_income(
     income_id: int,
     income: IncomeUpdate,
     session: Session = Depends(get_session),
-    user: User = Depends(check_admin)
+    user: User = Depends(require_admin_accountant())
 ):
     db_income = session.get(Income, income_id)
     if not db_income:
@@ -167,7 +167,7 @@ def update_income(
 def delete_income(
     income_id: int,
     session: Session = Depends(get_session),
-    user: User = Depends(check_admin)
+    user: User = Depends(require_admin_accountant())
 ):
     db_income = session.get(Income, income_id)
     if not db_income:
@@ -183,7 +183,7 @@ def delete_income(
 def filter_income(
     category_id: Optional[int] = None,
     session: Session = Depends(get_session),
-    user: User = Depends(check_admin)
+    user: User = Depends(require_admin_accountant())
 ):
     """Filter income records by category_id, or return all if None or 0."""
     try:
@@ -223,7 +223,7 @@ def filter_income(
 # def filter_income(
 #     category_id: Optional[int] = None,   # <-- make it optional
 #     session: Session = Depends(get_session),
-#     user: User = Depends(check_admin)
+#     user: User = Depends(require_admin_accountant())
 # ):
 #     """Filter income records by category_id, or return all if None."""
 #     try:

@@ -4,6 +4,7 @@
     "attendancevalue",
     "attendancevalues",
     "classnames",
+    "redoc",
     "teachernames"
   ],
   "terminal.integrated.defaultProfile.windows": "Command Prompt",
