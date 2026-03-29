@@ -5,9 +5,19 @@ interface LoginData {
   password: string;
 }
 
+interface UserResponse {
+  username: string;
+  email: string;
+  role: "ADMIN" | "PRINCIPAL" | "TEACHER" | "ACCOUNTANT" | "FEE_MANAGER" | "USER";
+  id: number;
+}
+
 interface LoginResponse {
   access_token: string;
-  user: string;
+  refresh_token: string;
+  token_type: string;
+  expires_in: number;
+  user: UserResponse;
 }
   export async function LoginAPI(loginData: LoginData) {
     try {

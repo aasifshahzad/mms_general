@@ -1,12 +1,6 @@
 import AxiosInstance from "@/api/axiosInterceptorInstance";
 import {AddFeeModel} from "@/models/Fees/Fee";
 
-// Helper function to get standard headers
-const getHeaders = () => ({
-  "Content-Type": "application/json",
-  Authorization: `Bearer ${localStorage.getItem("access_token")}`,
-});
-
 // Export as a single API object
 export const FeeAPI = {
   Create: async (AddFee: AddFeeModel) => {
@@ -17,7 +11,6 @@ export const FeeAPI = {
         {
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${localStorage.getItem("access_token")}`,
           },
         }
       );
@@ -41,10 +34,7 @@ export const FeeAPI = {
   }) => {
     try {
       const response = await AxiosInstance.get(
-        `/fee/class-fee-status/${class_id}?fee_month=${fee_month}&fee_year=${fee_year}`,
-        {
-          headers: getHeaders(),
-        }
+        `/fee/class-fee-status/${class_id}?fee_month=${fee_month}&fee_year=${fee_year}`
       );
       return response;
     } catch (error) {

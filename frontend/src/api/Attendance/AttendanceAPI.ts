@@ -22,7 +22,6 @@ export const Create = async (Attendances: MarkAttInput) => {
         {
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${localStorage.getItem("access_token")}`,
           },
         }
       );
@@ -36,12 +35,7 @@ export const Create = async (Attendances: MarkAttInput) => {
   export const GetbyFilter = async (FilteredAttendance: FilteredAttendance) => {
     try {
       const response = await AxiosInstance.get<FilteredAttendance>(
-        `/mark_attendance/filter_attendance_by_ids?attendance_date=${FilteredAttendance.attendance_date}&attendance_time_id=${FilteredAttendance.attendance_time_id}&class_name_id=${FilteredAttendance.class_name_id}&teacher_name_id=${FilteredAttendance.teacher_name_id}&student_id=${FilteredAttendance.student_id}&father_name=${FilteredAttendance.father_name}&attendance_value_id=${FilteredAttendance.attendance_value_id}`,
-        {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("access_token")}`,
-          },
-        }
+        `/mark_attendance/filter_attendance_by_ids?attendance_date=${FilteredAttendance.attendance_date}&attendance_time_id=${FilteredAttendance.attendance_time_id}&class_name_id=${FilteredAttendance.class_name_id}&teacher_name_id=${FilteredAttendance.teacher_name_id}&student_id=${FilteredAttendance.student_id}&father_name=${FilteredAttendance.father_name}&attendance_value_id=${FilteredAttendance.attendance_value_id}`
       );
       return response;
     }
@@ -61,7 +55,6 @@ export const Create = async (Attendances: MarkAttInput) => {
         {
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${localStorage.getItem("access_token")}`
           },
         }
       );
@@ -79,7 +72,6 @@ export const Create = async (Attendances: MarkAttInput) => {
         {
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${localStorage.getItem("access_token")}`
           },
         }
       );

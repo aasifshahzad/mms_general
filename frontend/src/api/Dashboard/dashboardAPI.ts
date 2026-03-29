@@ -4,11 +4,7 @@ import AxiosInstance from "@/api/axiosInterceptorInstance";
 export namespace DashboardAPI {
   export const GetUserRoles = async () => {
     try {
-      const response = await AxiosInstance.get("/dashboard/user-roles", {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("access_token")}`,
-        },
-      });
+      const response = await AxiosInstance.get("/dashboard/user-roles");
       console.log("API Response:", response);
       return response;
     } catch (error) {
@@ -18,12 +14,7 @@ export namespace DashboardAPI {
   export const GetStudentSummary = async (date: string) => {
     try {
       const response = await AxiosInstance.get(
-        `/dashboard/student-summary?date=${date}`,
-        {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("access_token")}`,
-          },
-        }
+        `/dashboard/student-summary?date=${date}`
       );
       console.log("Student Summary API Response:", response);
       return response;
@@ -34,12 +25,7 @@ export namespace DashboardAPI {
   export const GetAttendanceSummary = async () => {
     try {
       const response = await AxiosInstance.get(
-        "/dashboard/attendance-summary",
-        {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("access_token")}`,
-          },
-        }
+        "/dashboard/attendance-summary"
       );
       console.log("Attendance Summary API Response:", response);
       return response;
@@ -50,12 +36,7 @@ export namespace DashboardAPI {
   export const GetIncomeExpenseSummary = async (year: number) => {
     try {
       const response = await AxiosInstance.get(
-        `/dashboard/income-expense-summary?year=${year}`,
-        {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("access_token")}`,
-          },
-        }
+        `/dashboard/income-expense-summary?year=${year}`
       );
       console.log("Income Expense Summary API Response:", response);
       return response;
@@ -66,12 +47,7 @@ export namespace DashboardAPI {
   export const GetFeeSummary = async (year: number) => {
     try {
       const response = await AxiosInstance.get(
-        `/dashboard/fee-summary?year=${year}`,
-        {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("access_token")}`,
-          },
-        }
+        `/dashboard/fee-summary?year=${year}`
       );
       console.log("Fee Summary API Response:", response);
       return response;
@@ -86,14 +62,7 @@ export namespace DashboardAPI {
         url += `&month=${month}`;
       }
       
-      const response = await AxiosInstance.get(
-        url,
-        {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("access_token")}`,
-          }
-        }
-      );
+      const response = await AxiosInstance.get(url);
       console.log("Income Summary API Response:", response);
       return response;
     } catch (error) {
@@ -107,14 +76,7 @@ export namespace DashboardAPI {
         url += `&month=${month}`;
       }
       
-      const response = await AxiosInstance.get(
-        url,
-        {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("access_token")}`,
-          }
-        }
-      );
+      const response = await AxiosInstance.get(url);
       console.log("Expense Summary API Response:", response);
       return response;
     } catch (error) {

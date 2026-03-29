@@ -508,8 +508,8 @@ async def bulk_signup(
 @limiter.limit("10/minute")  # Security: Rate limiting - 10 attempts per minute per IP
 async def refresh_token(
     request: Request,
+    response: Response,
     refresh_token: str = Cookie(None),
-    response: Response = None,
     db: Session = Depends(get_session)
 ):
     """Refresh access token using refresh token cookie"""

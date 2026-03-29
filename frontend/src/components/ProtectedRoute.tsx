@@ -20,19 +20,28 @@ export function ProtectedRoute({ children }: ProtectedRouteProps) {
   const [isAuthorized, setIsAuthorized] = useState(false);
 
   useEffect(() => {
-    if (isLoading) return;
+    console.log("ProtectedRoute - useEffect triggered:", { role, isLoading, pathname });
+    
+    if (isLoading) {
+      console.log("ProtectedRoute - Still loading...");
+      return;
+    }
 
     // Allow access to non-dashboard routes without role check
     if (!pathname.startsWith("/dashboard")) {
+      console.log("ProtectedRoute - Non-dashboard route, allowing access");
       setIsAuthorized(true);
       return;
     }
 
     // Check if user has access to this route
+    console.log("ProtectedRoute - Checking access for role:", role, "and pathname:", pathname);
     const hasAccess = canAccessRoute(role, pathname);
+    console.log("ProtectedRoute - Access result:", hasAccess);
 
     if (!hasAccess) {
       // Redirect to unauthorized page
+      console.error("ProtectedRoute - Access denied, redirecting to unauthorized");
       router.push("/unauthorized");
       return;
     }

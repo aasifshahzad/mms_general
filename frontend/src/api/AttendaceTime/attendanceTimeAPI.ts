@@ -9,12 +9,7 @@ export namespace AttendanceTimeAPI {
     try {
       
       const response = await AxiosInstance.get<ClassTiming>(
-        "/attendance_time/attendance-values-all/",
-        {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("access_token")}`,
-          }
-        }
+        "/attendance_time/attendance-values-all/"
       );
       console.log("API Response:", response);
       return response;
@@ -32,7 +27,6 @@ export namespace AttendanceTimeAPI {
         {
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${localStorage.getItem("access_token")}`,
           },
         }
       );

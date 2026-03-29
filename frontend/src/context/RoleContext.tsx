@@ -18,8 +18,13 @@ export function RoleProvider({ children }: { children: React.ReactNode }) {
   // Initialize role from sessionStorage on mount
   useEffect(() => {
     const storedRole = sessionStorage.getItem("userRole");
+    const storedUser = sessionStorage.getItem("user");
+    console.log("RoleContext - Initializing from sessionStorage:", { storedRole, storedUser });
     if (storedRole) {
+      console.log("RoleContext - Setting role to:", storedRole);
       setRole(storedRole);
+    } else {
+      console.warn("RoleContext - No userRole found in sessionStorage");
     }
     setIsLoading(false);
   }, []);

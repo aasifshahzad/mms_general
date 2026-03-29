@@ -7,13 +7,7 @@ export const ExpenseAPI = {
   GetExpenseData: async (category_id: number) => {
     try {
       const response = await AxiosInstance.get(
-        `/expenses/filter-by-category/${category_id}`,
-        {
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${localStorage.getItem("access_token")}`,
-          },
-        }
+        `/expenses/filter-by-category/${category_id}`
       );
       console.log("API Response:", response.data);
       return response;
@@ -31,7 +25,6 @@ export const ExpenseAPI = {
         {
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${localStorage.getItem("access_token")}`,
           },
         }
       );
@@ -51,7 +44,6 @@ export const ExpenseAPI = {
         {
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${localStorage.getItem("access_token")}`,
           },
         }
       );
@@ -66,13 +58,7 @@ export const ExpenseAPI = {
   GetExpenseCategory: async () => {
     try {
       const response = await AxiosInstance.get(
-        "/expense_cat_names/expense-cat-names-all/",
-        {
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${localStorage.getItem("access_token")}`,
-          },
-        }
+        "/expense_cat_names/expense-cat-names-all/"
       );
       console.log("API Response:", response.data);
       return response;

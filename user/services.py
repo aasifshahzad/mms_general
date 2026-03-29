@@ -1,10 +1,9 @@
 from jose import JWTError, jwt
-from passlib.context import CryptContext
+import bcrypt
 from typing import Annotated, Optional
 from fastapi.openapi.models import OAuthFlows
 from fastapi.openapi.models import OAuthFlowPassword
 from fastapi.security import OAuth2PasswordBearer
-from setting import *
 from user.settings import *
 from datetime import datetime, timedelta, timezone
 from sqlmodel import Session, select
@@ -23,14 +22,12 @@ credentials_exception = HTTPException(
     headers={"WWW-Authenticate": "Bearer"},
 )
 
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
-
 
 # Update OAuth2 scheme to use correct path
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login-swagger")  
 
 
-def verify_password(plain_password, hashed_password):
+def verify_password(plain_password: str, hashed_password: str) -> bool:
     """
     Verify a plain password against its bcrypt hash.
     
@@ -44,17 +41,15 @@ def verify_password(plain_password, hashed_password):
     if not isinstance(plain_password, str):
         return False
     
-    # Safely handle bcrypt's 72-byte limit (same truncation as hashing)
-    password_bytes = plain_password.encode('utf-8')
-    if len(password_bytes) > 72:
-        plain_password = password_bytes[:72].decode('utf-8', errors='ignore')
-    
     try:
-        return pwd_context.verify(plain_password, hashed_password)
+        password_bytes = plain_password.encode('utf-8')
+        if len(password_bytes) > 72:
+            password_bytes = password_bytes[:72]
+        return bcrypt.checkpw(password_bytes, hashed_password.encode('utf-8'))
     except Exception:
         return False
 
-def get_password_hash(password):
+def get_password_hash(password: str) -> str:
     """
     Hash the password before storing it in the database.
     
@@ -64,12 +59,11 @@ def get_password_hash(password):
     if not isinstance(password, str):
         raise ValueError('Password must be a string')
     
-    # Defensive measure: truncate if somehow a password exceeds 72 bytes
     password_bytes = password.encode('utf-8')
     if len(password_bytes) > 72:
-        password = password_bytes[:72].decode('utf-8', errors='ignore')
+        password_bytes = password_bytes[:72]
     
-    return pwd_context.hash(password)
+    return bcrypt.hashpw(password_bytes, bcrypt.gensalt()).decode('utf-8')
 
 def get_user_by_username(db: Session, username: str) -> User:
     """Get the user by username."""
@@ -127,6 +121,9 @@ async def get_current_user(
                 detail="Token has expired",
                 headers={"WWW-Authenticate": "Bearer"},
             )
+        
+        user = get_user_by_username(db, username)
+        return user
     except JWTError:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,

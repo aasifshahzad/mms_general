@@ -12,13 +12,7 @@ export const IncomeAPI = {
   GetIncomeData: async (category_id: number) => {
     try {
       const response = await AxiosInstance.get(
-        `/income/filter_income?category_id=${category_id}`,
-        {
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${localStorage.getItem("access_token")}`,
-          },
-        }
+        `/income/filter_income?category_id=${category_id}`
       );
       console.log("API Response:", response.data)
       return response;
@@ -36,7 +30,6 @@ export const IncomeAPI = {
         {
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${localStorage.getItem("access_token")}`,
           },
         }
       );
@@ -51,13 +44,7 @@ export const IncomeAPI = {
   GetIncomeCategory: async () => {
     try {
       const response = await AxiosInstance.get(
-        "/income_cat_names/income-cat-names-all/",
-        {
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${localStorage.getItem("access_token")}`,
-          },
-        }
+        "/income_cat_names/income-cat-names-all/"
       );
       // console.log("API Response:", response.data);
       return response;
@@ -75,7 +62,6 @@ export const IncomeAPI = {
         {
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${localStorage.getItem("access_token")}`,
           },
         }
       );

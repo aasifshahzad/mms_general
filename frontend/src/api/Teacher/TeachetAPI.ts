@@ -8,12 +8,7 @@ export namespace TeacherNameAPI {
   export const Get = async () => {
     try {
       const response = await AxiosInstance.get<TeacherModel>(
-        "/teacher_name/teacher-names-all/",
-        {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("access_token")}`,
-          }
-        }
+        "/teacher_name/teacher-names-all/"
       );
       return response;
     } catch (error) {
@@ -31,7 +26,6 @@ export namespace TeacherNameAPI {
         {
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${localStorage.getItem("access_token")}`,
           },
         }
       );
@@ -45,12 +39,7 @@ export namespace TeacherNameAPI {
   export async function Delete(teacher_name: number) {
     try {
       const response = await AxiosInstance.delete(
-        `/teacher_name/del/${teacher_name}`,
-        {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("access_token")}`,
-          },
-        }
+        `/teacher_name/del/${teacher_name}`
       );
       return response;
     } catch (error) {

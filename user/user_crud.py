@@ -222,7 +222,7 @@ from fastapi.security import OAuth2PasswordRequestForm, OAuth2PasswordBearer
 from sqlmodel import Session, select
 from db import get_session
 from user.settings import ACCESS_TOKEN_EXPIRE_MINUTES, ALGORITHM, REFRESH_TOKEN_EXPIRE_MINUTES, SECRET_KEY
-from user.services import create_access_token, get_password_hash, get_user_by_username, verify_password, pwd_context, oauth2_scheme
+from user.services import create_access_token, get_password_hash, get_user_by_username, verify_password, oauth2_scheme
 from user.user_models import (
     LoginResponse, 
     TokenData, 

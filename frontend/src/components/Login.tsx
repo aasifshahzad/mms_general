@@ -13,9 +13,19 @@ type FormData = {
   password: string
 }
 
+interface UserResponse {
+  username: string
+  email: string
+  role: "ADMIN" | "PRINCIPAL" | "TEACHER" | "ACCOUNTANT" | "FEE_MANAGER" | "USER"
+  id: number
+}
+
 interface LoginResponse {
   access_token: string
-  user: string
+  refresh_token: string
+  token_type: string
+  expires_in: number
+  user: UserResponse
 }
 
 interface ApiErrorResponse {
@@ -44,6 +54,8 @@ export default function LoginForm() {
         // Security: Tokens are now in HTTPOnly cookies (not accessible here)
         // Store only non-sensitive user info in sessionStorage (cleared on browser close)
         sessionStorage.setItem("user", JSON.stringify(response.user))
+        // Store the user's role for authorization checks
+        sessionStorage.setItem("userRole", response.user.role)
         toast.success("Login Successfully!")
         router.push("/dashboard")
       } else {
