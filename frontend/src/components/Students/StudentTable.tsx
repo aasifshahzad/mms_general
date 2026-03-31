@@ -108,7 +108,7 @@ export default function ModernStudentTable() {
       header: "Student Gender",
     },
     {
-      accessorKey: "class_name",
+      accessorKey: "student_class_name",
       header: "Student Class Name",
     },
     {
@@ -148,7 +148,7 @@ export default function ModernStudentTable() {
               <Button
                 variant="outline"
                 size="sm"
-                onClick={() => setModalStudent({ id: row.original.student_id, name: row.original.student_name })}
+                onClick={() => setModalStudent({ id: Number(row.original.student_id), name: row.original.student_name })}
                 className="flex items-center gap-1 text-red-600 hover:text-red-700"
               >
                 <Trash2 className="w-4 h-4" />
@@ -318,7 +318,7 @@ export default function ModernStudentTable() {
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => setModalStudent({ id: row.original.student_id, name: row.original.student_name })}
+                      onClick={() => setModalStudent({ id: Number(row.original.student_id), name: row.original.student_name })}
                       className="flex items-center gap-1 text-red-600 hover:text-red-700"
                     >
                       <Trash2 className="w-4 h-4" />
@@ -333,7 +333,7 @@ export default function ModernStudentTable() {
                 </div>
                 <div>
                   <p className="font-medium text-gray-600 dark:text-gray-400">Class</p>
-                  <p className="text-gray-900 dark:text-white truncate">{row.original.class_name}</p>
+                  <p className="text-gray-900 dark:text-white truncate">{row.original.student_class_name}</p>
                 </div>
                 <div>
                   <p className="font-medium text-gray-600 dark:text-gray-400">Age</p>
@@ -432,7 +432,7 @@ export default function ModernStudentTable() {
                 </div>
                 <div>
                   <p className="text-xs font-medium text-gray-500 uppercase">Class Name</p>
-                  <p className="text-sm text-gray-700 dark:text-gray-300">{selectedStudent.class_name}</p>
+                  <p className="text-sm text-gray-700 dark:text-gray-300">{selectedStudent.student_class_name}</p>
                 </div>
                 <div>
                   <p className="text-xs font-medium text-gray-500 uppercase">City</p>
