@@ -136,7 +136,8 @@ from datetime import date
 @mark_attendance_router.post("/add_bulk_attendance/", response_model=dict)
 def add_bulk_attendance(
     bulk: BulkAttendanceCreate,
-    session: Session = Depends(get_session)
+    session: Session = Depends(get_session),
+    current_user: User = Depends(get_current_user)
 ):
     saved = []
     skipped = []

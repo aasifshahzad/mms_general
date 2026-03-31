@@ -33,12 +33,12 @@ const AddNewStudent = ({ onClassAdded }: { onClassAdded: () => void }) => {
       if (response) {
         setOpen(false);
         reset();
-        toast("Class Added Successfully!");
+        toast("Class Name Added Successfully!");
         onClassAdded(); // Call the function to refresh the table
       }
     } catch (error) {
       console.error("Error creating class:", error);
-      toast("Failed to add class");
+      toast("Failed to add class name");
     } finally {
       setLoading(false);
     }

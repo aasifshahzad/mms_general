@@ -33,12 +33,12 @@ const AddClassTime = ({ onClassAdded }: { onClassAdded: () => void }) => {
       if (response) {
         setOpen(false);
         reset();
-        toast("Class Added Successfully!");
+        toast("Attendance Timing Added Successfully!");
         onClassAdded(); // Call the function to refresh the table
       }
     } catch (error) {
-      console.error("Error creating class:", error);
-      toast("Failed to add class");
+      console.error("Error creating attendance timing:", error);
+      toast("Failed to add attendance timing");
     } finally {
       setLoading(false);
     }

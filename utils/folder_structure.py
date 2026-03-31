@@ -1,22 +1,34 @@
 import os
 
-IGNORE_FOLDERS = {".venv", "__pycache__", ".git"}
+IGNORE_FOLDERS = {".venv", "__pycache__", ".git", ".next", "node_modules"}
 
-def print_tree(start_path, indent=""):
-    items = sorted(os.listdir(start_path), key=lambda x: (not os.path.isdir(os.path.join(start_path, x)), x))
+def get_all_files(start_path):
+    """Recursively get all files in a directory"""
+    all_files = []
     
-    for item in items:
-        if item in IGNORE_FOLDERS:
-            continue  # Skip ignored folders
+    for root, dirs, files in os.walk(start_path):
+        # Remove ignored folders from dirs to prevent descending into them
+        dirs[:] = [d for d in dirs if d not in IGNORE_FOLDERS]
+        
+        for file in files:
+            file_path = os.path.join(root, file)
+            # Store relative path from start_path
+            rel_path = os.path.relpath(file_path, start_path)
+            all_files.append(rel_path)
+    
+    return sorted(all_files)
 
-        path = os.path.join(start_path, item)
-        print(indent + "|-- " + item)
+# Get all files in frontend/src
+src_path = "./frontend/src"
 
-        if os.path.isdir(path):
-            print_tree(path, indent + "|   ")
-
-root = "./"  # Change this to your desired root directory
-print_tree(root)
+if os.path.exists(src_path):
+    files = get_all_files(src_path)
+    print(f"All files in {src_path}:\n")
+    for file in files:
+        print(file)
+    print(f"\nTotal files: {len(files)}")
+else:
+    print(f"Error: {src_path} does not exist")
 
 
 # import os

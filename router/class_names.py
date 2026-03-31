@@ -6,6 +6,7 @@ from sqlalchemy.exc import IntegrityError  # <-- Add this import
 
 from db import get_session
 from schemas.class_names_model import ClassNames, ClassNamesCreate, ClassNamesResponse
+from schemas.attendance_model import Attendance
 from user.user_crud import require_admin, require_admin_teacher_principal
 from user.user_models import User
 

@@ -120,11 +120,28 @@ const ViewFees: React.FC = () => {
 
 const handleGetFees = async (data: GetFeeModel) => {
   try {
-    // Use new API: class_id, fee_month, fee_year
-    const response = await API3.GetClassFeeStatus({
-      class_id: data.class_id,
-      fee_month: data.fee_month,
-      fee_year: data.fee_year,
+    // Use new Filter API with all 5 filter parameters
+    // Strip empty strings, zeros, "all" values before sending
+    const response = await API3.Filter({
+      // student_id: 0 means "All students" (combobox deselected)
+      student_id: data.student_id && data.student_id !== 0
+        ? data.student_id
+        : undefined,
+      // class_id: 0 is the "All" option prepended in GetClassName()
+      class_id: data.class_id && Number(data.class_id) !== 0
+        ? Number(data.class_id)
+        : undefined,
+      // "all" string = skip this filter; empty string = skip this filter
+      fee_month: data.fee_month && data.fee_month !== "all"
+        ? data.fee_month
+        : undefined,
+      fee_year: data.fee_year && data.fee_year !== "all"
+        ? data.fee_year
+        : undefined,
+      // "all" or empty string = skip fee_status filter
+      fee_status: data.fee_status && data.fee_status !== "all"
+        ? data.fee_status
+        : undefined,
     });
 
     if (Array.isArray(response.data) && response.data.length === 0) {
@@ -148,9 +165,9 @@ const handleGetFees = async (data: GetFeeModel) => {
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 mt-3">
         <form
           onSubmit={handleSubmit(handleGetFees)}
-          className="flex flex-col gap-4 sm:flex-row sm:gap-6 p-2 sm:p-3"
+          className="flex flex-col gap-3 sm:gap-4 p-3 sm:p-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 lg:items-end"
         >
-          <div className="space-y-2 w-full sm:w-auto">
+          <div className="space-y-2 col-span-1">
             <label className="text-sm text-gray-700 dark:text-gray-300 font-bold">
               Student
             </label>
@@ -222,18 +239,25 @@ const handleGetFees = async (data: GetFeeModel) => {
             </Popover>
             <p className="text-red-500 text-xs">{errors.student_id?.message}</p>
           </div>
-          <div className="w-full sm:w-auto">
+          <div className="col-span-1">
+            <label className="text-sm text-gray-700 dark:text-gray-300 font-bold">
+              Class Name
+            </label>
             <Select
-              label="Class Name"
+              label=""
               options={classNameList}
               {...register("class_id")}
               className="w-full"
             />
           </div>
-          <div className="w-full sm:w-auto">
+          <div className="col-span-1">
+            <label className="text-sm text-gray-700 dark:text-gray-300 font-bold">
+              Fee Month
+            </label>
             <Select
-              label="Fee Month"
+              label=""
               options={[
+                { id: "all", title: "All" },
                 { id: "January", title: "January" },
                 { id: "February", title: "February" },
                 { id: "March", title: "March" },
@@ -251,21 +275,29 @@ const handleGetFees = async (data: GetFeeModel) => {
               className="w-full"
             />
           </div>
-          <div className="w-full sm:w-auto">
+          <div className="col-span-1">
+            <label className="text-sm text-gray-700 dark:text-gray-300 font-bold">
+              Fee Year
+            </label>
             <Select
-              label="Fee Year"
+              label=""
               options={[
+                { id: "all", title: "All" },
                 { id: "2023", title: "2023" },
                 { id: "2024", title: "2024" },
                 { id: "2025", title: "2025" },
+                { id: "2026", title: "2026" },
               ]}
               {...register("fee_year")}
               className="w-full"
             />
           </div>
-          <div className="w-full sm:w-auto">
+          <div className="col-span-1">
+            <label className="text-sm text-gray-700 dark:text-gray-300 font-bold">
+              Fee Status
+            </label>
             <Select
-              label="Fee Status"
+              label=""
               options={[
                 { id: "Paid", title: "Paid" },
                 { id: "Unpaid", title: "Unpaid" },
@@ -274,23 +306,23 @@ const handleGetFees = async (data: GetFeeModel) => {
               className="w-full"
             />
           </div>
-          <Button className="mt-2 sm:mt-6 w-full sm:w-auto" type="submit">
+          <Button className="w-full lg:col-span-1" type="submit">
             Get
           </Button>
         </form>
 
         {feesData.length > 0 && (
           <div className="p-2 sm:p-4 overflow-x-auto">
-            <Table className="min-w-[700px]">
+            <Table className="w-full">
               <TableHeader>
                 <TableRow>
-                  <TableHead>Student Name</TableHead>
-                  <TableHead>Father Name</TableHead>
-                  <TableHead>Class</TableHead>
-                  <TableHead>Amount</TableHead>
-                  <TableHead>Month</TableHead>
-                  <TableHead>Year</TableHead>
-                  <TableHead>Status</TableHead>
+                  <TableHead className="w-1/7">Student Name</TableHead>
+                  <TableHead className="w-1/7">Father Name</TableHead>
+                  <TableHead className="w-1/7">Class</TableHead>
+                  <TableHead className="w-1/7">Amount</TableHead>
+                  <TableHead className="w-1/7">Month</TableHead>
+                  <TableHead className="w-1/7">Year</TableHead>
+                  <TableHead className="w-1/7">Status</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>

@@ -66,8 +66,20 @@ export const ExpenseAPI = {
       console.error("API Error:", error);
       throw error;
     }
+  },
+
+  DeleteExpenseCategory: async (expense_cat_id: number) => {
+    try {
+      const response = await AxiosInstance.delete(
+        `/expense_cat_names/del/${expense_cat_id}`
+      );
+      return response;
+    } catch (error) {
+      console.error("API Error:", error);
+      throw error;
+    }
   }
 };
 
 // For backward compatibility, also export individual functions
-export const { GetExpenseData, AddExpense, AddExpenseCat, GetExpenseCategory } = ExpenseAPI;
+export const { GetExpenseData, AddExpense, AddExpenseCat, GetExpenseCategory, DeleteExpenseCategory } = ExpenseAPI;

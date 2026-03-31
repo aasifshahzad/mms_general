@@ -215,10 +215,10 @@ const AttendanceTable: React.FC = () => {
                 <Clock className="w-3 h-3 mr-1" />
                 Late
               </span>
-            ) : value === "sick" ? (
-              <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-purple-100 dark:bg-transparent text-purple-700">
+            ) : value === "leave" ? (
+              <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-orange-100 dark:bg-transparent text-orange-700">
                 <AlertCircle className="w-3 h-3 mr-1" />
-                Sick
+                Leave
               </span>
             ) : (
               <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-gray-50 dark:bg-transparent text-gray-700">

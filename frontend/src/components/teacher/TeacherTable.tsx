@@ -29,66 +29,11 @@ import AddNewTeacher from "./CreateTeacher";
 import DelConfirmMsg from "../DelConfMsg";
 import { toast } from "sonner";
 
-// Define columns
-const columns: ColumnDef<TeacherModel>[] = [
-  {
-    accessorKey: "teacher_name_id",
-    header: "Sr. No",
-    cell: ({ row }) => (
-      <div className="font-medium">{row.getValue("teacher_name_id")}</div>
-    ),
-  },
-  {
-    accessorKey: "teacher_name",
-    header: "Teacher Name",
-  },
-  {
-    accessorKey: "created_at",
-    header: "Created Date",
-    cell: ({ row }) => {
-      const date = new Date(row.getValue("created_at"));
-      const formattedDate = date.toLocaleDateString("en-GB"); // Use 'en-GB' for dd/MM/yyyy
-      return <div>{formattedDate}</div>;
-    },
-  },
-  {
-    accessorKey: "Delete",
-    header: "Delete",
-    cell: ({ row }) => (
-      <DelConfirmMsg
-        rowId={row.getValue("teacher_name_id ")}
-        OnDelete={(confirmed) => formDeleteHandler(confirmed, row.original)}
-      />
-    ),
-  },
-];
-const formDeleteHandler = async (confirmed: boolean, data: TeacherModel) => {
-  try {
-    if (confirmed) {
-      const response = await API.Delete(data.teacher_name_id) as Response;
-
-      if (response.status === 200) {
-        toast.success("Record deleted successfully", {
-          position: "bottom-center",
-        });
-      } else {
-        const errorData = await response.json();
-        toast.error(errorData?.message || "An error occurred", {
-          position: "bottom-center",
-        });
-      }
-    }
-  } catch (error) {
-    console.log("Error on Delete", error);
-  }
-};
-
 export default function TeacherTable() {
   const [globalFilter, setGlobalFilter] = useState("");
   const [data, setData] = useState<TeacherModel[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // Fetch data from API
   useEffect(() => {
     GetData();
   }, []);
@@ -104,6 +49,60 @@ export default function TeacherTable() {
       setLoading(false);
     }
   };
+
+  const handleDelete = async (confirmed: boolean, row: TeacherModel) => {
+    if (!confirmed) return;
+    try {
+      await API.Delete(row.teacher_name_id);
+      toast.success("Teacher deleted successfully", { position: "bottom-center" });
+      GetData(); // refresh table
+    } catch (error: unknown) {
+      const axiosError = error as { response?: { status: number; data?: { detail?: string } } };
+      if (axiosError.response?.status === 409) {
+        toast.error(
+          "Please delete related attendance records first before deleting this teacher.",
+          { position: "bottom-center" }
+        );
+      } else {
+        toast.error(
+          axiosError.response?.data?.detail || "Failed to delete teacher.",
+          { position: "bottom-center" }
+        );
+      }
+    }
+  };
+
+  const columns: ColumnDef<TeacherModel>[] = [
+    {
+      accessorKey: "teacher_name_id",
+      header: "Sr. No",
+      cell: ({ row }) => (
+        <div className="font-medium">{row.getValue("teacher_name_id")}</div>
+      ),
+    },
+    {
+      accessorKey: "teacher_name",
+      header: "Teacher Name",
+    },
+    {
+      accessorKey: "created_at",
+      header: "Created Date",
+      cell: ({ row }) => {
+        const date = new Date(row.getValue("created_at"));
+        return <div>{date.toLocaleDateString("en-GB")}</div>;
+      },
+    },
+    {
+      id: "delete",
+      header: "Delete",
+      cell: ({ row }) => (
+        <DelConfirmMsg
+          rowId={row.original.teacher_name_id}
+          OnDelete={(confirmed) => handleDelete(confirmed, row.original)}
+        />
+      ),
+    },
+  ];
 
   const table = useReactTable<TeacherModel>({
     data,

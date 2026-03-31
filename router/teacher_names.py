@@ -7,6 +7,7 @@ from sqlalchemy.exc import IntegrityError  # <-- Add this import
 from db import get_session
 
 from schemas.teacher_names_model import TeacherNames, TeacherNamesCreate, TeacherNamesResponse
+from schemas.attendance_model import Attendance
 from user.user_crud import require_admin, require_admin_teacher_principal
 from user.user_models import User
 
@@ -106,13 +107,12 @@ def delete_teacher_by_id(
             status_code=404, 
             detail=f"Teacher with ID {teacher_id} not found"
         )
-    # Check for related records (adjust model and field as needed)
-    # related_records = session.exec(select(SomeRelatedModel).where(SomeRelatedModel.teacher_id == teacher_id)).all()
-    related_records = []  # <-- Replace with actual query if you have related records
-    if related_records:
+    # Check for related attendance records
+    linked_attendance = session.exec(select(Attendance).where(Attendance.teacher_name_id == teacher_id)).first()
+    if linked_attendance:
         raise HTTPException(
-            status_code=400,
-            detail="Cannot delete: There are records using this teacher names."
+            status_code=409,
+            detail="Please delete related attendance records first before deleting this teacher."
         )
     try:
         session.delete(teacher)

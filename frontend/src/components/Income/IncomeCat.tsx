@@ -26,6 +26,8 @@ import { Button } from "@/components/ui/button";
 import { useEffect, useState } from "react";
 import AddIncomeCategory from "./CreateIncomeCat";
 import { IncomeCategory} from "@/models/income/income";
+import DelConfirmMsg from "../DelConfMsg";
+import { toast } from "sonner";
 
 // Define columns
 const columns: ColumnDef<IncomeCategory>[] = [
@@ -54,6 +56,16 @@ const columns: ColumnDef<IncomeCategory>[] = [
       return <div>{formattedDate}</div>;
     }
   },
+  {
+    accessorKey: "Delete",
+    header: "Delete",
+    cell: ({ row }) => (
+      <DelConfirmMsg
+        rowId={row.getValue("income_cat_name_id")}
+        OnDelete={(confirmed) => formDeleteHandler(confirmed, row.original)}
+      />
+    ),
+  },
 ];
 
 export default function IncomeCat() {
@@ -70,19 +82,82 @@ export default function IncomeCat() {
     setLoading(true);
     try {
       const response = await API.GetIncomeCategory();
-      const data: IncomeCategory[] = (response as { data: IncomeCategory[] }).data;
-      console.log("API Response:", data);
-      setData(data); // Just use the data directly if it already matches the interface
+      const responseData = (response as { data?: IncomeCategory[] })?.data;
+      console.log("API Response:", responseData);
+      setData(Array.isArray(responseData) ? responseData : []); // Just use the data directly if it already matches the interface
     } catch (error) {
       console.error("Error fetching data:", error);
+      setData([]);
     } finally {
       setLoading(false);
     }
   };
+
+  const formDeleteHandler = async (confirmed: boolean, deleteData: IncomeCategory) => {
+    if (!confirmed) return;
+    try {
+      await API.DeleteIncomeCategory(deleteData.income_cat_name_id);
+      toast.success("Category deleted successfully", {
+        position: "bottom-center",
+      });
+      GetData();
+    } catch (error: unknown) {
+      const axiosError = error as { response?: { status: number; data?: { detail?: string } } };
+      if (axiosError.response?.status === 409) {
+        toast.error(
+          "Please delete related income records first before deleting this category.",
+          { position: "bottom-center" }
+        );
+      } else {
+        toast.error(
+          axiosError.response?.data?.detail || "Failed to delete category.",
+          { position: "bottom-center" }
+        );
+      }
+    }
+  };
+
+  const columnsWithDelete: ColumnDef<IncomeCategory>[] = [
+    {
+      accessorKey: "income_cat_name_id", // Updated to match interface
+      header: "Sr. No",
+      /**
+       * A cell component that renders the income category id as a string in a font-medium div
+       * @param {{row: Row<IncomeCategory>}} props The props object with a row property containing the row data
+       * @returns {ReactElement} The rendered cell component
+       */
+      cell: ({ row }) => (
+        <div className="font-medium">{row.getValue("income_cat_name_id")}</div>
+      ),
+    },
+    {
+      accessorKey: "income_cat_name", // Updated to match interface
+      header: "Income Category",
+    },
+    {
+      accessorKey: "created_at",
+      header: "Created Date",
+      cell: ({ row }) => {
+        const date = new Date(row.getValue("created_at"));
+        const formattedDate = date.toLocaleDateString("en-GB");
+        return <div>{formattedDate}</div>;
+      }
+    },
+    {
+      id: "delete",
+      header: "Delete",
+      cell: ({ row }) => (
+        <DelConfirmMsg
+          rowId={row.original.income_cat_name_id}
+          OnDelete={(confirmed) => formDeleteHandler(confirmed, row.original)}
+        />
+      ),
+    },
+  ];
   
   const table = useReactTable({
     data,
-    columns,
+    columns: columnsWithDelete,
     getCoreRowModel: getCoreRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
@@ -133,7 +208,7 @@ export default function IncomeCat() {
           <TableBody>
             {loading ? (
               <TableRow>
-                <TableCell colSpan={columns.length} className="text-center">
+                <TableCell colSpan={columnsWithDelete.length} className="text-center">
                   <div className="flex justify-center">
                     <LoaderIcon className="animate-spin w-10 h-10" />
                   </div>

@@ -1,13 +1,10 @@
 from datetime import datetime
 from sqlmodel import Relationship, SQLModel, Field, Column
 from sqlalchemy import String, Integer, DateTime
-from typing import List, Optional
+from typing import List, Optional, Literal
+from pydantic import BaseModel
 
-from datetime import datetime
-# from schemas.attendance_model import Attendance
-
-# Attendance Value
-
+# ==================== SQLModel Database Models ====================
 
 class AttendanceValueBase(SQLModel):
     attendance_value_id: Optional[int] = Field(default=None, primary_key=True)
@@ -18,16 +15,32 @@ class AttendanceValue(AttendanceValueBase, table=True):
     attendance_value: str = Field(index=True, unique=True)
 
     # Relationship back to Attendance
-    attendances: list["Attendance"] = Relationship( # type: ignore
+    attendances: list["Attendance"] = Relationship(
         back_populates="attendance_value")
 
 
-class AttendanceValueCreate(SQLModel):
-    attendance_value: str = Field(index=True, unique=True)
+# ==================== Pydantic API Models ====================
+
+class AttendanceValueBaseAPI(BaseModel):
+    student_id: int
+    date: datetime
+    status: Literal['present', 'absent', 'late', 'leave']
 
 
-class AttendanceValueResponse (AttendanceValueBase, SQLModel):
-    attendance_value: str
+class AttendanceValueCreate(AttendanceValueBaseAPI):
+    pass
+
+
+class AttendanceValueUpdate(AttendanceValueBaseAPI):
+    pass
+
+
+class AttendanceValueResponse(AttendanceValueBaseAPI):
+    id: int
+    created_at: datetime
+    
+    class Config:
+        from_attributes = True
 
 
 class AttendanceValueDelete(SQLModel):

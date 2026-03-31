@@ -37,12 +37,12 @@ const AddIncomeCategory = ({
       if (response) {
         setOpen(false);
         reset();
-        toast("Class Added Successfully!");
+        toast("Income Category Added Successfully!");
         onIncomeCatAdd(); // Call the function to refresh the table
       }
     } catch (error) {
-      console.error("Error creating class:", error);
-      toast("Failed to add class");
+      console.error("Error creating income category:", error);
+      toast("Failed to add income category");
     } finally {
       setLoading(false);
     }

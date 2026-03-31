@@ -5,7 +5,7 @@ from sqlmodel import Session, select
 from router.class_names import get_class_name
 from schemas.students_model import Students
 from schemas.class_names_model import ClassNames
-from router.students import get_student_by_id, get_student_details
+from router.students import get_student_by_id, get_student_details, get_student_details_utility
 from sqlalchemy import func
 from datetime import datetime
 from schemas.fee_model import MONTHS
@@ -177,7 +177,7 @@ async def filter_fees(
 
         filtered_response = []
         for fee in fees:
-            student_details = get_student_details(db, fee.student_id)
+            student_details = get_student_details_utility(db, fee.student_id)
             class_name = get_class_name(db, fee.class_id)
 
             filtered_response.append(

@@ -65,7 +65,9 @@ const AddFees = () => {
   useEffect(() => {
     GetClassName();
     GetStudents();
-  }, []);
+    // Set year to current year as default
+    setFormValue("fee_year", new Date().getFullYear().toString());
+  }, [setFormValue]);
 
   // Watch for class changes and filter students accordingly
   // Modified to filter students using class_name instead of class_id

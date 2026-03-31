@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { Header } from "@/components/dashboard/Header";
 import { motion } from "framer-motion";
+import { ResponsiveH3, ResponsiveBody, ResponsiveLabel } from "@/components/responsive/ResponsiveTypography";
 
 export function StudentDashboard() {
   const [studentData, setStudentData] = useState({
@@ -30,32 +31,33 @@ export function StudentDashboard() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
       <Header value="My Dashboard" />
-      <div className="px-4 sm:px-6 lg:px-8 py-2">
-        <div className="inline-block bg-orange-100 text-orange-800 px-4 py-2 rounded-full text-sm font-medium">
-          👤 Student - Personal Dashboard
-        </div>
-      </div>
-      <main className="container mx-auto px-4 py-6 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <main className="container mx-auto px-2 sm:px-4 py-4 sm:py-6 md:px-6 lg:px-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4 md:gap-6">
           {/* Student Profile */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="bg-white p-6 rounded-xl shadow-md"
+            className="bg-white p-3 sm:p-4 md:p-6 rounded-lg sm:rounded-xl shadow-md hover:shadow-lg transition-shadow"
           >
-            <h3 className="text-lg font-semibold text-gray-800 mb-4">Your Profile</h3>
-            <div className="space-y-3">
+            <ResponsiveH3 className="mb-3 sm:mb-4">Your Profile</ResponsiveH3>
+            <div className="space-y-2 sm:space-y-3">
               <div>
-                <p className="text-sm text-gray-600">Name</p>
-                <p className="text-lg font-semibold text-gray-800">{studentData.name}</p>
+                <ResponsiveLabel className="text-gray-600">Name</ResponsiveLabel>
+                <ResponsiveBody className="!text-gray-900 font-semibold mt-1">
+                  {studentData.name}
+                </ResponsiveBody>
               </div>
               <div>
-                <p className="text-sm text-gray-600">Roll Number</p>
-                <p className="text-lg font-semibold text-gray-800">{studentData.rollNumber}</p>
+                <ResponsiveLabel className="text-gray-600">Roll Number</ResponsiveLabel>
+                <ResponsiveBody className="!text-gray-900 font-semibold mt-1">
+                  {studentData.rollNumber}
+                </ResponsiveBody>
               </div>
               <div>
-                <p className="text-sm text-gray-600">Class</p>
-                <p className="text-lg font-semibold text-gray-800">{studentData.class}</p>
+                <ResponsiveLabel className="text-gray-600">Class</ResponsiveLabel>
+                <ResponsiveBody className="!text-gray-900 font-semibold mt-1">
+                  {studentData.class}
+                </ResponsiveBody>
               </div>
             </div>
           </motion.div>
@@ -65,15 +67,15 @@ export function StudentDashboard() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
-            className="bg-white p-6 rounded-xl shadow-md"
+            className="bg-white p-3 sm:p-4 md:p-6 rounded-lg sm:rounded-xl shadow-md hover:shadow-lg transition-shadow"
           >
-            <h3 className="text-lg font-semibold text-gray-800 mb-4">Your Attendance</h3>
-            <div className="space-y-3">
+            <ResponsiveH3 className="mb-3 sm:mb-4">Your Attendance</ResponsiveH3>
+            <div className="space-y-2 sm:space-y-4">
               <div className="text-center">
-                <p className="text-sm text-gray-600 mb-2">Attendance Rate</p>
-                <p className="text-4xl font-bold text-blue-600">{studentData.attendance}%</p>
+                <ResponsiveLabel className="text-gray-600 block mb-2">Attendance Rate</ResponsiveLabel>
+                <p className="text-3xl sm:text-4xl font-bold text-blue-600">{studentData.attendance}%</p>
               </div>
-              <button className="w-full bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded-lg transition">
+              <button className="w-full bg-blue-500 hover:bg-blue-600 text-white py-2 sm:py-2.5 px-3 sm:px-4 rounded-lg transition text-sm sm:text-base font-medium">
                 View Detailed Attendance
               </button>
             </div>
@@ -84,20 +86,20 @@ export function StudentDashboard() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
-            className="bg-white p-6 rounded-xl shadow-md md:col-span-2"
+            className="bg-white p-3 sm:p-4 md:p-6 rounded-lg sm:rounded-xl shadow-md hover:shadow-lg transition-shadow md:col-span-2"
           >
-            <h3 className="text-lg font-semibold text-gray-800 mb-4">Fee Status</h3>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="bg-green-50 p-4 rounded-lg">
-                <p className="text-sm text-gray-600 mb-1">Total Paid</p>
-                <p className="text-2xl font-bold text-green-600">{studentData.totalPaid}</p>
+            <ResponsiveH3 className="mb-3 sm:mb-4">Fee Status</ResponsiveH3>
+            <div className="grid grid-cols-2 gap-2 sm:gap-4 mb-3 sm:mb-4">
+              <div className="bg-green-50 p-3 sm:p-4 rounded-lg">
+                <ResponsiveLabel className="text-green-700 block mb-1 sm:mb-2">Total Paid</ResponsiveLabel>
+                <p className="text-xl sm:text-2xl font-bold text-green-600">{studentData.totalPaid}</p>
               </div>
-              <div className="bg-red-50 p-4 rounded-lg">
-                <p className="text-sm text-gray-600 mb-1">Amount Due</p>
-                <p className="text-2xl font-bold text-red-600">{studentData.totalDue}</p>
+              <div className="bg-red-50 p-3 sm:p-4 rounded-lg">
+                <ResponsiveLabel className="text-red-700 block mb-1 sm:mb-2">Amount Due</ResponsiveLabel>
+                <p className="text-xl sm:text-2xl font-bold text-red-600">{studentData.totalDue}</p>
               </div>
             </div>
-            <button className="w-full mt-4 bg-green-500 hover:bg-green-600 text-white py-2 px-4 rounded-lg transition">
+            <button className="w-full bg-green-500 hover:bg-green-600 text-white py-2 sm:py-2.5 px-3 sm:px-4 rounded-lg transition text-sm sm:text-base font-medium">
               View Fee Details
             </button>
           </motion.div>

@@ -478,7 +478,7 @@ type Attendance = {
   present: boolean;
   absent: boolean;
   late: boolean;
-  sick: boolean;
+  leave: boolean;
 };
 
 interface ClassNameResponse {
@@ -543,7 +543,7 @@ const MarkAttendance = () => {
         present: false,
         absent: false,
         late: false,
-        sick: false,
+        leave: false,
       }))
     );
   }, [studentByFilter]);
@@ -629,7 +629,7 @@ const MarkAttendance = () => {
             if (checked) {
               newData[row.index].absent = false;
               newData[row.index].late = false;
-              newData[row.index].sick = false;
+               newData[row.index].leave = false;
             }
             setData(newData);
           }}
@@ -647,7 +647,7 @@ const MarkAttendance = () => {
             if (checked) {
               newData[row.index].present = false;
               newData[row.index].late = false;
-              newData[row.index].sick = false;
+               newData[row.index].leave = false;
             }
             setData(newData);
           }}
@@ -665,21 +665,21 @@ const MarkAttendance = () => {
             if (checked) {
               newData[row.index].present = false;
               newData[row.index].absent = false;
-              newData[row.index].sick = false;
+               newData[row.index].leave = false;
             }
             setData(newData);
           }}
         />
       ),
     }),
-    columnHelper.accessor("sick", {
-      header: "Sick",
+    columnHelper.accessor("leave", {
+      header: "Leave",
       cell: ({ row }) => (
         <Checkbox
-          checked={row.original.sick}
+          checked={row.original.leave}
           onCheckedChange={(checked) => {
             const newData = [...data];
-            newData[row.index].sick = checked as boolean;
+            newData[row.index].leave = checked as boolean;
             if (checked) {
               newData[row.index].present = false;
               newData[row.index].absent = false;
@@ -707,15 +707,15 @@ const onSubmit = async (formData: MarkAttInput) => {
     if (student.present) attendance_value_id = "1";
     if (student.absent) attendance_value_id = "2";
     if (student.late) attendance_value_id = "3";
-    if (student.sick) attendance_value_id = "4";
+    if (student.leave) attendance_value_id = "4";
 
     return {
       attendance_date: formData.attendance_date,
-      attendance_time_id: String(formData.attendance_time_id), // ✅ string
-      class_name_id: String(formData.class_name_id),           // ✅ string
-      teacher_name_id: String(formData.teacher_name_id),       // ✅ string
-      student_id: String(student.id),                          // ✅ string
-      attendance_value_id,                                     // ✅ string
+      attendance_time_id: String(formData.attendance_time_id),
+      class_name_id: String(formData.class_name_id),
+      teacher_name_id: String(formData.teacher_name_id),
+      student_id: String(student.id),
+      attendance_value_id,
     };
   });
 

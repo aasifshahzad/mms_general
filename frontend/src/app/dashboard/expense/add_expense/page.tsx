@@ -47,7 +47,7 @@ const AddExpense = () => {
     setIsLoading(true);
     try {
       const response = await API.AddExpense(data);
-      if (response.status === 201) {
+      if (response.status === 200 || response.status === 201) {
         toast.success("expense record added successfully");
         reset();
       } else {
@@ -62,17 +62,7 @@ const AddExpense = () => {
   };
   const onSubmit = async (data: AddExpenseModel) => {
     console.log("Form Data:", data);
-    try {
-      AddExpenseFunction(data);
-      setIsLoading(true);
-      // toast.success("expense record added successfully");
-      reset();
-    } catch (error) {
-      console.error("Error adding expense:", error);
-      toast.error("Failed to add expense record");
-    } finally {
-      setIsLoading(false);
-    }
+    await AddExpenseFunction(data);
   };
 
   return (

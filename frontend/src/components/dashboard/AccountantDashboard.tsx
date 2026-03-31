@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import { Header } from "@/components/dashboard/Header";
 import { motion } from "framer-motion";
+import { ResponsiveH3, ResponsiveLabel } from "@/components/responsive/ResponsiveTypography";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
 
 export function AccountantDashboard() {
@@ -16,70 +17,65 @@ export function AccountantDashboard() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
       <Header value="Accountant Dashboard" />
-      <div className="px-4 sm:px-6 lg:px-8 py-2">
-        <div className="inline-block bg-green-100 text-green-800 px-4 py-2 rounded-full text-sm font-medium">
-          💰 Accountant - Financial Management
-        </div>
-      </div>
-      <main className="container mx-auto px-4 py-6 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+      <main className="container mx-auto px-2 sm:px-4 py-4 sm:py-6 md:px-6 lg:px-8">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3 md:gap-4 mb-6 sm:mb-8">
           {/* Financial Summary Cards */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="bg-white p-6 rounded-xl shadow-md"
+            className="bg-white p-3 sm:p-4 md:p-6 rounded-lg sm:rounded-xl shadow-md hover:shadow-lg transition-shadow"
           >
-            <h3 className="text-sm font-medium text-gray-600 mb-2">Total Income</h3>
-            <p className="text-3xl font-bold text-green-600">{financialData.totalIncome}</p>
+            <ResponsiveLabel className="text-gray-600 block mb-2 sm:mb-3">Total Income</ResponsiveLabel>
+            <p className="text-2xl sm:text-3xl font-bold text-green-600">{financialData.totalIncome}</p>
           </motion.div>
 
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
-            className="bg-white p-6 rounded-xl shadow-md"
+            className="bg-white p-3 sm:p-4 md:p-6 rounded-lg sm:rounded-xl shadow-md hover:shadow-lg transition-shadow"
           >
-            <h3 className="text-sm font-medium text-gray-600 mb-2">Total Expenses</h3>
-            <p className="text-3xl font-bold text-red-600">{financialData.totalExpense}</p>
+            <ResponsiveLabel className="text-gray-600 block mb-2 sm:mb-3">Total Expenses</ResponsiveLabel>
+            <p className="text-2xl sm:text-3xl font-bold text-red-600">{financialData.totalExpense}</p>
           </motion.div>
 
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
-            className="bg-white p-6 rounded-xl shadow-md"
+            className="bg-white p-3 sm:p-4 md:p-6 rounded-lg sm:rounded-xl shadow-md hover:shadow-lg transition-shadow"
           >
-            <h3 className="text-sm font-medium text-gray-600 mb-2">Total Fees Collected</h3>
-            <p className="text-3xl font-bold text-blue-600">{financialData.totalFees}</p>
+            <ResponsiveLabel className="text-gray-600 block mb-2 sm:mb-3">Total Fees Collected</ResponsiveLabel>
+            <p className="text-2xl sm:text-3xl font-bold text-blue-600">{financialData.totalFees}</p>
           </motion.div>
 
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3 }}
-            className="bg-white p-6 rounded-xl shadow-md"
+            className="bg-white p-3 sm:p-4 md:p-6 rounded-lg sm:rounded-xl shadow-md hover:shadow-lg transition-shadow"
           >
-            <h3 className="text-sm font-medium text-gray-600 mb-2">Net Balance</h3>
-            <p className="text-3xl font-bold text-blue-600">{financialData.balance}</p>
+            <ResponsiveLabel className="text-gray-600 block mb-2 sm:mb-3">Net Balance</ResponsiveLabel>
+            <p className="text-2xl sm:text-3xl font-bold text-blue-600">{financialData.balance}</p>
           </motion.div>
         </div>
 
         {/* Quick Actions */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3 sm:gap-4 md:gap-6">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="bg-white p-6 rounded-xl shadow-md"
+            className="bg-white p-3 sm:p-4 md:p-6 rounded-lg sm:rounded-xl shadow-md hover:shadow-lg transition-shadow"
           >
-            <h3 className="text-lg font-semibold text-gray-800 mb-4">Quick Actions</h3>
+            <ResponsiveH3 className="mb-3 sm:mb-4">Quick Actions</ResponsiveH3>
             <div className="space-y-2">
-              <button className="w-full bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded-lg transition">
+              <button className="w-full bg-blue-500 hover:bg-blue-600 text-white py-2 sm:py-2.5 px-3 sm:px-4 rounded-lg transition text-sm sm:text-base font-medium">
                 Add Income
               </button>
-              <button className="w-full bg-red-500 hover:bg-red-600 text-white py-2 px-4 rounded-lg transition">
+              <button className="w-full bg-red-500 hover:bg-red-600 text-white py-2 sm:py-2.5 px-3 sm:px-4 rounded-lg transition text-sm sm:text-base font-medium">
                 Add Expense
               </button>
-              <button className="w-full bg-green-500 hover:bg-green-600 text-white py-2 px-4 rounded-lg transition">
+              <button className="w-full bg-green-500 hover:bg-green-600 text-white py-2 sm:py-2.5 px-3 sm:px-4 rounded-lg transition text-sm sm:text-base font-medium">
                 Manage Fees
               </button>
             </div>

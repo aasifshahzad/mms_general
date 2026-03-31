@@ -80,11 +80,11 @@ def delete_income_cat_name(user: Annotated[User, Depends(require_admin_accountan
         raise HTTPException(
             status_code=404, detail="Income category name not found")
     # Check for related income records
-    related_incomes = session.exec(select(Income).where(Income.category_id == income_cat_id)).all()
+    related_incomes = session.exec(select(Income).where(Income.category_id == income_cat_id)).first()
     if related_incomes:
         raise HTTPException(
-            status_code=400,
-            detail="Cannot delete: There are income records using this category."
+            status_code=409,
+            detail="Please delete related income records first before deleting this category."
         )
     session.delete(income_cat_name)
     session.commit()

@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { Header } from "@/components/dashboard/Header";
 import { motion } from "framer-motion";
+import { ResponsiveH3, ResponsiveLabel, ResponsiveLarge } from "@/components/responsive/ResponsiveTypography";
 
 export function TeacherDashboard() {
   const [studentStats, setStudentStats] = useState({
@@ -24,32 +25,27 @@ export function TeacherDashboard() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
       <Header value="Teacher Dashboard" />
-      <div className="px-4 sm:px-6 lg:px-8 py-2">
-        <div className="inline-block bg-blue-100 text-blue-800 px-4 py-2 rounded-full text-sm font-medium">
-          👨‍🏫 Teacher - Class & Attendance Management
-        </div>
-      </div>
-      <main className="container mx-auto px-4 py-6 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <main className="container mx-auto px-2 sm:px-4 py-4 sm:py-6 md:px-6 lg:px-8">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3 sm:gap-4 md:gap-6">
           {/* Class Statistics */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="bg-white p-6 rounded-xl shadow-md"
+            className="bg-white p-3 sm:p-4 md:p-6 rounded-lg sm:rounded-xl shadow-md hover:shadow-lg transition-shadow"
           >
-            <h3 className="text-lg font-semibold text-gray-800 mb-4">Class Overview</h3>
-            <div className="space-y-3">
+            <ResponsiveH3 className="mb-3 sm:mb-4">Class Overview</ResponsiveH3>
+            <div className="space-y-2 sm:space-y-3">
               <div className="flex justify-between items-center">
-                <span className="text-gray-600">Total Students:</span>
-                <span className="font-bold text-xl text-blue-600">{studentStats.total}</span>
+                <ResponsiveLabel className="text-gray-600">Total Students:</ResponsiveLabel>
+                <ResponsiveLarge className="text-blue-600">{studentStats.total}</ResponsiveLarge>
               </div>
               <div className="flex justify-between items-center">
-                <span className="text-gray-600">Present Today:</span>
-                <span className="font-bold text-xl text-green-600">{studentStats.present}</span>
+                <ResponsiveLabel className="text-gray-600">Present Today:</ResponsiveLabel>
+                <ResponsiveLarge className="text-green-600">{studentStats.present}</ResponsiveLarge>
               </div>
               <div className="flex justify-between items-center">
-                <span className="text-gray-600">Absent Today:</span>
-                <span className="font-bold text-xl text-red-600">{studentStats.absent}</span>
+                <ResponsiveLabel className="text-gray-600">Absent Today:</ResponsiveLabel>
+                <ResponsiveLarge className="text-red-600">{studentStats.absent}</ResponsiveLarge>
               </div>
             </div>
           </motion.div>
@@ -59,14 +55,14 @@ export function TeacherDashboard() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
-            className="bg-white p-6 rounded-xl shadow-md"
+            className="bg-white p-3 sm:p-4 md:p-6 rounded-lg sm:rounded-xl shadow-md hover:shadow-lg transition-shadow"
           >
-            <h3 className="text-lg font-semibold text-gray-800 mb-4">Quick Actions</h3>
+            <ResponsiveH3 className="mb-3 sm:mb-4">Quick Actions</ResponsiveH3>
             <div className="space-y-2">
-              <button className="w-full bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded-lg transition">
+              <button className="w-full bg-blue-500 hover:bg-blue-600 text-white py-2 sm:py-2.5 px-3 sm:px-4 rounded-lg transition text-sm sm:text-base font-medium">
                 Mark Attendance
               </button>
-              <button className="w-full bg-green-500 hover:bg-green-600 text-white py-2 px-4 rounded-lg transition">
+              <button className="w-full bg-green-500 hover:bg-green-600 text-white py-2 sm:py-2.5 px-3 sm:px-4 rounded-lg transition text-sm sm:text-base font-medium">
                 View Students
               </button>
             </div>
@@ -77,13 +73,13 @@ export function TeacherDashboard() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
-            className="bg-white p-6 rounded-xl shadow-md"
+            className="bg-white p-3 sm:p-4 md:p-6 rounded-lg sm:rounded-xl shadow-md hover:shadow-lg transition-shadow"
           >
-            <h3 className="text-lg font-semibold text-gray-800 mb-4">Attendance Report</h3>
+            <ResponsiveH3 className="mb-3 sm:mb-4">Attendance Report</ResponsiveH3>
             <div className="text-center">
-              <p className="text-gray-600 mb-2">Attendance Rate</p>
-              <p className="text-4xl font-bold text-blue-600">--</p>
-              <p className="text-sm text-gray-500 mt-2">No data available</p>
+              <ResponsiveLabel className="text-gray-600 block mb-2">Attendance Rate</ResponsiveLabel>
+              <p className="text-3xl sm:text-4xl font-bold text-blue-600">--</p>
+              <p className="text-xs sm:text-sm text-gray-500 mt-2">No data available</p>
             </div>
           </motion.div>
         </div>

@@ -251,6 +251,17 @@ async def get_student_by_id(
     return session.exec(select(Students).where(Students.student_id == student_id)).first()
 
 
+def get_student_details_utility(session: Session, student_id: int) -> Optional[dict]:
+    """Utility function to fetch student details by student_id (for internal use)."""
+    student = session.exec(select(Students).where(Students.student_id == student_id)).first()
+    if student:
+        return {
+            "student_name": student.student_name,
+            "father_name": student.father_name
+        }
+    return None
+
+
 def get_student_details(
     current_user: Annotated[User, Depends(get_current_user)],
     session: Annotated[Session, Depends(get_session)],

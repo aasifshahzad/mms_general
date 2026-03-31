@@ -16,7 +16,8 @@ export type Section =
   | "fees"
   | "expenses"
   | "income"
-  | "attendance_time";
+  | "attendance_time"
+  | "setup";
 
 // Role to accessible sections mapping
 const ROLE_PERMISSIONS: Record<UserRole, Section[]> = {
@@ -30,6 +31,7 @@ const ROLE_PERMISSIONS: Record<UserRole, Section[]> = {
     "expenses",
     "income",
     "attendance_time",
+    "setup",
   ],
   PRINCIPAL: [
     "dashboard",
@@ -38,13 +40,10 @@ const ROLE_PERMISSIONS: Record<UserRole, Section[]> = {
     "teachers",
     "classes",
     "fees",
-    "expenses",
-    "income",
-    "attendance_time",
   ],
   TEACHER: ["attendance", "students", "dashboard"],
   ACCOUNTANT: ["expenses", "fees", "income", "dashboard"],
-  FEE_MANAGER: ["expenses", "fees", "income", "dashboard"],
+  FEE_MANAGER: ["fees", "students", "dashboard"],
   USER: ["dashboard"], // Students can access own attendance & fees through filtered endpoints
 };
 
@@ -88,7 +87,10 @@ export function canAccessRoute(role: string | null, pathname: string): boolean {
     return canAccessSection(role, "dashboard");
   }
 
-  const section = parts[1];
+  // Normalize singular → plural to match Section type
+  const sectionMap: Record<string, string> = { expense: "expenses" };
+  const raw = parts[1];
+  const section = sectionMap[raw] ?? raw;
   return canAccessSection(role, section);
 }
 
@@ -117,4 +119,25 @@ export function getRoleDisplayName(role: string | null): string {
   };
 
   return displayNames[role as UserRole] || role;
+}
+
+/**
+ * Check if a submenu item should be visible for a given role
+ * Handles read-only restrictions (e.g., PRINCIPAL and ACCOUNTANT can view fees but not add)
+ */
+export function canAccessSubmenuItem(role: string | null, submenuPath: string): boolean {
+  if (!role) return false;
+
+  // PRINCIPAL: can view fees but not add
+  if (role === "PRINCIPAL" && submenuPath.includes("/fees/add_fees")) {
+    return false;
+  }
+
+  // ACCOUNTANT: can view fees but not add
+  if (role === "ACCOUNTANT" && submenuPath.includes("/fees/add_fees")) {
+    return false;
+  }
+
+  // All other cases follow the section-based access control
+  return true;
 }

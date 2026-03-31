@@ -3,7 +3,7 @@
 import { useRole } from "@/context/RoleContext";
 import { canAccessRoute } from "@/utils/rolePermissions";
 import { usePathname, useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
@@ -12,43 +12,14 @@ interface ProtectedRouteProps {
 /**
  * ProtectedRoute component that checks if user has access to current route
  * If unauthorized, redirects to /unauthorized (403 page)
+ * Derives authorization synchronously — no useEffect, no stale isAuthorized state
  */
 export function ProtectedRoute({ children }: ProtectedRouteProps) {
   const { role, isLoading } = useRole();
   const pathname = usePathname();
   const router = useRouter();
-  const [isAuthorized, setIsAuthorized] = useState(false);
 
-  useEffect(() => {
-    console.log("ProtectedRoute - useEffect triggered:", { role, isLoading, pathname });
-    
-    if (isLoading) {
-      console.log("ProtectedRoute - Still loading...");
-      return;
-    }
-
-    // Allow access to non-dashboard routes without role check
-    if (!pathname.startsWith("/dashboard")) {
-      console.log("ProtectedRoute - Non-dashboard route, allowing access");
-      setIsAuthorized(true);
-      return;
-    }
-
-    // Check if user has access to this route
-    console.log("ProtectedRoute - Checking access for role:", role, "and pathname:", pathname);
-    const hasAccess = canAccessRoute(role, pathname);
-    console.log("ProtectedRoute - Access result:", hasAccess);
-
-    if (!hasAccess) {
-      // Redirect to unauthorized page
-      console.error("ProtectedRoute - Access denied, redirecting to unauthorized");
-      router.push("/unauthorized");
-      return;
-    }
-
-    setIsAuthorized(true);
-  }, [pathname, role, isLoading, router]);
-
+  // Show loading spinner while role is being determined
   if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -57,9 +28,18 @@ export function ProtectedRoute({ children }: ProtectedRouteProps) {
     );
   }
 
-  if (!isAuthorized) {
-    return null; // Will redirect, so return nothing
+  // If no role and we're in a dashboard route, redirect to login (not unauthorized)
+  if (!role && pathname.startsWith("/dashboard")) {
+    router.replace("/login");
+    return null;
   }
 
+  // If role is confirmed but user is trying to access a dashboard route they don't have access to, redirect to unauthorized
+  if (role && pathname.startsWith("/dashboard") && !canAccessRoute(role, pathname)) {
+    router.replace("/unauthorized");
+    return null;
+  }
+
+  // Allow all other routes (login, home, and dashboard routes user has access to)
   return <>{children}</>;
 }

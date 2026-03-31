@@ -10,11 +10,12 @@ from schemas.dashboard_model import (
 )
 from user.user_models import User
 from schemas.attendance_model import Attendance, AttendanceValue
+from schemas.class_names_model import ClassNames
 from schemas.students_model import Students
 from schemas.income_model import Income
 from schemas.expense_model import Expense
 from schemas.fee_model import Fee  
-from user.user_crud import require_admin as check_admin
+from user.user_crud import get_current_user
 from user.user_models import User
 from typing import Annotated, List
 
@@ -22,12 +23,13 @@ dashboard_router = APIRouter(
     prefix="/dashboard",
     tags=["Dashboard"],
     responses={404: {"description": "Not found"}},
+    dependencies=[Depends(get_current_user)],
 )
 
 
 @dashboard_router.get("/user-roles", response_model=LoginGraphData)
-def get_user_role_summary(user: Annotated[User, Depends(check_admin)], session: Session = Depends(get_session)):
-    """Fetch user role distribution summary (dynamic role mapping from DB, zero-fill using UserRole enum)."""
+def get_user_role_summary(session: Session = Depends(get_session)):
+    """Fetch user role distribution summary (dynamic role mapping from DB, zero-fill using UserRole enum). Requires auth."""
     try:
         # counts from DB
         stmt = select(User.role, func.count(User.role).label("role_count")).group_by(User.role)
@@ -90,8 +92,8 @@ def get_user_role_summary(user: Annotated[User, Depends(check_admin)], session: 
 
 
 @dashboard_router.get("/attendance-summary", response_model=AttendanceGraphData)
-def get_attendance_summary(User: Annotated[User, Depends(check_admin)],session: Session = Depends(get_session)):
-    """Fetch today's attendance summary with graph visualization."""
+def get_attendance_summary(session: Session = Depends(get_session)):
+    """Fetch today's attendance summary with graph visualization. Requires auth."""
     try:
         # Get today's date at start and end of day to ensure we catch all records
         today = datetime.utcnow().date()
@@ -99,16 +101,18 @@ def get_attendance_summary(User: Annotated[User, Depends(check_admin)],session: 
         # Debug: Print the date we're querying for
         print(f"Querying attendance for date: {today}")
         
-        # Modified query to ensure we get results
+        # Modified query to join with ClassNames to get actual class names
         stmt = (
             select(
-                Attendance.class_name_id,
+                ClassNames.class_name_id,
+                ClassNames.class_name,
                 AttendanceValue.attendance_value,
                 func.count(Attendance.attendance_id).label("count")
             )
-            .join(AttendanceValue)
+            .join(ClassNames, Attendance.class_name_id == ClassNames.class_name_id)
+            .join(AttendanceValue, Attendance.attendance_value_id == AttendanceValue.attendance_value_id)
             .where(Attendance.attendance_date == today)
-            .group_by(Attendance.class_name_id, AttendanceValue.attendance_value)
+            .group_by(ClassNames.class_name_id, ClassNames.class_name, AttendanceValue.attendance_value)
         )
         
         result = session.exec(stmt).all()
@@ -120,42 +124,41 @@ def get_attendance_summary(User: Annotated[User, Depends(check_admin)],session: 
         if not result:
             print("No attendance data found for today")
             # Create default empty data for all classes
-            class_ids = session.exec(
-                select(Attendance.class_name_id).distinct()
-            ).all()
+            classes = session.exec(select(ClassNames)).all()
             
             class_data = {
-                class_id: {
+                c.class_name_id: {
                     "date": str(today),
-                    "class_name": f"Class {class_id}",
+                    "class_name": c.class_name,
                     "attendance_values": {
-                        "Present": 0,
-                        "Absent": 0,
-                        "Late": 0,
-                        "Sick": 0,
-                        "Leave": 0
+                        "present": 0,
+                        "absent": 0,
+                        "late": 0,
+    
+                        "leave": 0
                     }
-                } for class_id in class_ids
+                } for c in classes
             }
         else:
             class_data = {}
-            for class_id, value, count in result:
+            for class_id, class_name, value, count in result:
                 if class_id not in class_data:
                     class_data[class_id] = {
                         "date": str(today),
-                        "class_name": f"Class {class_id}",
+                        "class_name": class_name,
                         "attendance_values": {}
                     }
-                class_data[class_id]["attendance_values"][value] = count
+                # Store with lowercase keys to match database values
+                class_data[class_id]["attendance_values"][value.lower() if value else "unknown"] = count
         
         summary = [AttendanceSummary(**data) for data in class_data.values()]
         
         colors = {
-            "Present": "rgba(75, 192, 192, 1)",
-            "Absent": "rgba(255, 99, 132, 1)",
-            "Late": "rgba(255, 206, 86, 1)",
-            "Sick": "rgba(153, 102, 255, 1)",
-            "Leave": "rgba(255, 159, 64, 1)"
+            "present": "rgba(75, 192, 192, 1)",
+            "absent": "rgba(255, 99, 132, 1)",
+            "late": "rgba(255, 206, 86, 1)",
+
+            "leave": "rgba(255, 159, 64, 1)"
         }
         
         labels = sorted(list(class_data.keys()))  # Sort class IDs numerically
@@ -166,15 +169,16 @@ def get_attendance_summary(User: Annotated[User, Depends(check_admin)],session: 
         for data in class_data.values():
             attendance_types.update(data["attendance_values"].keys())
         
-        for att_type in attendance_types:
+        # Sort attendance types for consistent ordering
+        for att_type in sorted(attendance_types):
             datasets.append(Dataset(
-                label=att_type,
+                label=att_type.capitalize(),  # Capitalize for chart display
                 data=[class_data[class_id]["attendance_values"].get(att_type, 0) for class_id in labels],
                 backgroundColor=colors.get(att_type, "rgba(201, 203, 207, 1)")
             ))
         
         graph_data = GraphData(
-            labels=[f"Class {label}" for label in labels],
+            labels=[class_data[class_id]["class_name"] for class_id in labels],  # Use actual class names
             datasets=datasets,
             title=f"Attendance Summary for {today}",
             options={
@@ -198,7 +202,6 @@ def get_attendance_summary(User: Annotated[User, Depends(check_admin)],session: 
 
 @dashboard_router.get("/student-summary", response_model=StudentGraphData)
 def get_student_summary(
-    User: Annotated[User, Depends(check_admin)],
     date: date = Query(default=None),
     session: Session = Depends(get_session)
 ):
@@ -220,7 +223,7 @@ def get_student_summary(
 
         # Rest of the attendance counting code...
         default_values = {
-            "Present": 0, "Absent": 0, "Late": 0, "Sick": 0, "Leave": 0, "Unmarked": unmarked_count
+            "Present": 0, "Absent": 0, "Late": 0, "Leave": 0, "Unmarked": unmarked_count
         }
         
         # Update summary data safely
@@ -245,7 +248,6 @@ def get_student_summary(
             present=summary_data["Present"],
             absent=summary_data["Absent"],
             late=summary_data["Late"],
-            sick=summary_data["Sick"],
             leave=summary_data["Leave"]
         )
         
@@ -259,7 +261,7 @@ def get_student_summary(
                     "rgba(75, 192, 192, 0.8)",   # Present
                     "rgba(255, 99, 132, 0.8)",   # Absent
                     "rgba(255, 206, 86, 0.8)",   # Late
-                    "rgba(153, 102, 255, 0.8)",  # Sick
+
                     "rgba(255, 159, 64, 0.8)"    # Leave
                 ],
                 borderColor=[
@@ -285,7 +287,6 @@ def get_student_summary(
 
 @dashboard_router.get("/income-summary", response_model=CategoryGraphData)
 def get_income_summary(
-    User: Annotated[User, Depends(check_admin)],
     year: int = Query(default=datetime.now().year),
     month: int = Query(default=None),
     session: Session = Depends(get_session)
@@ -357,7 +358,6 @@ def get_income_summary(
 
 @dashboard_router.get("/expense-summary", response_model=CategoryGraphData)
 def get_expense_summary(
-    User: Annotated[User, Depends(check_admin)],
     year: int = Query(default=datetime.now().year),
     month: int = Query(default=None),
     session: Session = Depends(get_session)
@@ -428,9 +428,7 @@ def get_expense_summary(
         )
 
 @dashboard_router.get("/total-students", response_model=int)
-def get_total_students(
-    User: Annotated[User, Depends(check_admin)],
-    session: Session = Depends(get_session)):
+def get_total_students(session: Session = Depends(get_session)):
     """Get total number of students by ID range."""
     try:
         first_id = session.exec(select(func.min(Students.student_id))).first() or 0
@@ -445,7 +443,6 @@ def get_total_students(
 
 @dashboard_router.get("/unmarked-students", response_model=List[int])
 def get_unmarked_students(
-    User: Annotated[User, Depends(check_admin)],
     date: date = Query(default=None),
     session: Session = Depends(get_session)
 ):
@@ -482,7 +479,6 @@ def get_unmarked_students(
 
 @dashboard_router.get("/income-expense-summary")
 def get_income_expense_summary(
-    User: Annotated[User, Depends(check_admin)],
     year: int = datetime.now().year, session: Session = Depends(get_session)):
     """Get combined income and expense summary for comparison."""
     try:
@@ -592,7 +588,6 @@ def get_income_expense_summary(
 
 @dashboard_router.get("/fee-summary")
 def get_fee_summary(
-    User: Annotated[User, Depends(check_admin)],
     year: int = datetime.now().year, session: Session = Depends(get_session)):
     """Get monthly fee collection summary."""
     try:
@@ -672,7 +667,7 @@ def get_fee_summary(
         )
 
 @dashboard_router.get("/graph-test", response_class=HTMLResponse)
-async def get_graph_test(User: Annotated[User, Depends(check_admin)], session: Session = Depends(get_session)):
+async def get_graph_test(session: Session = Depends(get_session)):
     return """
     <!DOCTYPE html>
     <html>

@@ -19,7 +19,8 @@ import { RiCashLine } from "react-icons/ri";
 import { BsCashCoin } from "react-icons/bs";
 import { GiExpense } from "react-icons/gi";
 import { useRole } from "@/context/RoleContext";
-import { canAccessSection } from "@/utils/rolePermissions";
+import { canAccessSection, canAccessSubmenuItem } from "@/utils/rolePermissions";
+import axiosInstance from "@/api/axiosInterceptorInstance";
 
 type MenuItem = {
   id: number;
@@ -171,20 +172,21 @@ const menuList: MenuItem[] = [
 
 // Map menu item paths to role access sections
 const getMenuItemSection = (path: string): string => {
-  if (path.includes("/students")) return "students";
-  if (path.includes("/attendance")) return "attendance";
-  if (path.includes("/fees")) return "fees";
-  if (path.includes("/income")) return "income";
-  if (path.includes("/expense")) return "expenses";
-  if (path.includes("/setup") || path.includes("/settings")) return "teachers"; // Setup requires teacher/admin access
-  if (path.includes("/dashboard")) return "dashboard";
+  const lowerPath = path.toLowerCase();
+  if (lowerPath.includes("/students")) return "students";
+  if (lowerPath.includes("/attendance")) return "attendance";
+  if (lowerPath.includes("/fees")) return "fees";
+  if (lowerPath.includes("/income")) return "income";
+  if (lowerPath.includes("/expense")) return "expenses";
+  if (lowerPath.includes("/setup") || lowerPath.includes("/settings")) return "setup";
+  if (lowerPath.includes("/dashboard")) return "dashboard";
   return "dashboard";
 };
 
 const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
   const pathname = usePathname();
   const router = useRouter();
-  const { role, isLoading } = useRole();
+  const { role, isLoading, clearRole } = useRole();
   const [openSubmenu, setOpenSubmenu] = useState<number | null>(null);
   const [isDarkMode, setIsDarkMode] = useState(true);
   const [userData, setUserData] = useState<string | null>(null);
@@ -208,10 +210,17 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
   const toggleSubmenu = (id: number) =>
     setOpenSubmenu(openSubmenu === id ? null : id);
 
-  const handleLogout = () => {
-    localStorage.clear();
-    sessionStorage.clear();
-    router.push("/login");
+  const handleLogout = async () => {
+    try {
+      await axiosInstance.post("/auth/logout");  // clears HTTPOnly cookies server-side
+    } catch {
+      // proceed with local cleanup even if the call fails
+    } finally {
+      clearRole();            // clears sessionStorage + localStorage via context
+      localStorage.clear();   // belt-and-suspenders
+      sessionStorage.clear();
+      router.replace("/login");
+    }
   };
 
   // Helper function to safely check if pathname starts with a path
@@ -319,9 +328,9 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
                 <div className="ml-6 mt-1 space-y-1">
                   {item.submenu
                     ?.filter((subItem) => {
-                      // Filter submenu items by role
+                      // Filter submenu items by role and specific restrictions
                       const section = getMenuItemSection(subItem.path);
-                      return canAccessSection(role, section);
+                      return canAccessSection(role, section) && canAccessSubmenuItem(role, subItem.path);
                     })
                     .map((subItem) => (
                       <Link

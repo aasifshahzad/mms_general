@@ -37,4 +37,16 @@ export namespace AttendanceTimeAPI {
       throw error; 
     }
   };
+
+  export const Delete = async (attendance_time_id: number) => {
+    try {
+      const response = await AxiosInstance.delete(
+        `/attendance_time/${attendance_time_id}`
+      );
+      return response;
+    } catch (error) {
+      console.error("API Error:", error);
+      throw error;
+    }
+  };
 };

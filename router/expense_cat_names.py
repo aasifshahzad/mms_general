@@ -78,13 +78,12 @@ def delete_expense_cat_name(
         raise HTTPException(
             status_code=404, detail="Expense category name not found")
     # Check for related expense records
-    related_expenses = session.exec(select(Expense).where(Expense.category_id == expense_cat_id)).all()
+    related_expenses = session.exec(select(Expense).where(Expense.category_id == expense_cat_id)).first()
     if related_expenses:
         raise HTTPException(
-            status_code=400,
-            detail="Cannot delete: There are records using this expense category names."
+            status_code=409,
+            detail="Please delete related expense records first before deleting this category."
         )
     session.delete(expense_cat_name)
     session.commit()
-    return {"message": "Expense Category Name deleted successfully"}
     return {"message": "Expense Category Name deleted successfully"}

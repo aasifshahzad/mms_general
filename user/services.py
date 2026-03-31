@@ -10,6 +10,7 @@ from sqlmodel import Session, select
 from fastapi import HTTPException, status, Depends
 from db import get_session
 from typing import Annotated
+from passlib.context import CryptContext
 
 from pydantic import EmailStr
 from typing import Union, Any
@@ -22,9 +23,13 @@ credentials_exception = HTTPException(
     headers={"WWW-Authenticate": "Bearer"},
 )
 
+# Password context for hashing
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 # Update OAuth2 scheme to use correct path
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login-swagger")  
+# auto_error=False allows None to be returned if token is missing, 
+# instead of raising 403. This allows fallback to cookie-based auth.
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login-swagger", auto_error=False)  
 
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:

@@ -37,12 +37,12 @@ const AddExpenseCategory = ({
       if (response) {
         setOpen(false);
         reset();
-        toast("Class Added Successfully!");
+        toast("Expense Category Added Successfully!");
         onExpenseCatAdd(); // Call the function to refresh the table
       }
     } catch (error) {
-      console.error("Error creating class:", error);
-      toast("Failed to add class");
+      console.error("Error creating expense category:", error);
+      toast("Failed to add expense category");
     } finally {
       setLoading(false);
     }

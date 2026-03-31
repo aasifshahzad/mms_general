@@ -34,7 +34,14 @@ const EditAttendance = ({ attendanceId, onUpdate }: EditAttendanceProps) => {
 
 
 
-  const handleFormSubmit = async (data: MarkAttUpdate) => {
+  const handleFormSubmit = async (data: {
+    attendance_date?: string;
+    attendance_time_id?: number;
+    class_name_id?: number;
+    teacher_name_id?: number;
+    student_id?: number;
+    attendance_value_id?: number;
+  }) => {
     setLoading(true);
     console.log(data);
     try {
@@ -45,7 +52,6 @@ const EditAttendance = ({ attendanceId, onUpdate }: EditAttendanceProps) => {
       const updateData: MarkAttUpdate = {
         attendance_id: attendanceId,
         attendance_value_id: getAttendanceValueId(attendanceValue.value),
-        created_at: new Date(),
         updated_at: new Date(),
       };
 
@@ -84,7 +90,7 @@ const EditAttendance = ({ attendanceId, onUpdate }: EditAttendanceProps) => {
         return 2;
       case "late":
         return 3;
-      case "sick":
+      case "leave":
         return 4;
       default:
         return 1;
@@ -143,10 +149,10 @@ const EditAttendance = ({ attendanceId, onUpdate }: EditAttendanceProps) => {
                 <input
                   type="radio"
                   name="attendanceStatus"
-                  className="form-radio h-4 w-4 text-green-600"
-                  value="sick"
+                  className="form-radio h-4 w-4 text-orange-600"
+                  value="leave"
                 />
-                <span className="ml-2">Sick</span>
+                <span className="ml-2">Leave</span>
               </label>
             </div>
 

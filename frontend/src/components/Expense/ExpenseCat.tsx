@@ -26,30 +26,8 @@ import { Button } from "@/components/ui/button";
 import { useEffect, useState } from "react";
 import AddExpenseCategory from "./CreateExpenseCat";
 import { ExpenseCategory} from "@/models/expense/expense";
-
-// Define columns
-const columns: ColumnDef<ExpenseCategory>[] = [
-  {
-    accessorKey: "expense_cat_name_id", // Updated to match interface
-    header: "Sr. No",
-    cell: ({ row }) => (
-      <div className="font-medium">{row.getValue("expense_cat_name_id")}</div>
-    ),
-  },
-  {
-    accessorKey: "expense_cat_name", // Updated to match interface
-    header: "Expense Category",
-  },
-  {
-    accessorKey: "created_at",
-    header: "Created Date",
-    cell: ({ row }) => {
-      const date = new Date(row.getValue("created_at"));
-      const formattedDate = date.toLocaleDateString("en-GB");
-      return <div>{formattedDate}</div>;
-    }
-  },
-];
+import DelConfirmMsg from "../DelConfMsg";
+import { toast } from "sonner";
 
 export default function ExpenseCat() {
   const [globalFilter, setGlobalFilter] = useState("");
@@ -62,19 +40,78 @@ export default function ExpenseCat() {
   }, []);
 
   const GetData = async () => {
-    setLoading(true);
+    setLoading(true)
     try {
       const response = await API.GetExpenseCategory();
-      const data: ExpenseCategory[] = (response as { data: ExpenseCategory[] }).data;
-      console.log("API Response:", data);
-      setData(data); // Just use the data directly if it already matches the interface
+      const responseData = (response as { data?: ExpenseCategory[] })?.data;
+      console.log("API Response:", responseData);
+      setData(Array.isArray(responseData) ? responseData : []); // Just use the data directly if it already matches the interface
     } catch (error) {
       console.error("Error fetching data:", error);
+      setData([]);
     } finally {
       setLoading(false);
     }
   };
-  
+
+  const formDeleteHandler = async (confirmed: boolean, deleteData: ExpenseCategory) => {
+    if (!confirmed) return;
+    try {
+      await API.DeleteExpenseCategory(deleteData.expense_cat_name_id);
+      toast.success("Category deleted successfully", {
+        position: "bottom-center",
+      });
+      GetData();
+    } catch (error: unknown) {
+      const axiosError = error as { response?: { status: number; data?: { detail?: string } } };
+      if (axiosError.response?.status === 409) {
+        toast.error(
+          "Please delete related expense records first before deleting this category.",
+          { position: "bottom-center" }
+        );
+      } else {
+        toast.error(
+          axiosError.response?.data?.detail || "Failed to delete category.",
+          { position: "bottom-center" }
+        );
+      }
+    }
+  };
+
+  // Define columns
+  const columns: ColumnDef<ExpenseCategory>[] = [
+    {
+      accessorKey: "expense_cat_name_id", // Updated to match interface
+      header: "Sr. No",
+      cell: ({ row }) => (
+        <div className="font-medium">{row.getValue("expense_cat_name_id")}</div>
+      ),
+    },
+    {
+      accessorKey: "expense_cat_name", // Updated to match interface
+      header: "Expense Category",
+    },
+    {
+      accessorKey: "created_at",
+      header: "Created Date",
+      cell: ({ row }) => {
+        const date = new Date(row.getValue("created_at"));
+        const formattedDate = date.toLocaleDateString("en-GB");
+        return <div>{formattedDate}</div>;
+      }
+    },
+    {
+      id: "delete",
+      header: "Delete",
+      cell: ({ row }) => (
+        <DelConfirmMsg
+          rowId={row.original.expense_cat_name_id}
+          OnDelete={(confirmed) => formDeleteHandler(confirmed, row.original)}
+        />
+      ),
+    },
+  ];
+
   const table = useReactTable({
     data,
     columns,

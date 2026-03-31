@@ -9,7 +9,7 @@ import {
   getPaginationRowModel,
   getFilteredRowModel,
 } from "@tanstack/react-table";
-import { Search, LoaderIcon } from "lucide-react";
+import { Search, LoaderIcon, Eye, Trash2 } from "lucide-react";
 import { StudentAPI as API } from "@/api/Student/StudentsAPI";
 export { format } from "date-fns";
 
@@ -22,6 +22,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 import { StudentModel } from "@/models/students/Student";
 import { useEffect, useState } from "react";
 import AddNewStudent from "./CreateStudent";
@@ -29,11 +30,20 @@ import DelConfirmMsg from "../DelConfMsg";
 import { toast } from "sonner";
 import Card  from "@/components/ui/card";
 import {Pagination} from "@/components/ui/pagination";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogClose,
+} from "@/components/ui/dialog";
 
 export default function ModernStudentTable() {
   const [globalFilter, setGlobalFilter] = useState("");
   const [data, setData] = useState<StudentModel[]>([]);
   const [loading, setLoading] = useState(true);
+  const [selectedStudent, setSelectedStudent] = useState<StudentModel | null>(null);
+  const [showDetailsDialog, setShowDetailsDialog] = useState(false);
 
   // Define formDeleteHandler first
   const formDeleteHandler = async (confirmed: boolean, data: StudentModel & { index?: number }) => {
@@ -78,25 +88,12 @@ export default function ModernStudentTable() {
       header: "Student Name",
     },
     {
-      accessorKey: "student_date_of_birth",
-      header: "Student Date of Birth",
-      cell: ({ row }) => {
-        const date = new Date(row.getValue("student_date_of_birth"));
-        const formattedDate = date.toLocaleDateString("en-GB"); // Use 'en-GB' for dd/MM/yyyy
-        return <div>{formattedDate}</div>;
-      },
-    },
-    {
       accessorKey: "student_age",
       header: "Student Age",
     },
     {
       accessorKey: "student_gender",
       header: "Student Gender",
-    },
-    {
-      accessorKey: "student_education",
-      header: "Student Education",
     },
     {
       accessorKey: "class_name",
@@ -107,38 +104,36 @@ export default function ModernStudentTable() {
       header: "Student City",
     },
     {
-      accessorKey: "student_address",
-      header: "Student Address",
-    },
-    {
       accessorKey: "father_name",
       header: "Father Name",
-    },
-    {
-      accessorKey: "father_occupation",
-      header: "Father Occupation",
-    },
-    {
-      accessorKey: "father_cnic",
-      header: "Father CNIC",
-    },
-    {
-      accessorKey: "father_cast_name",
-      header: "Father Cast Name",
     },
     {
       accessorKey: "father_contact",
       header: "Father Contact",
     },
     {
-      accessorKey: "Delete",
-      header: "Delete",
+      accessorKey: "Action",
+      header: "Action",
       cell: ({ row }) => {
         return (
-          <DelConfirmMsg
-            rowId={row.getValue("id")}
-            OnDelete={(confirmed) => formDeleteHandler(confirmed, row.original)}
-          />
+          <div className="flex gap-2 items-center">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                setSelectedStudent(row.original);
+                setShowDetailsDialog(true);
+              }}
+              className="flex items-center gap-1"
+            >
+              <Eye className="w-4 h-4" />
+              <span className="hidden sm:inline">View</span>
+            </Button>
+            <DelConfirmMsg
+              rowId={row.getValue("student_id")}
+              OnDelete={(confirmed) => formDeleteHandler(confirmed, row.original)}
+            />
+          </div>
         );
       }
     }
@@ -175,30 +170,31 @@ export default function ModernStudentTable() {
   });
 
   return (
-    <Card className="ml-3 mr-3 mt-2 p-6 w-full md:w-[80%] bg-white dark:bg-background rounded-lg shadow-lg">
+    <Card className="mt-2 p-3 sm:p-6 w-full bg-white dark:bg-background rounded-lg shadow-lg">
       <AddNewStudent onClassAdded={GetData} />
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 gap-4">
-        <div className="relative w-full sm:w-auto">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+      <div className="flex flex-col gap-4 mb-6">
+        <div className="relative w-full">
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4 sm:h-5 sm:w-5" />
           <Input
             placeholder="Search Students..."
             value={globalFilter ?? ""}
             onChange={(e: React.ChangeEvent<HTMLInputElement>) => setGlobalFilter(e.target.value)}
-            className="pl-10 pr-4 py-2 w-full sm:w-64 rounded-full border-gray-300 focus:border-blue-500 focus:ring focus:ring-blue-200 transition-all duration-300"
+            className="pl-10 pr-4 py-2 w-full rounded-lg border-gray-300 focus:border-blue-500 focus:ring focus:ring-blue-200 transition-all duration-300"
           />
         </div>
       </div>
 
-      {/* Table rendering */}
-      <div className="rounded-md border w-auto border-gray-200 transition-shadow duration-300 hover:shadow-md overflow-x-auto">
-        <Table className="whitespace-nowrap scroll-smooth">
-          <TableHeader className="bg-primary w-[60%] hover:bg-none text-white">
+      {/* Mobile: Card View, Desktop: Table View */}
+      {/* Table rendering - Hidden on mobile, visible on sm and up */}
+      <div className="hidden sm:block w-full rounded-md border border-gray-200 transition-shadow duration-300 hover:shadow-md overflow-x-auto">
+        <Table className="w-full whitespace-nowrap scroll-smooth">
+          <TableHeader className="bg-primary hover:bg-none text-white sticky top-0 z-10">
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow key={headerGroup.id}>
                 {headerGroup.headers.map((header) => (
                   <TableHead
                     key={header.id}
-                    className="font-bold text-white"
+                    className="font-bold text-white px-2 sm:px-3 md:px-4 py-2 sm:py-3 text-xs sm:text-sm"
                   >
                     {header.isPlaceholder
                       ? null
@@ -215,17 +211,17 @@ export default function ModernStudentTable() {
           <TableBody>
             {loading ? (
               <TableRow>
-                <TableCell colSpan={columns.length} className="text-center">
+                <TableCell colSpan={columns.length} className="text-center py-4">
                   <div className="flex justify-center">
-                    <LoaderIcon className="animate-spin w-10 h-10" />
+                    <LoaderIcon className="animate-spin w-8 h-8 sm:w-10 sm:h-10" />
                   </div>
                 </TableCell>
               </TableRow>
             ) : data?.length > 0 ? (
               table.getRowModel().rows.map((row) => (
-                <TableRow key={row.id}>
+                <TableRow key={row.id} className="hover:bg-slate-50 dark:hover:bg-slate-900">
                   {row.getVisibleCells().map((cell) => (
-                    <TableCell key={cell.id} className="py-2 px-4">
+                    <TableCell key={cell.id} className="py-2 px-2 sm:px-3 md:px-4 text-xs sm:text-sm">
                       {flexRender(cell.column.columnDef.cell, cell.getContext())}
                     </TableCell>
                   ))}
@@ -233,7 +229,7 @@ export default function ModernStudentTable() {
               ))
             ) : (
               <TableRow>
-                <TableCell colSpan={columns.length} className="h-24 text-center text-gray-500">
+                <TableCell colSpan={columns.length} className="h-24 text-center text-gray-500 py-4">
                   No results found.
                 </TableCell>
               </TableRow>
@@ -242,25 +238,195 @@ export default function ModernStudentTable() {
         </Table>
       </div>
 
-      {/* Pagination */}
-      <Pagination
-        className="flex mt-4"
-        currentPage={table.getState().pagination.pageIndex + 1}
-        totalPages={Math.ceil((table?.getFilteredRowModel()?.rows.length || 0) / table.getState().pagination.pageSize)}
-        onPageChange={(page) => {
-          table.setPageIndex(page - 1);
-        }}
-      />
-      <div className="flex justify-start text-sm text-gray-500 ">
-        Showing{" "}
-        {table.getState().pagination.pageIndex * table.getState().pagination.pageSize + 1}{" "}
-        to{" "}
-        {Math.min(
-          (table.getState().pagination.pageIndex + 1) * table.getState().pagination.pageSize,
-          table.getFilteredRowModel().rows.length
-        )}{" "}
-        of {table.getFilteredRowModel().rows.length} results
+      {/* Mobile Card View - visible only on small screens */}
+      <div className="sm:hidden space-y-3">
+        {loading ? (
+          <div className="flex justify-center py-8">
+            <LoaderIcon className="animate-spin w-8 h-8" />
+          </div>
+        ) : data?.length > 0 ? (
+          table.getRowModel().rows.map((row) => (
+            <div
+              key={row.id}
+              className="bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-lg p-3 space-y-2"
+            >
+              <div className="flex justify-between items-start gap-2">
+                <div className="flex-1">
+                  <p className="text-xs font-medium text-gray-600 dark:text-gray-400 uppercase">Sr. No</p>
+                  <p className="text-sm font-semibold text-gray-900 dark:text-white">
+                    {row.original.student_id}
+                  </p>
+                </div>
+                <div className="flex gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      setSelectedStudent(row.original);
+                      setShowDetailsDialog(true);
+                    }}
+                    className="flex items-center gap-1"
+                  >
+                    <Eye className="w-4 h-4" />
+                  </Button>
+                  <DelConfirmMsg
+                    rowId={row.original.student_id}
+                    OnDelete={(confirmed) => formDeleteHandler(confirmed, row.original)}
+                  />
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-2 text-xs">
+                <div>
+                  <p className="font-medium text-gray-600 dark:text-gray-400">Name</p>
+                  <p className="text-gray-900 dark:text-white truncate">{row.original.student_name}</p>
+                </div>
+                <div>
+                  <p className="font-medium text-gray-600 dark:text-gray-400">Class</p>
+                  <p className="text-gray-900 dark:text-white truncate">{row.original.class_name}</p>
+                </div>
+                <div>
+                  <p className="font-medium text-gray-600 dark:text-gray-400">Age</p>
+                  <p className="text-gray-900 dark:text-white">{row.original.student_age}</p>
+                </div>
+                <div>
+                  <p className="font-medium text-gray-600 dark:text-gray-400">Gender</p>
+                  <p className="text-gray-900 dark:text-white">{row.original.student_gender}</p>
+                </div>
+                <div className="col-span-2">
+                  <p className="font-medium text-gray-600 dark:text-gray-400">City</p>
+                  <p className="text-gray-900 dark:text-white truncate">{row.original.student_city}</p>
+                </div>
+              </div>
+            </div>
+          ))
+        ) : (
+          <div className="text-center py-8 text-gray-500">No results found.</div>
+        )}
       </div>
+
+      {/* Pagination */}
+      {!loading && data?.length > 0 && (
+        <>
+          <Pagination
+            className="flex mt-4"
+            currentPage={table.getState().pagination.pageIndex + 1}
+            totalPages={Math.ceil((table?.getFilteredRowModel()?.rows?.length || 1) / table.getState().pagination.pageSize)}
+            onPageChange={(page) => {
+              table.setPageIndex(page - 1);
+            }}
+          />
+          <div className="flex justify-start text-sm text-gray-500 ">
+            Showing{" "}
+            {table.getState().pagination.pageIndex * table.getState().pagination.pageSize + 1}{" "}
+            to{" "}
+            {Math.min(
+              (table.getState().pagination.pageIndex + 1) * table.getState().pagination.pageSize,
+              table?.getFilteredRowModel()?.rows?.length || 0
+            )}{" "}
+            of {table?.getFilteredRowModel()?.rows?.length || 0} results
+          </div>
+        </>
+      )}
+
+      {/* Student Details Dialog */}
+      <Dialog open={showDetailsDialog} onOpenChange={setShowDetailsDialog}>
+        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Student Details</DialogTitle>
+            <DialogClose />
+          </DialogHeader>
+          {selectedStudent && (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 py-4">
+              {/* Student Information Section */}
+              <div className="space-y-4">
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-3 border-b pb-2">
+                    Student Information
+                  </h3>
+                </div>
+                <div>
+                  <p className="text-xs font-medium text-gray-500 uppercase">Student ID</p>
+                  <p className="text-sm font-semibold text-gray-900 dark:text-white">{selectedStudent.student_id}</p>
+                </div>
+                <div>
+                  <p className="text-xs font-medium text-gray-500 uppercase">Student Name</p>
+                  <p className="text-sm font-semibold text-gray-900 dark:text-white">{selectedStudent.student_name}</p>
+                </div>
+                <div>
+                  <p className="text-xs font-medium text-gray-500 uppercase">Date of Birth</p>
+                  <p className="text-sm text-gray-700 dark:text-gray-300">
+                    {new Date(selectedStudent.student_date_of_birth).toLocaleDateString("en-GB")}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-xs font-medium text-gray-500 uppercase">Age</p>
+                  <p className="text-sm text-gray-700 dark:text-gray-300">{selectedStudent.student_age}</p>
+                </div>
+                <div>
+                  <p className="text-xs font-medium text-gray-500 uppercase">Gender</p>
+                  <p className="text-sm text-gray-700 dark:text-gray-300">{selectedStudent.student_gender}</p>
+                </div>
+                <div>
+                  <p className="text-xs font-medium text-gray-500 uppercase">Education</p>
+                  <p className="text-sm text-gray-700 dark:text-gray-300">{selectedStudent.student_education}</p>
+                </div>
+              </div>
+
+              {/* Additional Information Section */}
+              <div className="space-y-4">
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-3 border-b pb-2">
+                    Additional Information
+                  </h3>
+                </div>
+                <div>
+                  <p className="text-xs font-medium text-gray-500 uppercase">Class Name</p>
+                  <p className="text-sm text-gray-700 dark:text-gray-300">{selectedStudent.class_name}</p>
+                </div>
+                <div>
+                  <p className="text-xs font-medium text-gray-500 uppercase">City</p>
+                  <p className="text-sm text-gray-700 dark:text-gray-300">{selectedStudent.student_city}</p>
+                </div>
+                <div>
+                  <p className="text-xs font-medium text-gray-500 uppercase">Address</p>
+                  <p className="text-sm text-gray-700 dark:text-gray-300">{selectedStudent.student_address}</p>
+                </div>
+              </div>
+
+              {/* Father Information Section */}
+              <div className="space-y-4 md:col-span-2">
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-3 border-b pb-2">
+                    Father Information
+                  </h3>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <p className="text-xs font-medium text-gray-500 uppercase">Father Name</p>
+                    <p className="text-sm text-gray-700 dark:text-gray-300">{selectedStudent.father_name}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs font-medium text-gray-500 uppercase">Father Contact</p>
+                    <p className="text-sm text-gray-700 dark:text-gray-300">{selectedStudent.father_contact}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs font-medium text-gray-500 uppercase">Father Occupation</p>
+                    <p className="text-sm text-gray-700 dark:text-gray-300">{selectedStudent.father_occupation}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs font-medium text-gray-500 uppercase">Father CNIC</p>
+                    <p className="text-sm text-gray-700 dark:text-gray-300">{selectedStudent.father_cnic}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs font-medium text-gray-500 uppercase">Father Caste Name</p>
+                    <p className="text-sm text-gray-700 dark:text-gray-300">{selectedStudent.father_cast_name}</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </Card>
   );
 }

@@ -7,10 +7,9 @@ export interface AddFeeModel {
 }
 
 export interface GetFeeModel {
-    fee_status: number,
-    student_id: number,
-    class_id: number,
-    fee_amount: number,
-    fee_month: string,
-    fee_year: number
+    student_id?: number,
+    class_id?: number,
+    fee_month?: string,
+    fee_year?: string,
+    fee_status?: string,
 }

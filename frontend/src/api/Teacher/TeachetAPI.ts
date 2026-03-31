@@ -36,14 +36,15 @@ export namespace TeacherNameAPI {
       throw error; 
     }
   };
-  export async function Delete(teacher_name: number) {
+  export async function Delete(teacher_id: number) {
     try {
       const response = await AxiosInstance.delete(
-        `/teacher_name/del/${teacher_name}`
+        `/teacher_name/${teacher_id}`
       );
       return response;
     } catch (error) {
-      return error;
+      console.error("API Error:", error);
+      throw error;
     }
   }
 }

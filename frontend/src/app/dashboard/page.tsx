@@ -60,7 +60,6 @@ interface StudentSummaryData {
     present: number;
     absent: number;
     late: number;
-    sick: number;
     leave: number;
   };
   graph: {
@@ -83,7 +82,6 @@ interface AttendanceSummaryData {
       Present: number;
       Absent: number;
       Late: number;
-      Sick: number;
       Leave: number;
     };
   }[];
@@ -253,6 +251,7 @@ export default function DashboardRouter() {
  * Full Admin/Principal Dashboard with all statistics
  */
 function AdminDashboardView() {
+  const { role } = useRole();
   const [userRolesData, setUserRolesData] = useState<UserRolesData | null>(
     null
   );
@@ -299,8 +298,24 @@ function AdminDashboardView() {
     "November",
     "December",
   ];
+
+  // Helper: access attendance_values by key, case-insensitively
+  const getAttVal = (
+    values: Record<string, number>,
+    key: string
+  ): number => {
+    // Try exact match first, then lowercase, then capitalized
+    return (
+      values[key] ??
+      values[key.toLowerCase()] ??
+      values[key.charAt(0).toUpperCase() + key.slice(1).toLowerCase()] ??
+      0
+    );
+  };
+
   // Fetch user roles data when component mounts
   useEffect(() => {
+    if (!role) return;  // wait until role is confirmed
     const fetchUserRolesData = async () => {
       try {
         const response = (await DashboardAPI.GetUserRoles()) as ApiResponse<UserRolesData>;
@@ -315,8 +330,9 @@ function AdminDashboardView() {
     };
 
     fetchUserRolesData();
-  }, []);
+  }, [role]);
   useEffect(() => {
+    if (!role) return;  // wait until role is confirmed
     const fetchStudentSummaryData = async () => {
       setStudentSummaryLoading(true);
       try {
@@ -334,25 +350,40 @@ function AdminDashboardView() {
     };
 
     fetchStudentSummaryData();
-  }, [selectedDate]);
+  }, [selectedDate, role]);
   useEffect(() => {
+    if (!role) return;  // wait until role is confirmed
     const fetchAttendanceSummary = async () => {
       setAttendanceSummaryLoading(true);
       try {
         const response = (await DashboardAPI.GetAttendanceSummary()) as ApiResponse<AttendanceSummaryData>;
+        console.log("📊 Raw attendance response:", response);
+        console.log("📊 Response.data:", response?.data);
+        console.log("📊 Response.data.summary:", response?.data?.summary);
+        
         if (response && response.data) {
+          console.log("✅ Setting attendance data with", response.data.summary?.length || 0, "records");
           setAttendanceSummaryData(response.data);
+        } else if (response?.data === undefined || response?.data === null) {
+          console.error("❌ Response exists but data is null/undefined:", response);
+          setAttendanceSummaryData(null);
+        } else {
+          console.warn("⚠️ Attendance summary: empty or unexpected response", response);
+          setAttendanceSummaryData(null);
         }
       } catch (error) {
-        console.error("Error fetching attendance summary:", error);
+        console.error("❌ Error fetching attendance summary:", error);
+        setAttendanceSummaryData(null);
       } finally {
         setAttendanceSummaryLoading(false);
       }
     };
 
+    console.log("🔄 Fetching attendance summary, role:", role);
     fetchAttendanceSummary();
-  }, []);
+  }, [role]);
   useEffect(() => {
+    if (!role) return;  // wait until role is confirmed
     const fetchIncomeExpenseSummary = async () => {
       setIncomeExpenseLoading(true);
       try {
@@ -370,8 +401,9 @@ function AdminDashboardView() {
     };
 
     fetchIncomeExpenseSummary();
-  }, [selectedYear]);
+  }, [selectedYear, role]);
   useEffect(() => {
+    if (!role) return;  // wait until role is confirmed
     const fetchFeeSummary = async () => {
       setFeeSummaryLoading(true);
       try {
@@ -387,8 +419,9 @@ function AdminDashboardView() {
     };
 
     fetchFeeSummary();
-  }, [selectedYear]);
+  }, [selectedYear, role]);
   useEffect(() => {
+    if (!role) return;  // wait until role is confirmed
     const fetchIncomeSummary = async () => {
       setIncomeSummaryLoading(true);
       try {
@@ -407,8 +440,9 @@ function AdminDashboardView() {
     };
 
     fetchIncomeSummary();
-  }, [selectedYear, selectedMonth]);
+  }, [selectedYear, selectedMonth, role]);
   useEffect(() => {
+    if (!role) return;  // wait until role is confirmed
     const fetchExpenseSummary = async () => {
       setExpenseSummaryLoading(true);
       try {
@@ -427,7 +461,7 @@ function AdminDashboardView() {
     };
 
     fetchExpenseSummary();
-  }, [selectedYear, selectedExpenseMonth]);
+  }, [selectedYear, selectedExpenseMonth, role]);
   // Transform API data for the pie chart
   const transformedPieData =
     userRolesData?.graph.labels.map((label, index) => ({
@@ -436,23 +470,18 @@ function AdminDashboardView() {
       color: userRolesData.graph.datasets[0].backgroundColor[index],
     })) || [];
   const transformedBarData =
-    studentSummaryData?.graph.labels.map((label, index) => ({
-      name: label,
-      value: studentSummaryData.graph.datasets[0].data[index],
-      color:
-        studentSummaryData.graph.datasets[0].backgroundColor[index] || "#000",
-    })) || [];
+    studentSummaryData?.graph.labels
+      .map((label, index) => ({
+        name: label,
+        value: studentSummaryData.graph.datasets[0].data[index],
+        color:
+          studentSummaryData.graph.datasets[0].backgroundColor[index] || "#000",
+      }))
+      || [];
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
       <Header value="Dashboard" />
-
-      {/* Role Context Badge */}
-      <div className="px-4 sm:px-6 lg:px-8 py-2">
-        <div className="inline-block bg-purple-100 text-purple-800 px-4 py-2 rounded-full text-sm font-medium">
-          👑 Administrator - Full System Access
-        </div>
-      </div>
 
       {/* Main Content */}
       <main className="container mx-auto px-4 py-6 sm:px-6 lg:px-8">
@@ -531,17 +560,6 @@ function AdminDashboardView() {
                     {studentSummaryData.summary.late}
                   </p>
                 </div>
-                <div className="bg-gradient-to-r from-purple-50 to-purple-100 p-4 rounded-xl shadow-sm">
-                  <div className="flex items-center justify-center mb-2 text-purple-500">
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                    </svg>
-                  </div>
-                  <p className="text-sm text-gray-600 text-center">Sick</p>
-                  <p className="font-bold text-xl text-center text-gray-800">
-                    {studentSummaryData.summary.sick}
-                  </p>
-                </div>
                 <div className="bg-gradient-to-r from-orange-50 to-orange-100 p-4 rounded-xl shadow-sm">
                   <div className="flex items-center justify-center mb-2 text-orange-500">
                     <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -589,7 +607,8 @@ function AdminDashboardView() {
           </motion.div>
           
           <div className="grid gap-8 md:grid-cols-2">
-            {/* User Roles Overview Card */}
+            {/* User Roles Overview Card - Hidden for PRINCIPAL and ACCOUNTANT */}
+            {role !== "PRINCIPAL" && role !== "ACCOUNTANT" && (
             <motion.div 
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -637,6 +656,7 @@ function AdminDashboardView() {
                 )}
               </div>
             </motion.div>
+            )}
             
             {/* Fee Collection Trends Card */}
             <motion.div 
@@ -820,43 +840,46 @@ function AdminDashboardView() {
                         Late
                       </th>
                       <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Sick
-                      </th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                         Leave
                       </th>
                     </tr>
                   </thead>
                   <tbody className="bg-white divide-y divide-gray-200">
-                    {attendanceSummaryData.summary.map((item, index) => (
-                      <tr key={index} className="hover:bg-gray-50 transition-colors duration-150">
-                        <td className="px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-900">
-                          {item.class_name}
-                        </td>
-                        <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-700">
-                          <span className="px-2 py-1 rounded-full bg-green-100 text-green-800">{item.attendance_values.Present}</span>
-                        </td>
-                        <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-700">
-                          <span className="px-2 py-1 rounded-full bg-red-100 text-red-800">{item.attendance_values.Absent}</span>
-                        </td>
-                        <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-700">
-                          <span className="px-2 py-1 rounded-full bg-yellow-100 text-yellow-800">{item.attendance_values.Late}</span>
-                        </td>
-                        <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-700">
-                          <span className="px-2 py-1 rounded-full bg-purple-100 text-purple-800">{item.attendance_values.Sick}</span>
-                        </td>
-                        <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-700">
-                          <span className="px-2 py-1 rounded-full bg-orange-100 text-orange-800">{item.attendance_values.Leave}</span>
+                    {attendanceSummaryData.summary && attendanceSummaryData.summary.length > 0 ? (
+                      attendanceSummaryData.summary.map((item, index) => (
+                        <tr key={index} className="hover:bg-gray-50 transition-colors duration-150">
+                          <td className="px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-900">
+                            {item.class_name}
+                          </td>
+                          <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-700">
+                            <span className="px-2 py-1 rounded-full bg-green-100 text-green-800">{getAttVal(item.attendance_values, "present")}</span>
+                          </td>
+                          <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-700">
+                            <span className="px-2 py-1 rounded-full bg-red-100 text-red-800">{getAttVal(item.attendance_values, "absent")}</span>
+                          </td>
+                          <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-700">
+                            <span className="px-2 py-1 rounded-full bg-yellow-100 text-yellow-800">{getAttVal(item.attendance_values, "late")}</span>
+                          </td>
+                          <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-700">
+                            <span className="px-2 py-1 rounded-full bg-orange-100 text-orange-800">{getAttVal(item.attendance_values, "leave")}</span>
+                          </td>
+                        </tr>
+                      ))
+                    ) : (
+                      <tr>
+                        <td colSpan={5} className="px-4 py-8 text-center text-gray-500">
+                          No attendance data available
                         </td>
                       </tr>
-                    ))}
+                    )}
                   </tbody>
                 </table>
               </div>
             )}
           </motion.div>
           
-          {/* Financial Summary Card */}
+          {/* Financial Summary Card - Hidden for PRINCIPAL */}
+          {role !== "PRINCIPAL" && (
           <motion.div 
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -1039,8 +1062,10 @@ function AdminDashboardView() {
               )}
             </div>
           </motion.div>
+          )}
           
-          {/* Income Category Details Card */}
+          {/* Income Category Details Card - Hidden for PRINCIPAL */}
+          {role !== "PRINCIPAL" && (
           <motion.div 
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -1169,8 +1194,10 @@ function AdminDashboardView() {
               )}
             </div>
           </motion.div>
+          )}
           
-          {/* Expense Category Details Card */}
+          {/* Expense Category Details Card - Hidden for PRINCIPAL */}
+          {role !== "PRINCIPAL" && (
           <motion.div 
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -1303,6 +1330,7 @@ function AdminDashboardView() {
               )}
             </div>
           </motion.div>
+          )}
         </div>
       </main>
     </div>

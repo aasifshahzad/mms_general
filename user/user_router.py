@@ -281,7 +281,7 @@ from .user_crud import (
     require_authenticated
 )
 from .services import (
-    verify_token, create_access_token,
+    verify_token, create_access_token, get_user_by_username,
     revoke_refresh_token, ACCESS_TOKEN_EXPIRE_MINUTES
 )
 from db import get_session
@@ -505,7 +505,7 @@ async def bulk_signup(
 
 
 @user_router.post("/refresh", response_model=LoginResponse)
-@limiter.limit("10/minute")  # Security: Rate limiting - 10 attempts per minute per IP
+@limiter.limit("30/minute")  # Security: Rate limiting - 30 attempts per minute per IP (token refresh queue handles deduplication)
 async def refresh_token(
     request: Request,
     response: Response,

@@ -36,14 +36,15 @@ export namespace ClassNameAPI {
     }
   };
 
-  export const Delete = async (id: number) => {
+  export const Delete = async (class_name_id: number) => {
     try {
       const response = await AxiosInstance.delete(
-        `/class_name/delete_class_name/${id}/`
+        `/class_name/${class_name_id}`
       );
       return response;
     } catch (error) {
-      return error;
+      console.error("API Error:", error);
+      throw error;
     }
   };
 }

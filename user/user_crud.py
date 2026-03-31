@@ -1,24 +1,24 @@
-# from datetime import timedelta
-# from jose import JWTError, jwt
-# from typing import Annotated
-# from fastapi import Depends, HTTPException, status
-# from fastapi.security import OAuth2PasswordRequestForm, OAuth2PasswordBearer
-# from sqlmodel import Session, select
-# from db import get_session
-# from user.settings import ACCESS_TOKEN_EXPIRE_MINUTES, ALGORITHM, REFRESH_TOKEN_EXPIRE_MINUTES, SECRET_KEY
-# from user.services import create_access_token, get_password_hash, get_user_by_username, verify_password, pwd_context, oauth2_scheme
-# from user.user_models import (
-#     LoginResponse, 
-#     TokenData, 
-#     User, 
-#     UserCreate,
-#     UserLogin, 
-#     UserResponse, 
-#     UserUpdate,
-#     UserRole,
-#     AdminUserUpdate
-# )
-# from passlib.context import CryptContext
+from datetime import timedelta
+from jose import JWTError, jwt
+from typing import Annotated, Optional
+from fastapi import Depends, HTTPException, status, Request
+from fastapi.security import OAuth2PasswordRequestForm, OAuth2PasswordBearer
+from sqlmodel import Session, select
+from db import get_session
+from user.settings import ACCESS_TOKEN_EXPIRE_MINUTES, ALGORITHM, REFRESH_TOKEN_EXPIRE_MINUTES, SECRET_KEY
+from user.services import create_access_token, get_password_hash, get_user_by_username, verify_password, pwd_context, oauth2_scheme
+from user.user_models import (
+    LoginResponse, 
+    TokenData, 
+    User, 
+    UserCreate,
+    UserLogin, 
+    UserResponse, 
+    UserUpdate,
+    UserRole,
+    AdminUserUpdate
+)
+from passlib.context import CryptContext
 
 # pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
@@ -317,8 +317,35 @@ def delete_user(session: Session, username: str) -> dict[str, str]:
     session.commit()
     return {"message": f"User {username} deleted successfully"}
 
+async def get_token_from_cookie_or_header(
+    request: Request,
+    token_from_header: Annotated[Optional[str], Depends(oauth2_scheme)] = None
+) -> str:
+    """
+    Extract token from either Authorization header or HTTPOnly cookie.
+    Preference: Authorization header > access_token cookie
+    
+    This allows HTTPOnly cookies set by the login endpoint to work
+    alongside traditional Authorization headers.
+    """
+    # First try to get token from Authorization header
+    if token_from_header:
+        return token_from_header
+    
+    # Fallback to HTTPOnly cookie (for browser requests)
+    token_from_cookie = request.cookies.get("access_token")
+    if token_from_cookie:
+        return token_from_cookie
+    
+    # No token found in either location
+    raise HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="Could not validate credentials - no token provided",
+        headers={"WWW-Authenticate": "Bearer"},
+    )
+
 async def get_current_user(
-    token: Annotated[str, Depends(oauth2_scheme)], 
+    token: Annotated[str, Depends(get_token_from_cookie_or_header)], 
     db: Annotated[Session, Depends(get_session)]
 ) -> User:
     credentials_exception = HTTPException(

@@ -71,8 +71,20 @@ export const IncomeAPI = {
       console.error("API Error:", error);
       throw error; 
     }
+  },
+
+  DeleteIncomeCategory: async (income_cat_id: number) => {
+    try {
+      const response = await AxiosInstance.delete(
+        `/income_cat_names/del/${income_cat_id}`
+      );
+      return response;
+    } catch (error) {
+      console.error("API Error:", error);
+      throw error;
+    }
   }
 };
 
 // For backward compatibility, also export individual functions
-export const { GetIncomeData, AddIncome, GetIncomeCategory, AddIncomeCategory } = IncomeAPI;
+export const { GetIncomeData, AddIncome, GetIncomeCategory, AddIncomeCategory, DeleteIncomeCategory } = IncomeAPI;

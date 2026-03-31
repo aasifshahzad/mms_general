@@ -15,7 +15,6 @@ class StudentSummary(BaseModel):
     present: int
     absent: int
     late: int
-    sick: int
     leave: int
 
 class IncomeExpenseCategorySummary(BaseModel):

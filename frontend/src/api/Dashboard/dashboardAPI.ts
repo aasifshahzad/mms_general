@@ -30,7 +30,8 @@ export namespace DashboardAPI {
       console.log("Attendance Summary API Response:", response);
       return response;
     } catch (error) {
-      return error;
+      console.error("Attendance Summary API Error:", error);
+      throw error;
     }
   };
   export const GetIncomeExpenseSummary = async (year: number) => {

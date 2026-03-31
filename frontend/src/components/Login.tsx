@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation"
 import { LoginAPI } from "@/api/Login/Login"
 import { toast } from "sonner"
 import Image from "next/image"
+import { useRole } from "@/context/RoleContext"
 
 type FormData = {
   username: string
@@ -45,6 +46,7 @@ export default function LoginForm() {
   const [isLoading, setIsLoading] = useState(false)
   const [showPassword, setShowPassword] = useState(false);
   const router = useRouter()
+  const { setRole } = useRole()
 
   const onSubmit = async (data: FormData) => {
     setIsLoading(true)
@@ -52,10 +54,19 @@ export default function LoginForm() {
       const response: LoginResponse = await LoginAPI(data)
       if (response?.user) {
         // Security: Tokens are now in HTTPOnly cookies (not accessible here)
-        // Store only non-sensitive user info in sessionStorage (cleared on browser close)
+        // Store full user object to localStorage (persists across refresh)
+        localStorage.setItem("user", JSON.stringify(response.user))
+        // Also store to sessionStorage for current session
         sessionStorage.setItem("user", JSON.stringify(response.user))
         // Store the user's role for authorization checks
         sessionStorage.setItem("userRole", response.user.role)
+        
+        // Update RoleContext's React state directly so ProtectedRoute
+        // sees the role immediately on navigation — without waiting for
+        // RoleContext's useEffect to re-run (it won't, because RoleProvider
+        // is already mounted in the root layout and persists across routes).
+        setRole(response.user.role)
+        
         toast.success("Login Successfully!")
         router.push("/dashboard")
       } else {

@@ -1,5 +1,11 @@
 import { EntityBase } from "../EntityBase";
 
+export interface MarkAttendance extends EntityBase {
+  studentId: string | number;
+  date: Date;
+  status: 'present' | 'absent' | 'late' | 'leave';
+}
+
 export interface MarkAttInput {
   attendance_date: string;
   attendance_time_id: number;
@@ -16,6 +22,12 @@ export interface MarkAttInput {
 }
 
 export interface MarkAttUpdate extends EntityBase {
-  attendance_id: number;
-  attendance_value_id: number;
+  attendance_id?: number;
+  attendance_date?: string;
+  attendance_time_id?: number;
+  class_name_id?: number;
+  teacher_name_id?: number;
+  student_id?: number;
+  attendance_value_id?: number;
+}
 }

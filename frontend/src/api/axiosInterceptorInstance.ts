@@ -11,6 +11,10 @@ const axiosInterceptorInstance = axios.create({
   withCredentials: true,  // Security: Include HTTPOnly cookies in requests
 });
 
+// Token refresh queue — ensures only ONE refresh happens at a time
+let isRefreshing = false;
+let refreshPromise: Promise<void> | null = null;
+
 // Request interceptor
 axiosInterceptorInstance.interceptors.request.use(
   (config) => {
@@ -33,40 +37,71 @@ axiosInterceptorInstance.interceptors.response.use(
     if (error.response?.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true;
 
-      try {
-        console.log("Interceptor - 401 detected, attempting token refresh...");
-        
-        // Refresh token endpoint - tokens in cookies
-        const baseURL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
-        const response = await axios.post(
-          `${baseURL}/auth/refresh`,
-          {},
-          { 
-            withCredentials: true,  // Include cookies
-            headers: {
-              "Content-Type": "application/json",
-            }
-          }
-        );
-
-        console.log("Interceptor - Token refreshed successfully");
-
-        // After refresh, retry original request
-        // New access token is now in HTTPOnly cookie
-        return axiosInterceptorInstance(originalRequest);
-      } catch (refreshError) {
-        // Refresh failed - clear authentication and redirect to login
-        console.error("Interceptor - Token refresh failed:", refreshError);
-        
-        // Clear sessionStorage on refresh failure
-        sessionStorage.removeItem("user");
-        sessionStorage.removeItem("userRole");
-        
-        // Redirect to login page
-        if (typeof window !== "undefined") {
-          window.location.href = "/login";
+      // If a refresh is already in progress, wait for it instead of starting a new one
+      if (isRefreshing && refreshPromise) {
+        try {
+          await refreshPromise;
+          // After refresh completes, retry original request with fresh cookie
+          return axiosInterceptorInstance(originalRequest);
+        } catch (err) {
+          return Promise.reject(err);
         }
-        return Promise.reject(refreshError);
+      }
+
+      // Start the refresh process
+      isRefreshing = true;
+      refreshPromise = (async () => {
+        try {
+          console.log("Interceptor - 401 detected, attempting token refresh...");
+          
+          // Refresh token endpoint - tokens in cookies
+          const baseURL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+          const refreshResponse = await axios.post(
+            `${baseURL}/auth/refresh`,
+            {},
+            { 
+              withCredentials: true,  // Critical: Include/send cookies
+              headers: {
+                "Content-Type": "application/json",
+              }
+            }
+          );
+
+          console.log("Interceptor - Token refreshed successfully", {
+            statusCode: refreshResponse.status,
+            hasCookie: !!refreshResponse.headers['set-cookie']
+          });
+          
+          // Wait a tiny moment for browser to process the Set-Cookie header
+          // This ensures the new token is in the cookie jar before retry
+          await new Promise(resolve => setTimeout(resolve, 10));
+          
+        } catch (refreshError) {
+          // Refresh failed - clear authentication and redirect to login
+          console.error("Interceptor - Token refresh failed:", refreshError);
+          
+          // Clear sessionStorage on refresh failure
+          sessionStorage.removeItem("user");
+          sessionStorage.removeItem("userRole");
+          
+          // Redirect to login page
+          if (typeof window !== "undefined") {
+            window.location.href = "/login";
+          }
+          throw refreshError;
+        } finally {
+          isRefreshing = false;
+          refreshPromise = null;
+        }
+      })();
+
+      try {
+        await refreshPromise;
+        // After refresh completes and cookies are set, retry original request
+        // The browser will automatically include the new token in the cookie
+        return axiosInterceptorInstance(originalRequest);
+      } catch (err) {
+        return Promise.reject(err);
       }
     }
 

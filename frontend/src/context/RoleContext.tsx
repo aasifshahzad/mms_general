@@ -15,28 +15,69 @@ export function RoleProvider({ children }: { children: React.ReactNode }) {
   const [role, setRole] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Initialize role from sessionStorage on mount
   useEffect(() => {
-    const storedRole = sessionStorage.getItem("userRole");
-    const storedUser = sessionStorage.getItem("user");
-    console.log("RoleContext - Initializing from sessionStorage:", { storedRole, storedUser });
-    if (storedRole) {
-      console.log("RoleContext - Setting role to:", storedRole);
-      setRole(storedRole);
-    } else {
-      console.warn("RoleContext - No userRole found in sessionStorage");
+    // Guard against SSR — storage is only available in browser
+    if (typeof window === "undefined") {
+      setIsLoading(false);
+      return;
     }
+
+    // 1. Try sessionStorage first (set by setRole() calls within the same tab)
+    const storedRole = sessionStorage.getItem("userRole");
+
+    if (storedRole) {
+      setRole(storedRole);
+      setIsLoading(false);
+      return;
+    }
+
+    // 2. Fallback: extract role from the user object in localStorage.
+    //    This handles the case where the login page saves the full user object
+    //    to localStorage but doesn't separately call context.setRole().
+    const storedUser = localStorage.getItem("user");
+    if (storedUser) {
+      try {
+        const user = JSON.parse(storedUser);
+        if (user?.role) {
+          console.log("RoleContext - Recovered role from localStorage:", user.role);
+          setRole(user.role);
+          // Sync into sessionStorage so subsequent checks are fast
+          sessionStorage.setItem("userRole", user.role);
+        } else {
+          console.warn("RoleContext - user object in localStorage has no role field:", user);
+        }
+      } catch {
+        console.error("RoleContext - Failed to parse user from localStorage");
+      }
+    } else {
+      console.warn("RoleContext - No user found in localStorage or sessionStorage");
+    }
+
     setIsLoading(false);
   }, []);
 
   const setRoleAndStore = (newRole: string) => {
     setRole(newRole);
+    // Write to BOTH storages so either path works on next load
     sessionStorage.setItem("userRole", newRole);
+    // Also update the role field inside the stored user object
+    try {
+      const storedUser = localStorage.getItem("user");
+      if (storedUser) {
+        const user = JSON.parse(storedUser);
+        user.role = newRole;
+        localStorage.setItem("user", JSON.stringify(user));
+      }
+    } catch {
+      // Non-critical — sessionStorage is the primary source
+    }
   };
 
   const clearRole = () => {
     setRole(null);
     sessionStorage.removeItem("userRole");
+    localStorage.removeItem("user");
+    localStorage.removeItem("userRole");
   };
 
   return (
