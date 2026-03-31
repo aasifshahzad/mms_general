@@ -103,3 +103,55 @@ body {
     @apply bg-background text-foreground;
   }
 }
+
+/* --- Print Styles --- */
+@media print {
+  /* Hide non-printable UI elements */
+  aside,
+  header,
+  nav,
+  .no-print {
+    display: none !important;
+  }
+
+  body {
+    background: white;
+    padding: 0;
+    margin: 0;
+  }
+
+  /* Ensure print area fills the page */
+  .print-area {
+    width: 100%;
+  }
+
+  .print-area table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12px;
+  }
+
+  .print-area th,
+  .print-area td {
+    border: 1px solid #ccc;
+    padding: 6px 10px;
+    text-align: left;
+  }
+
+  .print-area th {
+    background-color: #f3f4f6;
+    font-weight: 600;
+  }
+
+  .print-title {
+    font-size: 16px;
+    font-weight: bold;
+    margin-bottom: 8px;
+  }
+
+  .print-meta {
+    font-size: 11px;
+    color: #555;
+    margin-bottom: 12px;
+  }
+}

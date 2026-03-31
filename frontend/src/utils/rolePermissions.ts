@@ -138,6 +138,11 @@ export function canAccessSubmenuItem(role: string | null, submenuPath: string): 
     return false;
   }
 
+  // Deleted Students: only ADMIN and PRINCIPAL can access
+  if (submenuPath.includes("/students/deleted")) {
+    return role === "ADMIN" || role === "PRINCIPAL";
+  }
+
   // All other cases follow the section-based access control
   return true;
 }

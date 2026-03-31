@@ -3,6 +3,8 @@ import { ExpenseCategory } from "@/models/expense/expense";
 import React, { useEffect, useState } from "react";
 import { ExpenseAPI as API } from "@/api/Expense/ExpenseAPI";
 import { useForm } from "react-hook-form";
+import { usePrint } from "@/components/print/usePrint";
+import { Printer } from "lucide-react";
 
 import {
   Table,
@@ -42,6 +44,7 @@ const ViewExpense = () => {
     register,
     formState: { errors },
   } = useForm<ExpenseFormValues>();
+  const { printRecords } = usePrint();
   const [isLoading, setIsLoading] = useState(false);
   const [expenseCategory, setExpenseCategory] = useState<ExpenseCategory[]>([]);
   const [expenseData, setExpenseData] = useState<ExpenseDataItem[]>([]);
@@ -161,30 +164,47 @@ const ViewExpense = () => {
       {/* Table to display Expense data */}
       <div className="mt-4 bg-white dark:bg-background rounded-md">
         {expenseData.length > 0 ? (
-          <Table>
-            <TableHeader className="bg-primary dark:bg-secondary hover:bg-none">
-              <TableRow>
-                <TableHead className="text-gray-100">ID</TableHead>
-                <TableHead className="text-gray-100">Date</TableHead>
-                <TableHead className="text-gray-100">Category</TableHead>
-                <TableHead className="text-gray-100">To Whom</TableHead>
-                <TableHead className="text-gray-100">Description</TableHead>
-                <TableHead className="text-gray-100">Amount</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {expenseData.map((item) => (
-                <TableRow className="h-[1rem]" key={item.id}>
-                  <TableCell>{item.id}</TableCell>
-                  <TableCell>{item.date}</TableCell>
-                  <TableCell>{item.category}</TableCell>
-                  <TableCell>{item.to_whom}</TableCell>
-                  <TableCell>{item.description}</TableCell>
-                  <TableCell>{item.amount}</TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+          <>
+            <div className="flex justify-between items-center p-4 no-print">
+              <h3 className="text-lg font-semibold">Expense Data</h3>
+              <button
+                onClick={() => {
+                  const meta = `Total records: ${expenseData.length} · Printed: ${new Date().toLocaleDateString()}`;
+                  printRecords('expense-print-area', 'Expense Report', meta);
+                }}
+                className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition"
+              >
+                <Printer size={16} />
+                Print
+              </button>
+            </div>
+            <div id="expense-print-area">
+              <Table>
+                <TableHeader className="bg-primary dark:bg-secondary hover:bg-none">
+                  <TableRow>
+                    <TableHead className="text-gray-100">ID</TableHead>
+                    <TableHead className="text-gray-100">Date</TableHead>
+                    <TableHead className="text-gray-100">Category</TableHead>
+                    <TableHead className="text-gray-100">To Whom</TableHead>
+                    <TableHead className="text-gray-100">Description</TableHead>
+                    <TableHead className="text-gray-100">Amount</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {expenseData.map((item) => (
+                    <TableRow className="h-[1rem]" key={item.id}>
+                      <TableCell>{item.id}</TableCell>
+                      <TableCell>{item.date}</TableCell>
+                      <TableCell>{item.category}</TableCell>
+                      <TableCell>{item.to_whom}</TableCell>
+                      <TableCell>{item.description}</TableCell>
+                      <TableCell>{item.amount}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          </>
         ) : (
           <p>No expense records available.</p>
         )}

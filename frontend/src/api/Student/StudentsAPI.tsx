@@ -41,14 +41,37 @@ export namespace StudentAPI {
     }
   };
 
-  export async function Delete(student_id: number) {
+  export async function Delete(student_id: number, payload?: { reason: string; deleted_by: number }) {
     try {
       const response = await AxiosInstance.delete(
-        `/students/${student_id}`
+        `/students/${student_id}`,
+        payload ? { data: payload } : undefined
       );
       return response;
     } catch (error) {
       return error;
+    }
+  }
+
+  export async function GetDeletedStudents() {
+    try {
+      const response = await AxiosInstance.get('/deleted-students/');
+      return response.data;
+    } catch (error) {
+      console.error('Error fetching deleted students:', error);
+      throw error;
+    }
+  }
+
+  export async function RestoreStudent(deletedRecordId: number) {
+    try {
+      const response = await AxiosInstance.post(
+        `/deleted-students/${deletedRecordId}/restore`
+      );
+      return response.data;
+    } catch (error) {
+      console.error('Error restoring student:', error);
+      throw error;
     }
   }
   export async function GetStudentbyFilter(class_id: number) {

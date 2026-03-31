@@ -6,9 +6,10 @@ from typing import List, Optional
 from typing import Annotated
 from user.user_models import User, UserRole
 from user.user_crud import get_current_user
+from datetime import datetime
 
 from db import get_session
-from schemas.students_model import Students, StudentsCreate, StudentsResponse, StudentsUpdate
+from schemas.students_model import Students, StudentsCreate, StudentsResponse, StudentsUpdate, DeletedStudent, SoftDeleteRequest
 from user.user_crud import require_admin_principal
 from user.user_models import User
 
@@ -69,15 +70,51 @@ def update_student(user: Annotated[User, Depends(require_admin_principal())],stu
 
 
 @students_router.delete("/{student_id}", response_model=dict)
-def delete_student(user: Annotated[User, Depends(require_admin_principal())],student_id: int, session: Annotated[Session, Depends(get_session)]):
-    db_student = session.get(Students, student_id)
+def delete_student(
+    user: Annotated[User, Depends(require_admin_principal())],
+    student_id: int,
+    payload: SoftDeleteRequest,
+    session: Annotated[Session, Depends(get_session)]
+):
+    """
+    Soft-delete a student:
+    - Copies student data + deletion metadata into deleted_students table
+    - Removes from active students table
+    """
+    # 1. Fetch active student
+    db_student = session.exec(
+        select(Students).where(Students.student_id == student_id)
+    ).first()
     if not db_student:
         raise HTTPException(status_code=404, detail="Student not found")
 
+    # 2. Archive to deleted_students
+    deleted_record = DeletedStudent(
+        original_student_id=db_student.student_id,
+        student_name=db_student.student_name,
+        student_date_of_birth=db_student.student_date_of_birth,
+        student_gender=db_student.student_gender,
+        student_age=db_student.student_age,
+        student_education=db_student.student_education,
+        class_name=db_student.class_name,
+        student_city=db_student.student_city,
+        student_address=db_student.student_address,
+        father_name=db_student.father_name,
+        father_occupation=db_student.father_occupation,
+        father_cnic=db_student.father_cnic,
+        father_cast_name=db_student.father_cast_name,
+        father_contact=db_student.father_contact,
+        reason=payload.reason,
+        deleted_by=payload.deleted_by,
+        deleted_at=datetime.utcnow(),
+    )
+    session.add(deleted_record)
+
+    # 3. Remove from active students
     session.delete(db_student)
     session.commit()
 
-    return {"message": "Student deleted successfully"}
+    return {"message": f"Student '{db_student.student_name}' soft-deleted successfully."}
 
 
 @students_router.get("/all_students/", response_model=List[StudentsResponse])

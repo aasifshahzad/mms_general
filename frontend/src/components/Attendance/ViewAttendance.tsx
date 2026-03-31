@@ -7,6 +7,7 @@ import {
   Clock,
   ChevronLeft,
   ChevronRight,
+  Printer,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -17,6 +18,7 @@ import { ClassNameAPI as API2 } from "@/api/Classname/ClassNameAPI";
 import { AttendanceTimeAPI as API13 } from "@/api/AttendaceTime/attendanceTimeAPI";
 import { TeacherNameAPI as API4 } from "@/api/Teacher/TeachetAPI";
 import { StudentAPI as API5 } from "@/api/Student/StudentsAPI";
+import { usePrint } from "@/components/print/usePrint";
 import { toast } from "sonner";
 import { ChevronsUpDown } from "lucide-react";
 import { cn } from "@/libs/utils";
@@ -109,6 +111,7 @@ const AttendanceTable: React.FC = () => {
     formState: { errors },
     handleSubmit,
   } = useForm<FilteredAttendance>();
+  const { printRecords } = usePrint();
   const [isLoading, setIsLoading] = useState(false);
   const [classTimeList, setClassTimeList] = useState<SelectComponentOption[]>(
     []
@@ -234,7 +237,7 @@ const AttendanceTable: React.FC = () => {
       id: "actions",
       header: "Actions",
       cell: ({ row }) => (
-        <div className="flex justify-center items-center gap-2">
+        <div className="no-print flex justify-center items-center gap-2">
           <EditAttendance
             attendanceId={row.original.attendance_id}
             onUpdate={handleAttendanceUpdate}
@@ -603,7 +606,22 @@ const AttendanceTable: React.FC = () => {
 
       {/* Table Section */}
       <div className="mt-4 bg-white dark:bg-background rounded-xl shadow-sm border border-gray-200 dark:border-secondary overflow-x-auto overflow-y-auto max-h-[60vh]">
-        <div className="overflow-x-auto overflow-y-auto">
+        {attendanceRecords.length > 0 && (
+          <div className="flex justify-between items-center p-4 no-print border-b border-gray-200">
+            <h3 className="text-lg font-semibold">Attendance Data</h3>
+            <button
+              onClick={() => {
+                const meta = `Total records: ${attendanceRecords.length} · Printed: ${new Date().toLocaleDateString()}`;
+                printRecords('attendance-print-area', 'Attendance Report', meta);
+              }}
+              className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition"
+            >
+              <Printer size={16} />
+              Print
+            </button>
+          </div>
+        )}
+        <div id="attendance-print-area" className="overflow-x-auto overflow-y-auto">
           <Table>
             <TableHeader>
               {table.getHeaderGroups().map((headerGroup) => (
@@ -611,7 +629,9 @@ const AttendanceTable: React.FC = () => {
                   {headerGroup.headers.map((header) => (
                     <TableHead
                       key={header.id}
-                      className="text-xs h-10 bg-primary dark:bg-secondary text-white dark:text-gray-100 px-2 whitespace-nowrap"
+                      className={`text-xs h-10 bg-primary dark:bg-secondary text-white dark:text-gray-100 px-2 whitespace-nowrap ${
+                        header.column.columnDef.id === "actions" ? "no-print" : ""
+                      }`}
                     >
                       {header.isPlaceholder
                         ? null
@@ -645,7 +665,12 @@ const AttendanceTable: React.FC = () => {
                     className="text-xs hover:bg-gray-50 dark:hover:bg-secondary"
                   >
                     {row.getVisibleCells().map((cell) => (
-                      <TableCell key={cell.id} className="px-2 py-[0.4rem] whitespace-nowrap">
+                      <TableCell 
+                        key={cell.id} 
+                        className={`px-2 py-[0.4rem] whitespace-nowrap ${
+                          cell.column.columnDef.id === "actions" ? "no-print" : ""
+                        }`}
+                      >
                         {flexRender(
                           cell.column.columnDef.cell,
                           cell.getContext()

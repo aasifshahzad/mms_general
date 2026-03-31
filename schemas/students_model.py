@@ -11,6 +11,16 @@ from datetime import datetime
 # from schemas.fee_model import Fee
 
 # ****************************************************************************************
+# Request Models
+
+
+class SoftDeleteRequest(SQLModel):
+    """Payload sent when an admin soft-deletes a student."""
+    reason: str
+    deleted_by: int  # User ID of the admin/principal performing deletion
+
+
+# ****************************************************************************************
 # Students
 
 
@@ -91,3 +101,46 @@ class StudentsUpdate(SQLModel):
     father_cnic: Optional[str] = None
     father_cast_name: Optional[str] = None
     father_contact: Optional[str] = None
+
+
+# ****************************************************************************************
+# Deleted Students (Soft Delete Audit Table)
+
+
+class DeletedStudent(SQLModel, table=True):
+    """Audit table for soft-deleted students."""
+    student_id: Optional[int] = Field(default=None, primary_key=True)
+    original_student_id: int
+    student_name: str
+    class_name: str
+    student_date_of_birth: Optional[datetime] = Field(
+        default=None, sa_column=Column(DateTime))
+    student_gender: Optional[str] = None
+    student_age: Optional[str] = None
+    student_education: Optional[str] = None
+    student_city: Optional[str] = None
+    student_address: Optional[str] = None
+    father_name: Optional[str] = None
+    father_occupation: Optional[str] = None
+    father_cnic: Optional[str] = None
+    father_cast_name: Optional[str] = None
+    father_contact: Optional[str] = None
+    reason: str
+    deleted_by: int
+    deleted_at: datetime = Field(default_factory=datetime.utcnow, sa_column=Column(DateTime))
+
+
+class DeletedStudentResponse(SQLModel):
+    """Response schema for a deleted student record."""
+    student_id: int
+    original_student_id: int
+    student_name: str
+    class_name: str
+    father_name: Optional[str] = None
+    reason: str
+    deleted_by: int
+    deleted_by_name: Optional[str] = None
+    deleted_at: datetime
+
+    class Config:
+        from_attributes = True

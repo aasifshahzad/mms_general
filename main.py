@@ -19,6 +19,7 @@ from router.attendance_time import attendance_time_router
 from router.teacher_names import teachernames_router
 from router.class_names import classnames_router
 from router.students import students_router
+from router.deleted_students import deleted_students_router
 from router.mark_attendance import mark_attendance_router
 from router.adm_del import adm_del_router
 from router.fee import fee_router
@@ -136,6 +137,7 @@ app.include_router(expense_router)
 app.include_router(fee_router)
 app.include_router(income_router)
 app.include_router(students_router)
+app.include_router(deleted_students_router)
 app.include_router(mark_attendance_router)
 app.include_router(adm_del_router)
 

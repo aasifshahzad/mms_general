@@ -43,7 +43,27 @@ type SidebarProps = {
 
 const menuList: MenuItem[] = [
   { id: 1, name: "Dashboard", icon: LayoutDashboard, path: "/dashboard" },
-  { id: 2, name: "Student", icon: GraduationCap, path: "/dashboard/students" },
+  {
+    id: 2,
+    name: "Student",
+    icon: GraduationCap,
+    path: "/dashboard/students",
+    hasSubmenu: true,
+    submenu: [
+      {
+        id: 21,
+        name: "All Students",
+        icon: GoDotFill,
+        path: "/dashboard/students",
+      },
+      {
+        id: 22,
+        name: "Deleted Students",
+        icon: GoDotFill,
+        path: "/dashboard/students/deleted",
+      },
+    ],
+  },
   {
     id: 3,
     name: "Attendance",

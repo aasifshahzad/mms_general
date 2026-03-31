@@ -162,6 +162,8 @@ import { IncomeCategory } from "@/models/income/income";
 import React, { useEffect, useState } from "react";
 import { IncomeAPI as API } from "@/api/Income/IncomeAPI";
 import { useForm } from "react-hook-form";
+import { usePrint } from "@/components/print/usePrint";
+import { Printer } from "lucide-react";
 
 import {
   Table,
@@ -199,6 +201,7 @@ const ViewIncome = () => {
     register,
     formState: { errors },
   } = useForm<IncomeFormValues>();
+  const { printRecords } = usePrint();
 
   const [isLoading, setIsLoading] = useState(false);
   const [incomeCategory, setIncomeCategory] = useState<IncomeCategory[]>([]);
@@ -292,32 +295,49 @@ const ViewIncome = () => {
 
       <div className="mt-4 container mx-auto bg-white dark:bg-background rounded-md">
         {incomeData.length > 0 ? (
-          <Table>
-            <TableHeader className="bg-primary dark:bg-secondary hover:bg-none">
-              <TableRow>
-                <TableHead className="text-gray-100">ID</TableHead>
-                <TableHead className="text-gray-100">Date</TableHead>
-                <TableHead className="text-gray-100">Category</TableHead>
-                <TableHead className="text-gray-100">Source</TableHead>
-                <TableHead className="text-gray-100">Description</TableHead>
-                <TableHead className="text-gray-100">Contact</TableHead>
-                <TableHead className="text-gray-100">Amount</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {incomeData.map((item) => (
-                <TableRow className="h-[1rem]" key={item.id}>
-                  <TableCell>{item.id}</TableCell>
-                  <TableCell>{item.date}</TableCell>
-                  <TableCell>{item.category}</TableCell>
-                  <TableCell>{item.source}</TableCell>
-                  <TableCell>{item.description}</TableCell>
-                  <TableCell>{item.contact}</TableCell>
-                  <TableCell>{item.amount}</TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+          <>
+            <div className="flex justify-between items-center p-4 no-print">
+              <h3 className="text-lg font-semibold">Income Data</h3>
+              <button
+                onClick={() => {
+                  const meta = `Total records: ${incomeData.length} · Printed: ${new Date().toLocaleDateString()}`;
+                  printRecords('income-print-area', 'Income Report', meta);
+                }}
+                className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition"
+              >
+                <Printer size={16} />
+                Print
+              </button>
+            </div>
+            <div id="income-print-area">
+              <Table>
+                <TableHeader className="bg-primary dark:bg-secondary hover:bg-none">
+                  <TableRow>
+                    <TableHead className="text-gray-100">ID</TableHead>
+                    <TableHead className="text-gray-100">Date</TableHead>
+                    <TableHead className="text-gray-100">Category</TableHead>
+                    <TableHead className="text-gray-100">Source</TableHead>
+                    <TableHead className="text-gray-100">Description</TableHead>
+                    <TableHead className="text-gray-100">Contact</TableHead>
+                    <TableHead className="text-gray-100">Amount</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {incomeData.map((item) => (
+                    <TableRow className="h-[1rem]" key={item.id}>
+                      <TableCell>{item.id}</TableCell>
+                      <TableCell>{item.date}</TableCell>
+                      <TableCell>{item.category}</TableCell>
+                      <TableCell>{item.source}</TableCell>
+                      <TableCell>{item.description}</TableCell>
+                      <TableCell>{item.contact}</TableCell>
+                      <TableCell>{item.amount}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          </>
         ) : (
           <p>No income records available.</p>
         )}

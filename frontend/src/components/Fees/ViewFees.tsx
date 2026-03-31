@@ -8,6 +8,8 @@ import { ClassNameAPI as API2 } from "@/api/Classname/ClassNameAPI";
 import { FeeAPI as API3 } from "@/api/Fees/AddFeeAPI"
 import { GetFeeModel} from "@/models/Fees/Fee";
 import { toast } from "sonner";
+import { usePrint } from "@/components/print/usePrint";
+import { Printer } from "lucide-react";
 import {
   Command,
   CommandEmpty,
@@ -62,6 +64,7 @@ const ViewFees: React.FC = () => {
     setValue: setFormValue,
     formState: { errors },
   } = useForm<GetFeeModel>();
+  const { printRecords } = usePrint();
   const [studentsList, setStudentsList] = useState<
     { id: number; title: string }[]
   >([]);
@@ -312,41 +315,56 @@ const handleGetFees = async (data: GetFeeModel) => {
         </form>
 
         {feesData.length > 0 && (
-          <div className="p-2 sm:p-4 overflow-x-auto">
-            <Table className="w-full">
-              <TableHeader>
-                <TableRow>
-                  <TableHead className="w-1/7">Student Name</TableHead>
-                  <TableHead className="w-1/7">Father Name</TableHead>
-                  <TableHead className="w-1/7">Class</TableHead>
-                  <TableHead className="w-1/7">Amount</TableHead>
-                  <TableHead className="w-1/7">Month</TableHead>
-                  <TableHead className="w-1/7">Year</TableHead>
-                  <TableHead className="w-1/7">Status</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {feesData.map((fee) => (
-                  <TableRow key={fee.fee_id}>
-                    <TableCell>{fee.student_name}</TableCell>
-                    <TableCell>{fee.father_name}</TableCell>
-                    <TableCell>{fee.class_name}</TableCell>
-                    <TableCell>{fee.fee_amount}</TableCell>
-                    <TableCell>{fee.fee_month}</TableCell>
-                    <TableCell>{fee.fee_year}</TableCell>
-                    <TableCell>
-                      <span className={`px-2 py-1 rounded-full text-xs ${
-                        fee.fee_status === "Paid" 
-                          ? "bg-green-100 text-green-800" 
-                          : "bg-red-100 text-red-800"
-                      }`}>
-                        {fee.fee_status}
-                      </span>
-                    </TableCell>
+          <div className="p-2 sm:p-4">
+            <div className="flex justify-between items-center mb-4 no-print">
+              <h3 className="text-lg font-semibold">Fees Data</h3>
+              <button
+                onClick={() => {
+                  const meta = `Total records: ${feesData.length} · Printed: ${new Date().toLocaleDateString()}`;
+                  printRecords('fees-print-area', 'Fees Report', meta);
+                }}
+                className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition"
+              >
+                <Printer size={16} />
+                Print
+              </button>
+            </div>
+            <div id="fees-print-area" className="overflow-x-auto">
+              <Table className="w-full">
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="w-1/7">Student Name</TableHead>
+                    <TableHead className="w-1/7">Father Name</TableHead>
+                    <TableHead className="w-1/7">Class</TableHead>
+                    <TableHead className="w-1/7">Amount</TableHead>
+                    <TableHead className="w-1/7">Month</TableHead>
+                    <TableHead className="w-1/7">Year</TableHead>
+                    <TableHead className="w-1/7">Status</TableHead>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+                </TableHeader>
+                <TableBody>
+                  {feesData.map((fee) => (
+                    <TableRow key={fee.fee_id}>
+                      <TableCell>{fee.student_name}</TableCell>
+                      <TableCell>{fee.father_name}</TableCell>
+                      <TableCell>{fee.class_name}</TableCell>
+                      <TableCell>{fee.fee_amount}</TableCell>
+                      <TableCell>{fee.fee_month}</TableCell>
+                      <TableCell>{fee.fee_year}</TableCell>
+                      <TableCell>
+                        <span className={`px-2 py-1 rounded-full text-xs ${
+                          fee.fee_status === "Paid" 
+                            ? "bg-green-100 text-green-800" 
+                            : "bg-red-100 text-red-800"
+                        }`}>
+                          {fee.fee_status}
+                        </span>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
           </div>
         )}
       </div>

@@ -9,8 +9,9 @@ import {
   getPaginationRowModel,
   getFilteredRowModel,
 } from "@tanstack/react-table";
-import { Search, LoaderIcon, Eye, Trash2 } from "lucide-react";
+import { Search, LoaderIcon, Eye, Trash2, Printer } from "lucide-react";
 import { StudentAPI as API } from "@/api/Student/StudentsAPI";
+import { usePrint } from "@/components/print/usePrint";
 export { format } from "date-fns";
 
 import {
@@ -26,7 +27,7 @@ import { Button } from "@/components/ui/button";
 import { StudentModel } from "@/models/students/Student";
 import { useEffect, useState } from "react";
 import AddNewStudent from "./CreateStudent";
-import DelConfirmMsg from "../DelConfMsg";
+import DeleteStudentModal from "./DeleteStudentModal";
 import { toast } from "sonner";
 import Card  from "@/components/ui/card";
 import {Pagination} from "@/components/ui/pagination";
@@ -37,42 +38,53 @@ import {
   DialogTitle,
   DialogClose,
 } from "@/components/ui/dialog";
+import { useRole } from "@/context/RoleContext";
 
 export default function ModernStudentTable() {
   const [globalFilter, setGlobalFilter] = useState("");
   const [data, setData] = useState<StudentModel[]>([]);
+  const { printRecords } = usePrint();
   const [loading, setLoading] = useState(true);
   const [selectedStudent, setSelectedStudent] = useState<StudentModel | null>(null);
   const [showDetailsDialog, setShowDetailsDialog] = useState(false);
+  const [modalStudent, setModalStudent] = useState<{ id: number; name: string } | null>(null);
+  const { role } = useRole();
+  const [currentUserId, setCurrentUserId] = useState<number | null>(null);
+
+  // Get current user ID from localStorage
+  useEffect(() => {
+    const user = JSON.parse(localStorage.getItem('user') || '{}');
+    setCurrentUserId(user?.id || null);
+  }, []);
 
   // Define formDeleteHandler first
-  const formDeleteHandler = async (confirmed: boolean, data: StudentModel & { index?: number }) => {
-    const {...newData } = data;
+  const formDeleteHandler = async (reason: string) => {
+    if (!modalStudent || !currentUserId) return;
+    
     try {
-      if (confirmed) {
-        const studentId = Number(newData.student_id);
-        if (isNaN(studentId)) {
-          toast.error("Invalid Student ID", {
+      const payload = {
+        reason,
+        deleted_by: currentUserId
+      };
+      const response = await API.Delete(modalStudent.id, payload);
+      if (response && typeof response === 'object' && 'status' in response) {
+        if (response.status === 200) {
+          toast.success("Record deleted successfully", {
             position: "bottom-center",
           });
-          return;
-        }
-        const response = await API.Delete(studentId);
-        if (response && typeof response === 'object' && 'status' in response) {
-          if (response.status === 200) {
-            toast.success("Record deleted successfully", {
-              position: "bottom-center",
-            });
-            GetData(); // Refresh data after delete
-          } else {
-            toast.error("An error occurred", {
-              position: "bottom-center",
-            });
-          }
+          GetData(); // Refresh data after delete
+          setModalStudent(null);
+        } else {
+          toast.error("An error occurred", {
+            position: "bottom-center",
+          });
         }
       }
     } catch (error) {
       console.log("Error on Delete", error);
+      toast.error("Failed to delete student", {
+        position: "bottom-center",
+      });
     }
   };
 
@@ -115,8 +127,11 @@ export default function ModernStudentTable() {
       accessorKey: "Action",
       header: "Action",
       cell: ({ row }) => {
+        // Only ADMIN and PRINCIPAL can delete students
+        const canDelete = role === "ADMIN" || role === "PRINCIPAL";
+        
         return (
-          <div className="flex gap-2 items-center">
+          <div className="flex gap-2 items-center no-print">
             <Button
               variant="outline"
               size="sm"
@@ -129,10 +144,17 @@ export default function ModernStudentTable() {
               <Eye className="w-4 h-4" />
               <span className="hidden sm:inline">View</span>
             </Button>
-            <DelConfirmMsg
-              rowId={row.getValue("student_id")}
-              OnDelete={(confirmed) => formDeleteHandler(confirmed, row.original)}
-            />
+            {canDelete && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setModalStudent({ id: row.original.student_id, name: row.original.student_name })}
+                className="flex items-center gap-1 text-red-600 hover:text-red-700"
+              >
+                <Trash2 className="w-4 h-4" />
+                <span className="hidden sm:inline">Delete</span>
+              </Button>
+            )}
           </div>
         );
       }
@@ -173,28 +195,45 @@ export default function ModernStudentTable() {
     <Card className="mt-2 p-3 sm:p-6 w-full bg-white dark:bg-background rounded-lg shadow-lg">
       <AddNewStudent onClassAdded={GetData} />
       <div className="flex flex-col gap-4 mb-6">
-        <div className="relative w-full">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4 sm:h-5 sm:w-5" />
-          <Input
-            placeholder="Search Students..."
-            value={globalFilter ?? ""}
-            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setGlobalFilter(e.target.value)}
-            className="pl-10 pr-4 py-2 w-full rounded-lg border-gray-300 focus:border-blue-500 focus:ring focus:ring-blue-200 transition-all duration-300"
-          />
+        <div className="flex gap-2 items-center">
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4 sm:h-5 sm:w-5" />
+            <Input
+              placeholder="Search Students..."
+              value={globalFilter ?? ""}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setGlobalFilter(e.target.value)}
+              className="pl-10 pr-4 py-2 w-full rounded-lg border-gray-300 focus:border-blue-500 focus:ring focus:ring-blue-200 transition-all duration-300"
+            />
+          </div>
+          {data.length > 0 && (
+            <button
+              onClick={() => {
+                const meta = `Total records: ${data.length} · Printed: ${new Date().toLocaleDateString()}`;
+                printRecords('student-print-area', 'Student Report', meta);
+              }}
+              className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition whitespace-nowrap"
+            >
+              <Printer size={16} />
+              Print
+            </button>
+          )}
         </div>
       </div>
 
       {/* Mobile: Card View, Desktop: Table View */}
       {/* Table rendering - Hidden on mobile, visible on sm and up */}
       <div className="hidden sm:block w-full rounded-md border border-gray-200 transition-shadow duration-300 hover:shadow-md overflow-x-auto">
-        <Table className="w-full whitespace-nowrap scroll-smooth">
+        <div id="student-print-area">
+          <Table className="w-full whitespace-nowrap scroll-smooth">
           <TableHeader className="bg-primary hover:bg-none text-white sticky top-0 z-10">
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow key={headerGroup.id}>
                 {headerGroup.headers.map((header) => (
                   <TableHead
                     key={header.id}
-                    className="font-bold text-white px-2 sm:px-3 md:px-4 py-2 sm:py-3 text-xs sm:text-sm"
+                    className={`font-bold text-white px-2 sm:px-3 md:px-4 py-2 sm:py-3 text-xs sm:text-sm ${
+                      header.column.columnDef.id === "Action" ? "no-print" : ""
+                    }`}
                   >
                     {header.isPlaceholder
                       ? null
@@ -221,7 +260,12 @@ export default function ModernStudentTable() {
               table.getRowModel().rows.map((row) => (
                 <TableRow key={row.id} className="hover:bg-slate-50 dark:hover:bg-slate-900">
                   {row.getVisibleCells().map((cell) => (
-                    <TableCell key={cell.id} className="py-2 px-2 sm:px-3 md:px-4 text-xs sm:text-sm">
+                    <TableCell 
+                      key={cell.id} 
+                      className={`py-2 px-2 sm:px-3 md:px-4 text-xs sm:text-sm ${
+                        cell.column.columnDef.id === "Action" ? "no-print" : ""
+                      }`}
+                    >
                       {flexRender(cell.column.columnDef.cell, cell.getContext())}
                     </TableCell>
                   ))}
@@ -236,6 +280,7 @@ export default function ModernStudentTable() {
             )}
           </TableBody>
         </Table>
+        </div>
       </div>
 
       {/* Mobile Card View - visible only on small screens */}
@@ -269,10 +314,16 @@ export default function ModernStudentTable() {
                   >
                     <Eye className="w-4 h-4" />
                   </Button>
-                  <DelConfirmMsg
-                    rowId={row.original.student_id}
-                    OnDelete={(confirmed) => formDeleteHandler(confirmed, row.original)}
-                  />
+                  {(role === "ADMIN" || role === "PRINCIPAL") && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setModalStudent({ id: row.original.student_id, name: row.original.student_name })}
+                      className="flex items-center gap-1 text-red-600 hover:text-red-700"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </Button>
+                  )}
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-2 text-xs">
@@ -427,6 +478,16 @@ export default function ModernStudentTable() {
           )}
         </DialogContent>
       </Dialog>
+
+      {/* Delete Student Modal */}
+      {modalStudent && (
+        <DeleteStudentModal
+          studentId={modalStudent.id}
+          studentName={modalStudent.name}
+          onConfirm={formDeleteHandler}
+          onClose={() => setModalStudent(null)}
+        />
+      )}
     </Card>
   );
 }
