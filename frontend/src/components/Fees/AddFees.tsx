@@ -1,17 +1,17 @@
-"use client";
+'use client';
 
-import React, { useState, useEffect, useCallback } from "react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Select } from "@/components/Select";
-import { useForm } from "react-hook-form";
-import { ClassNameAPI } from "@/api/Classname/ClassNameAPI";
-import { StudentAPI } from "@/api/Student/StudentsAPI";
-import { FeeAPI } from "@/api/Fees/AddFeeAPI";
-import { toast } from "sonner";
-import { ChevronsUpDown, Check, Loader2, Save } from "lucide-react";
-import { cn } from "@/libs/utils";
-import { AddFeeModel } from "@/models/Fees/Fee";
+import React, { useState, useEffect, useCallback } from 'react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Select } from '@/components/Select';
+import { useForm } from 'react-hook-form';
+import { ClassNameAPI } from '@/api/Classname/ClassNameAPI';
+import { StudentAPI } from '@/api/Student/StudentsAPI';
+import { FeeAPI } from '@/api/Fees/AddFeeAPI';
+import { toast } from 'sonner';
+import { ChevronsUpDown, Check, Loader2, Save } from 'lucide-react';
+import { cn } from '@/libs/utils';
+import { AddFeeModel } from '@/models/Fees/Fee';
 import {
   Command,
   CommandEmpty,
@@ -19,12 +19,12 @@ import {
   CommandInput,
   CommandItem,
   CommandList,
-} from "@/components/ui/command";
+} from '@/components/ui/command';
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "@/components/ui/popover";
+} from '@/components/ui/popover';
 
 interface ClassNameResponse {
   class_name_id: number;
@@ -38,7 +38,7 @@ interface StudentResponse {
 }
 
 const inputCls =
-  "h-10 w-full border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 rounded-xl px-3 text-sm text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-300 focus:border-indigo-400 hover:border-slate-300 dark:hover:border-slate-600 transition-colors";
+  'h-10 w-full border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 rounded-xl px-3 text-sm text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-300 focus:border-indigo-400 hover:border-slate-300 dark:hover:border-slate-600 transition-colors';
 
 const FieldLabel = ({ children }: { children: React.ReactNode }) => (
   <label className="text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wide mb-1.5 block">
@@ -61,13 +61,13 @@ const AddFees = () => {
   const [studentsList, setStudentsList] = useState<{ id: number; title: string }[]>([]);
   const [filteredStudentsList, setFilteredStudentsList] = useState<{ id: number; title: string }[]>([]);
   const [open, setOpen] = useState(false);
-  const [selectedStudent, setSelectedStudent] = useState("");
-  const selectedClassId = watch("class_id");
+  const [selectedStudent, setSelectedStudent] = useState('');
+  const selectedClassId = watch('class_id');
 
   useEffect(() => {
     GetClassName();
     GetStudents();
-    setFormValue("fee_year", new Date().getFullYear().toString());
+    setFormValue('fee_year', new Date().getFullYear());
   }, [setFormValue]);
 
   const filterStudentsByClass = useCallback(
@@ -98,7 +98,7 @@ const AddFees = () => {
           }
         }
       } catch (error) {
-        console.error("Error fetching students by class:", error);
+        console.error('Error fetching students by class:', error);
         const selectedClass = classNameList.find((cls) => cls.id === classId);
         if (selectedClass && studentsList.length > 0) {
           const allStudentsResponse = (await StudentAPI.Get()) as { data: StudentResponse[] };
@@ -125,8 +125,8 @@ const AddFees = () => {
     } else {
       setFilteredStudentsList(studentsList);
     }
-    setSelectedStudent("");
-    setFormValue("student_id", 0);
+    setSelectedStudent('');
+    setFormValue('student_id', 0);
   }, [selectedClassId, studentsList, filterStudentsByClass, setFormValue]);
 
   const GetStudents = async () => {
@@ -140,7 +140,7 @@ const AddFees = () => {
       setStudentsList(list);
       setFilteredStudentsList(list);
     } catch (error) {
-      console.error("Error fetching students:", error);
+      console.error('Error fetching students:', error);
     } finally {
       setIsLoading(false);
     }
@@ -159,7 +159,7 @@ const AddFees = () => {
         );
       }
     } catch (error) {
-      console.error("Error fetching class names:", error);
+      console.error('Error fetching class names:', error);
     }
     setIsLoading(false);
   };
@@ -168,12 +168,12 @@ const AddFees = () => {
     try {
       setIsLoading(true);
       await FeeAPI.Create(formData);
-      toast.success("Fee record added successfully", { position: "bottom-center" });
+      toast.success('Fee record added successfully', { position: 'bottom-center' });
       reset();
-      setSelectedStudent("");
+      setSelectedStudent('');
     } catch (error) {
-      console.error("Error adding fee record:", error);
-      toast.error("Failed to add fee record", { position: "bottom-center" });
+      console.error('Error adding fee record:', error);
+      toast.error('Failed to add fee record', { position: 'bottom-center' });
     } finally {
       setIsLoading(false);
     }
@@ -198,9 +198,9 @@ const AddFees = () => {
                 <div className="h-10 text-slate-800 dark:text-slate-100">
                   <Select
                     options={classNameList}
-                    {...register("class_id", {
+                    {...register('class_id', {
                       valueAsNumber: true,
-                      required: "Required",
+                      required: 'Required',
                     })}
                     DisplayItem="title"
                     className={`${inputCls} py-0 m-0`}
@@ -218,12 +218,12 @@ const AddFees = () => {
                       variant="outline"
                       role="combobox"
                       aria-expanded={open}
-                      className={`${inputCls} justify-between font-normal hover:bg-transparent ${!selectedClassId && "opacity-50"}`}
+                      className={`${inputCls} justify-between font-normal hover:bg-transparent ${!selectedClassId && 'opacity-50'}`}
                       disabled={!selectedClassId}
                     >
                       {selectedStudent
                         ? filteredStudentsList.find((student) => student.id.toString() === selectedStudent)?.title
-                        : selectedClassId ? "Select student..." : "Select class first"}
+                        : selectedClassId ? 'Select student...' : 'Select class first'}
                       <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                     </Button>
                   </PopoverTrigger>
@@ -244,13 +244,13 @@ const AddFees = () => {
                                   key={student.id}
                                   value={student.id.toString()}
                                   onSelect={(currentValue: string) => {
-                                    setSelectedStudent(currentValue === selectedStudent ? "" : currentValue);
+                                    setSelectedStudent(currentValue === selectedStudent ? '' : currentValue);
                                     setOpen(false);
-                                    setFormValue("student_id", Number(currentValue));
+                                    setFormValue('student_id', Number(currentValue));
                                   }}
                                 >
                                   {student.title}
-                                  <Check className={cn("ml-auto h-4 w-4", selectedStudent === student.id.toString() ? "opacity-100" : "opacity-0")} />
+                                  <Check className={cn('ml-auto h-4 w-4', selectedStudent === student.id.toString() ? 'opacity-100' : 'opacity-0')} />
                                 </CommandItem>
                               ))}
                             </CommandGroup>
@@ -269,10 +269,10 @@ const AddFees = () => {
                 <Input
                   type="number"
                   className={inputCls}
-                  {...register("fee_amount", {
+                  {...register('fee_amount', {
                     valueAsNumber: true,
-                    required: "Required",
-                    min: { value: 0, message: "Min: 0" },
+                    required: 'Required',
+                    min: { value: 0, message: 'Min: 0' },
                   })}
                   placeholder="e.g. 5000"
                 />
@@ -286,14 +286,14 @@ const AddFees = () => {
                   <Select
                     label=""
                     options={[
-                      { id: "January", title: "January" }, { id: "February", title: "February" },
-                      { id: "March", title: "March" }, { id: "April", title: "April" },
-                      { id: "May", title: "May" }, { id: "June", title: "June" },
-                      { id: "July", title: "July" }, { id: "August", title: "August" },
-                      { id: "September", title: "September" }, { id: "October", title: "October" },
-                      { id: "November", title: "November" }, { id: "December", title: "December" },
+                      { id: 'January', title: 'January' }, { id: 'February', title: 'February' },
+                      { id: 'March', title: 'March' }, { id: 'April', title: 'April' },
+                      { id: 'May', title: 'May' }, { id: 'June', title: 'June' },
+                      { id: 'July', title: 'July' }, { id: 'August', title: 'August' },
+                      { id: 'September', title: 'September' }, { id: 'October', title: 'October' },
+                      { id: 'November', title: 'November' }, { id: 'December', title: 'December' },
                     ]}
-                    {...register("fee_month")}
+                    {...register('fee_month')}
                     className={`${inputCls} py-0 m-0`}
                   />
                 </div>
@@ -305,10 +305,10 @@ const AddFees = () => {
                 <Input
                   type="number"
                   className={inputCls}
-                  {...register("fee_year", {
-                    required: "Required",
-                    min: { value: 2000, message: "After 2000" },
-                    setValueAs: (v) => v === undefined || v === null ? "" : String(v),
+                  {...register('fee_year', {
+                    required: 'Required',
+                    min: { value: 2000, message: 'After 2000' },
+                    setValueAs: (v) => v === undefined || v === null ? '' : String(v),
                   })}
                   placeholder="e.g. 2024"
                 />

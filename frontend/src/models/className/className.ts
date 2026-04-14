@@ -1,4 +1,4 @@
-import { EntityBase } from "../EntityBase";
+import { EntityBase } from '../EntityBase';
 
 export interface ClassNameModel extends EntityBase{
     class_name_id: number;

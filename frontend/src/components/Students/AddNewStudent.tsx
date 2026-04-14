@@ -1,19 +1,19 @@
-"use client";
-import React, { useEffect, useState } from "react";
-import { Button } from "../ui/button";
+'use client';
+import React, { useEffect, useState } from 'react';
+import { Button } from '../ui/button';
 import {
   Dialog,
   DialogContent,
   DialogDescription,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog";
-import { Input } from "../ui/input";
-import { useForm } from "react-hook-form";
-import { toast } from "sonner";
-import { LoaderIcon } from "lucide-react";
-import { Select } from "../Select";
-import { ClassNameAPI as API } from "@/api/Classname/ClassNameAPI";
+} from '@/components/ui/dialog';
+import { Input } from '../ui/input';
+import { useForm } from 'react-hook-form';
+import { toast } from 'sonner';
+import { LoaderIcon } from 'lucide-react';
+import { Select } from '../Select';
+import { ClassNameAPI as API } from '@/api/Classname/ClassNameAPI';
 
 interface Inputs {
   Sname: string;
@@ -55,10 +55,10 @@ const AddNewStudent = () => {
       setLoading(false);
       setOpen(false);
       reset();
-      toast("Student Added Successfully!");
+      toast('Student Added Successfully!');
     }
     setLoading(false);
-    console.log("form Data", data);
+    console.log('form Data', data);
   };
 
   const GetClassName = async () => {
@@ -73,7 +73,7 @@ const AddNewStudent = () => {
         );
       }
     } catch (error) {
-      console.error("Error fetching class names:", error);
+      console.error('Error fetching class names:', error);
     }
   };
 
@@ -115,9 +115,9 @@ const AddNewStudent = () => {
                     <Input
                       className="border-gray-300 focus:border-blue-500 focus:ring-blue-500"
                       placeholder="Enter Full Name"
-                      {...register("Sname", { required: "Field is required" })} // Student name field
+                      {...register('Sname', { required: 'Field is required' })} // Student name field
                     />
-                    <p className="text-red-500">{errors.Sname?.message}</p>{" "}
+                    <p className="text-red-500">{errors.Sname?.message}</p>{' '}
                     {/* Error message for student name */}
                   </div>
 
@@ -128,9 +128,9 @@ const AddNewStudent = () => {
                     <Input
                       className="border-gray-300 focus:border-blue-500 focus:ring-blue-500"
                       placeholder="Enter Father Name"
-                      {...register("fname", { required: "Field is required" })} // Father name field
+                      {...register('fname', { required: 'Field is required' })} // Father name field
                     />
-                    <p className="text-red-500">{errors.fname?.message}</p>{" "}
+                    <p className="text-red-500">{errors.fname?.message}</p>{' '}
                     {/* Error message for father name */}
                   </div>
                 </div>
@@ -145,9 +145,9 @@ const AddNewStudent = () => {
                       type="number"
                       className="border-gray-300 focus:border-blue-500 focus:ring-blue-500"
                       placeholder="Enter Age"
-                      {...register("age", { required: "Field is required" })} // Age field
+                      {...register('age', { required: 'Field is required' })} // Age field
                     />
-                    <p className="text-red-500">{errors.age?.message}</p>{" "}
+                    <p className="text-red-500">{errors.age?.message}</p>{' '}
                     {/* Error message for age */}
                   </div>
 
@@ -158,9 +158,9 @@ const AddNewStudent = () => {
                     <Input
                       type="date"
                       className="border-gray-300 focus:border-blue-500 focus:ring-blue-500"
-                      {...register("DOB", { required: "Field is required" })} // Date of Birth field
+                      {...register('DOB', { required: 'Field is required' })} // Date of Birth field
                     />
-                    <p className="text-red-500">{errors.DOB?.message}</p>{" "}
+                    <p className="text-red-500">{errors.DOB?.message}</p>{' '}
                     {/* Error message for Date of Birth */}
                   </div>
                 </div>
@@ -174,9 +174,9 @@ const AddNewStudent = () => {
                     <Input
                       className="border-gray-300 focus:border-blue-500 focus:ring-blue-500"
                       placeholder="Enter Cast"
-                      {...register("cast", { required: "Field is required" })} // Cast field
+                      {...register('cast', { required: 'Field is required' })} // Cast field
                     />
-                    <p className="text-red-500">{errors.cast?.message}</p>{" "}
+                    <p className="text-red-500">{errors.cast?.message}</p>{' '}
                     {/* Error message for cast */}
                   </div>
 
@@ -187,9 +187,9 @@ const AddNewStudent = () => {
                     <Input
                       className="border-gray-300 focus:border-blue-500 focus:ring-blue-500"
                       placeholder="Enter City"
-                      {...register("city", { required: "Field is required" })} // City field
+                      {...register('city', { required: 'Field is required' })} // City field
                     />
-                    <p className="text-red-500">{errors.city?.message}</p>{" "}
+                    <p className="text-red-500">{errors.city?.message}</p>{' '}
                     {/* Error message for city */}
                   </div>
                 </div>
@@ -203,9 +203,9 @@ const AddNewStudent = () => {
                     <Input
                       className="border-gray-300 focus:border-blue-500 focus:ring-blue-500"
                       placeholder="Enter Gender"
-                      {...register("gender", { required: "Field is required" })} // Gender field
+                      {...register('gender', { required: 'Field is required' })} // Gender field
                     />
-                    <p className="text-red-500">{errors.gender?.message}</p>{" "}
+                    <p className="text-red-500">{errors.gender?.message}</p>{' '}
                     {/* Error message for gender */}
                   </div>
 
@@ -216,11 +216,11 @@ const AddNewStudent = () => {
                     <Input
                       className="border-gray-300 focus:border-blue-500 focus:ring-blue-500"
                       placeholder="Enter Education"
-                      {...register("education", {
-                        required: "Field is required",
+                      {...register('education', {
+                        required: 'Field is required',
                       })} // Education field
                     />
-                    <p className="text-red-500">{errors.education?.message}</p>{" "}
+                    <p className="text-red-500">{errors.education?.message}</p>{' '}
                     {/* Error message for education */}
                   </div>
                 </div>
@@ -234,13 +234,13 @@ const AddNewStudent = () => {
                     <Input
                       className="border-gray-300 focus:border-blue-500 focus:ring-blue-500"
                       placeholder="Enter Father Occupation"
-                      {...register("fatherOccupation", {
-                        required: "Field is required",
+                      {...register('fatherOccupation', {
+                        required: 'Field is required',
                       })} // Father's occupation field
                     />
                     <p className="text-red-500">
                       {errors.fatherOccupation?.message}
-                    </p>{" "}
+                    </p>{' '}
                     {/* Error message for father's occupation */}
                   </div>
 
@@ -252,13 +252,13 @@ const AddNewStudent = () => {
                       type="number"
                       className="border-gray-300 focus:border-blue-500 focus:ring-blue-500"
                       placeholder="Enter Father Contact"
-                      {...register("fatherContact", {
-                        required: "Field is required",
+                      {...register('fatherContact', {
+                        required: 'Field is required',
                       })} // Father's contact field
                     />
                     <p className="text-red-500">
                       {errors.fatherContact?.message}
-                    </p>{" "}
+                    </p>{' '}
                     {/* Error message for father's contact */}
                   </div>
                 </div>
@@ -269,8 +269,8 @@ const AddNewStudent = () => {
                     <Select
                       label="Class Name"
                       options={classNameList}
-                      {...register("class", {
-                        required: "Field is required",
+                      {...register('class', {
+                        required: 'Field is required',
                       })}
                       DisplayItem="title" // Matches the title key from options
                       className="w-full"
@@ -287,11 +287,11 @@ const AddNewStudent = () => {
                     <Input
                       className="border-gray-300 focus:border-blue-500 focus:ring-blue-500"
                       placeholder="Enter Address"
-                      {...register("address", {
-                        required: "Field is required",
+                      {...register('address', {
+                        required: 'Field is required',
                       })} // Address field
                     />
-                    <p className="text-red-500">{errors.address?.message}</p>{" "}
+                    <p className="text-red-500">{errors.address?.message}</p>{' '}
                     {/* Error message for address */}
                   </div>
                 </div>
@@ -311,7 +311,7 @@ const AddNewStudent = () => {
                     disabled={loading}
                     className="bg-primary dark:bg-transparent dark:border dark:border-white text-white hover:bg-blue-600 dark:hover:bg-zinc-900"
                   >
-                    {loading ? <LoaderIcon className="animate-spin" /> : "Save"}
+                    {loading ? <LoaderIcon className="animate-spin" /> : 'Save'}
                   </Button>
                 </div>
               </form>

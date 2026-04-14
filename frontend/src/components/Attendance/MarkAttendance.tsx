@@ -1,21 +1,21 @@
-"use client";
-import { AxiosResponse } from "axios";
-import { MarkAttInput } from "@/models/markattendace/markattendance";
-import React, { useEffect, useState } from "react";
-import { useForm } from "react-hook-form";
-import { ClassNameAPI as API } from "@/api/Classname/ClassNameAPI";
-import { AttendanceTimeAPI as API1 } from "@/api/AttendaceTime/attendanceTimeAPI";
-import { TeacherNameAPI as API2 } from "@/api/Teacher/TeachetAPI";
-import { StudentAPI as API3 } from "@/api/Student/StudentsAPI";
-import { Select, SelectOption as SelectComponentOption } from "../Select";
-import { Checkbox } from "@/components/ui/checkbox";
-import { AttendanceAPI } from "@/api/Attendance/AttendanceAPI";
-import { toast } from "sonner";
-import { Loader2, Users, CalendarCheck, RefreshCw, CheckCircle2, XCircle, Clock, LogOut } from "lucide-react";
+'use client';
+import { AxiosResponse } from 'axios';
+import { MarkAttInput } from '@/models/markattendace/markattendance';
+import React, { useEffect, useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { ClassNameAPI as API } from '@/api/Classname/ClassNameAPI';
+import { AttendanceTimeAPI as API1 } from '@/api/AttendaceTime/attendanceTimeAPI';
+import { TeacherNameAPI as API2 } from '@/api/Teacher/TeachetAPI';
+import { StudentAPI as API3 } from '@/api/Student/StudentsAPI';
+import { Select, SelectOption as SelectComponentOption } from '../Select';
+import { Checkbox } from '@/components/ui/checkbox';
+import { AttendanceAPI } from '@/api/Attendance/AttendanceAPI';
+import { toast } from 'sonner';
+import { Loader2, Users, CalendarCheck, RefreshCw, CheckCircle2, XCircle, Clock, LogOut } from 'lucide-react';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
-type AttendanceStatus = "present" | "absent" | "late" | "leave" | "";
+type AttendanceStatus = 'present' | 'absent' | 'late' | 'leave' | '';
 
 type AttendanceRow = {
   id: number;
@@ -37,19 +37,19 @@ interface BulkAttendanceResponse {
 // ─── Status config ────────────────────────────────────────────────────────────
 
 const STATUS_CONFIG: Record<
-  "present" | "absent" | "late" | "leave",
+  'present' | 'absent' | 'late' | 'leave',
   { label: string; icon: React.ReactNode; ring: string; bg: string; text: string; value: string }
 > = {
-  present: { label: "Present", icon: <CheckCircle2 className="w-3.5 h-3.5" />, ring: "ring-emerald-400", bg: "bg-emerald-50 dark:bg-emerald-900/30", text: "text-emerald-700 dark:text-emerald-400", value: "1" },
-  absent:  { label: "Absent",  icon: <XCircle       className="w-3.5 h-3.5" />, ring: "ring-rose-400",    bg: "bg-rose-50 dark:bg-rose-900/30",       text: "text-rose-700 dark:text-rose-400",       value: "2" },
-  late:    { label: "Late",    icon: <Clock         className="w-3.5 h-3.5" />, ring: "ring-amber-400",   bg: "bg-amber-50 dark:bg-amber-900/30",     text: "text-amber-700 dark:text-amber-400",     value: "3" },
-  leave:   { label: "Leave",   icon: <LogOut        className="w-3.5 h-3.5" />, ring: "ring-blue-400",    bg: "bg-blue-50 dark:bg-blue-900/30",        text: "text-blue-700 dark:text-blue-400",       value: "4" },
+  present: { label: 'Present', icon: <CheckCircle2 className="w-3.5 h-3.5" />, ring: 'ring-emerald-400', bg: 'bg-emerald-50 dark:bg-emerald-900/30', text: 'text-emerald-700 dark:text-emerald-400', value: '1' },
+  absent:  { label: 'Absent',  icon: <XCircle       className="w-3.5 h-3.5" />, ring: 'ring-rose-400',    bg: 'bg-rose-50 dark:bg-rose-900/30',       text: 'text-rose-700 dark:text-rose-400',       value: '2' },
+  late:    { label: 'Late',    icon: <Clock         className="w-3.5 h-3.5" />, ring: 'ring-amber-400',   bg: 'bg-amber-50 dark:bg-amber-900/30',     text: 'text-amber-700 dark:text-amber-400',     value: '3' },
+  leave:   { label: 'Leave',   icon: <LogOut        className="w-3.5 h-3.5" />, ring: 'ring-blue-400',    bg: 'bg-blue-50 dark:bg-blue-900/30',        text: 'text-blue-700 dark:text-blue-400',       value: '4' },
 };
 
 // ─── Shared input styles ──────────────────────────────────────────────────────
 
 const selectCls =
-  "h-10 w-full border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 rounded-xl px-3 text-sm text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-300 focus:border-indigo-400 hover:border-slate-300 dark:hover:border-slate-600 transition-colors";
+  'h-10 w-full border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 rounded-xl px-3 text-sm text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-300 focus:border-indigo-400 hover:border-slate-300 dark:hover:border-slate-600 transition-colors';
 
 const FieldLabel = ({ children }: { children: React.ReactNode }) => (
   <p className="text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wide mb-1.5">
@@ -67,7 +67,7 @@ const MarkAttendance = () => {
   const [isLoading, setIsLoading]     = useState(false);
   const [isFetching, setIsFetching]   = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [markAll, setMarkAll] = useState<AttendanceStatus>("");
+  const [markAll, setMarkAll] = useState<AttendanceStatus>('');
 
   const { register, handleSubmit, formState: { errors } } = useForm<MarkAttInput>();
 
@@ -104,22 +104,22 @@ const MarkAttendance = () => {
     try {
       const response = (await API3.GetStudentbyFilter(formData.class_name_id)) as { data: StudentResponse[] };
       if (response.data) {
-        setRows(response.data.map(s => ({ id: s.student_id, name: s.student_name, status: "" })));
+        setRows(response.data.map(s => ({ id: s.student_id, name: s.student_name, status: '' })));
       }
     } catch (e) {
       console.error(e);
-      toast.error("Failed to load students");
+      toast.error('Failed to load students');
     } finally {
       setIsFetching(false);
     }
   };
 
   const setStudentStatus = (idx: number, status: AttendanceStatus) => {
-    setRows(prev => prev.map((r, i) => i === idx ? { ...r, status: r.status === status ? "" : status } : r));
+    setRows(prev => prev.map((r, i) => i === idx ? { ...r, status: r.status === status ? '' : status } : r));
   };
 
   const handleMarkAll = (status: AttendanceStatus) => {
-    const newStatus = markAll === status ? "" : status;
+    const newStatus = markAll === status ? '' : status;
     setMarkAll(newStatus);
     setRows(prev => prev.map(r => ({ ...r, status: newStatus })));
   };
@@ -127,7 +127,7 @@ const MarkAttendance = () => {
   const onSubmit = async (formData: MarkAttInput) => {
     const unmarked = rows.filter(r => !r.status);
     if (unmarked.length > 0) {
-      toast.error(`${unmarked.length} student(s) have no attendance status set.`, { position: "bottom-center" });
+      toast.error(`${unmarked.length} student(s) have no attendance status set.`, { position: 'bottom-center' });
       return;
     }
 
@@ -138,29 +138,29 @@ const MarkAttendance = () => {
       class_name_id: String(formData.class_name_id),
       teacher_name_id: String(formData.teacher_name_id),
       student_id: String(student.id),
-      attendance_value_id: STATUS_CONFIG[student.status as keyof typeof STATUS_CONFIG]?.value || "1",
+      attendance_value_id: STATUS_CONFIG[student.status as keyof typeof STATUS_CONFIG]?.value || '1',
     }));
 
     try {
       const response = (await AttendanceAPI.Create({ ...formData, attendances })) as unknown as AxiosResponse<BulkAttendanceResponse>;
       if (response.status === 200 || response.status === 201) {
         const { summary } = response.data;
-        toast.success(`✓ Saved ${summary.saved} · Skipped ${summary.skipped}`, { position: "bottom-center", duration: 5000 });
-        setRows(prev => prev.map(r => ({ ...r, status: "" })));
-        setMarkAll("");
+        toast.success(`✓ Saved ${summary.saved} · Skipped ${summary.skipped}`, { position: 'bottom-center', duration: 5000 });
+        setRows(prev => prev.map(r => ({ ...r, status: '' })));
+        setMarkAll('');
       }
     } catch (e: any) {
-      toast.error("Failed to submit attendance", { position: "bottom-center" });
+      toast.error('Failed to submit attendance', { position: 'bottom-center' });
     } finally {
       setIsSubmitting(false);
     }
   };
 
   // Stats
-  const presentCount = rows.filter(r => r.status === "present").length;
-  const absentCount  = rows.filter(r => r.status === "absent").length;
-  const lateCount    = rows.filter(r => r.status === "late").length;
-  const leaveCount   = rows.filter(r => r.status === "leave").length;
+  const presentCount = rows.filter(r => r.status === 'present').length;
+  const absentCount  = rows.filter(r => r.status === 'absent').length;
+  const lateCount    = rows.filter(r => r.status === 'late').length;
+  const leaveCount   = rows.filter(r => r.status === 'leave').length;
   const unmarkedCount = rows.filter(r => !r.status).length;
 
   return (
@@ -181,7 +181,7 @@ const MarkAttendance = () => {
               <input
                 type="date"
                 className={selectCls}
-                {...register("attendance_date", { required: "Date is required" })}
+                {...register('attendance_date', { required: 'Date is required' })}
               />
               {errors.attendance_date && <p className="text-rose-500 text-xs mt-1">{errors.attendance_date.message}</p>}
             </div>
@@ -191,7 +191,7 @@ const MarkAttendance = () => {
               <FieldLabel>Class Time <span className="text-rose-500">*</span></FieldLabel>
               <Select
                 options={classTimeList}
-                {...register("attendance_time_id", { required: "Time is required" })}
+                {...register('attendance_time_id', { required: 'Time is required' })}
                 DisplayItem="title"
                 className={selectCls}
               />
@@ -203,7 +203,7 @@ const MarkAttendance = () => {
               <FieldLabel>Class Name <span className="text-rose-500">*</span></FieldLabel>
               <Select
                 options={classNameList}
-                {...register("class_name_id", { required: "Class is required" })}
+                {...register('class_name_id', { required: 'Class is required' })}
                 DisplayItem="title"
                 className={selectCls}
               />
@@ -215,7 +215,7 @@ const MarkAttendance = () => {
               <FieldLabel>Teacher <span className="text-rose-500">*</span></FieldLabel>
               <Select
                 options={teacherNameList}
-                {...register("teacher_name_id", { required: "Teacher is required" })}
+                {...register('teacher_name_id', { required: 'Teacher is required' })}
                 DisplayItem="title"
                 className={selectCls}
               />
@@ -232,7 +232,7 @@ const MarkAttendance = () => {
               className="inline-flex items-center gap-2 px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold rounded-xl shadow-sm hover:shadow-md transition-all disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isFetching ? <Loader2 className="w-4 h-4 animate-spin" /> : <Users className="w-4 h-4" />}
-              {isFetching ? "Loading…" : "Load Students"}
+              {isFetching ? 'Loading…' : 'Load Students'}
             </button>
 
             {rows.length > 0 && (
@@ -242,14 +242,14 @@ const MarkAttendance = () => {
                 className="inline-flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white text-sm font-semibold rounded-xl shadow-sm hover:shadow-md transition-all disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {isSubmitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <CalendarCheck className="w-4 h-4" />}
-                {isSubmitting ? "Submitting…" : "Submit Attendance"}
+                {isSubmitting ? 'Submitting…' : 'Submit Attendance'}
               </button>
             )}
 
             {rows.length > 0 && (
               <button
                 type="button"
-                onClick={() => { setRows([]); setMarkAll(""); }}
+                onClick={() => { setRows([]); setMarkAll(''); }}
                 className="inline-flex items-center gap-2 px-4 py-2.5 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 text-sm font-semibold rounded-xl transition-colors"
               >
                 <RefreshCw className="w-4 h-4" />
@@ -276,10 +276,10 @@ const MarkAttendance = () => {
             {/* Stats chips */}
             {rows.length > 0 && (
               <div className="hidden sm:flex flex-wrap gap-2">
-                {(["present", "absent", "late", "leave"] as const).map(s => (
+                {(['present', 'absent', 'late', 'leave'] as const).map(s => (
                   <span key={s} className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold ${STATUS_CONFIG[s].bg} ${STATUS_CONFIG[s].text}`}>
                     {STATUS_CONFIG[s].icon}
-                    {s === "present" ? presentCount : s === "absent" ? absentCount : s === "late" ? lateCount : leaveCount}
+                    {s === 'present' ? presentCount : s === 'absent' ? absentCount : s === 'late' ? lateCount : leaveCount}
                     <span className="capitalize">{s}</span>
                   </span>
                 ))}
@@ -296,7 +296,7 @@ const MarkAttendance = () => {
           {rows.length > 0 && (
             <div className="hidden sm:flex px-5 py-3 bg-slate-50 dark:bg-slate-800/50 border-b border-slate-100 dark:border-slate-800 flex-wrap items-center gap-2">
               <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide mr-1">Mark All:</span>
-              {(["present", "absent", "late", "leave"] as const).map(s => (
+              {(['present', 'absent', 'late', 'leave'] as const).map(s => (
                 <button
                   key={s}
                   type="button"
@@ -304,7 +304,7 @@ const MarkAttendance = () => {
                   className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all ${
                     markAll === s
                       ? `${STATUS_CONFIG[s].bg} ${STATUS_CONFIG[s].text} border-current ring-1 ${STATUS_CONFIG[s].ring}`
-                      : "bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-400 border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600"
+                      : 'bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-400 border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600'
                   }`}
                 >
                   {STATUS_CONFIG[s].icon}
@@ -329,9 +329,9 @@ const MarkAttendance = () => {
                     <tr className="bg-slate-800 dark:bg-slate-950 text-slate-100">
                       <th className="px-4 py-3.5 text-left text-xs font-semibold uppercase tracking-wider w-12">#</th>
                       <th className="px-4 py-3.5 text-left text-xs font-semibold uppercase tracking-wider">Student Name</th>
-                      {(["present", "absent", "late", "leave"] as const).map(s => (
+                      {(['present', 'absent', 'late', 'leave'] as const).map(s => (
                         <th key={s} className="px-4 py-3.5 text-center text-xs font-semibold uppercase tracking-wider">
-                          <span className={`inline-flex items-center gap-1 ${STATUS_CONFIG[s].text.replace("dark:", "")}`}>
+                          <span className={`inline-flex items-center gap-1 ${STATUS_CONFIG[s].text.replace('dark:', '')}`}>
                             {STATUS_CONFIG[s].icon}
                             {STATUS_CONFIG[s].label}
                           </span>
@@ -345,17 +345,17 @@ const MarkAttendance = () => {
                       <tr
                         key={row.id}
                         className={`transition-colors hover:bg-slate-50 dark:hover:bg-slate-800/40 ${
-                          row.status ? STATUS_CONFIG[row.status as keyof typeof STATUS_CONFIG]?.bg + " dark:bg-opacity-10" : ""
+                          row.status ? STATUS_CONFIG[row.status as keyof typeof STATUS_CONFIG]?.bg + ' dark:bg-opacity-10' : ''
                         }`}
                       >
                         <td className="px-4 py-3 text-slate-500 dark:text-slate-400 font-medium">{idx + 1}</td>
                         <td className="px-4 py-3 font-semibold text-slate-800 dark:text-slate-100">{row.name}</td>
-                        {(["present", "absent", "late", "leave"] as const).map(s => (
+                        {(['present', 'absent', 'late', 'leave'] as const).map(s => (
                           <td key={s} className="px-4 py-3 text-center">
                             <Checkbox
                               checked={row.status === s}
                               onCheckedChange={() => setStudentStatus(idx, s)}
-                              className={`mx-auto ${row.status === s ? "border-current" : ""}`}
+                              className={`mx-auto ${row.status === s ? 'border-current' : ''}`}
                             />
                           </td>
                         ))}
@@ -392,7 +392,7 @@ const MarkAttendance = () => {
                       )}
                     </div>
                     <div className="grid grid-cols-4 gap-2">
-                      {(["present", "absent", "late", "leave"] as const).map(s => (
+                      {(['present', 'absent', 'late', 'leave'] as const).map(s => (
                         <button
                           key={s}
                           type="button"
@@ -400,10 +400,10 @@ const MarkAttendance = () => {
                           className={`flex flex-col items-center gap-1 py-2 rounded-xl border text-xs font-semibold transition-all ${
                             row.status === s
                               ? `${STATUS_CONFIG[s].bg} ${STATUS_CONFIG[s].text} border-current ring-1 ${STATUS_CONFIG[s].ring}`
-                              : "bg-slate-50 dark:bg-slate-800 text-slate-500 dark:text-slate-400 border-slate-200 dark:border-slate-700"
+                              : 'bg-slate-50 dark:bg-slate-800 text-slate-500 dark:text-slate-400 border-slate-200 dark:border-slate-700'
                           }`}
                         >
-                          <span className="text-base">{s === "present" ? "✓" : s === "absent" ? "✗" : s === "late" ? "⏰" : "📤"}</span>
+                          <span className="text-base">{s === 'present' ? '✓' : s === 'absent' ? '✗' : s === 'late' ? '⏰' : '📤'}</span>
                           <span className="capitalize text-[10px]">{s}</span>
                         </button>
                       ))}

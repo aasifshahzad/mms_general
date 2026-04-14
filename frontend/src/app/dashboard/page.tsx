@@ -1,9 +1,9 @@
-"use client";
-import React, { useState, useEffect } from "react";
-import { useRole } from "@/context/RoleContext";
-import { TeacherDashboard } from "@/components/dashboard/TeacherDashboard";
-import { AccountantDashboard } from "@/components/dashboard/AccountantDashboard";
-import { StudentDashboard } from "@/components/dashboard/StudentDashboard";
+'use client';
+import React, { useState, useEffect } from 'react';
+import { useRole } from '@/context/RoleContext';
+import { TeacherDashboard } from '@/components/dashboard/TeacherDashboard';
+import { AccountantDashboard } from '@/components/dashboard/AccountantDashboard';
+import { StudentDashboard } from '@/components/dashboard/StudentDashboard';
 import {
   PieChart,
   Pie,
@@ -19,15 +19,15 @@ import {
   LineChart,
   Line,
   Area,
-} from "recharts";
-import { DashboardAPI } from "@/api/Dashboard/dashboardAPI";
+} from 'recharts';
+import { DashboardAPI } from '@/api/Dashboard/dashboardAPI';
 import {
   CardsSkeleton,
   ChartSkeleton,
   Skeleton,
-} from "@/components/dashboard/Skeleton";
-import { Header } from "@/components/dashboard/Header";
-import { motion } from "framer-motion";
+} from '@/components/dashboard/Skeleton';
+import { Header } from '@/components/dashboard/Header';
+import { motion } from 'framer-motion';
 
 // ─── Type Definitions ────────────────────────────────────────────────────────
 
@@ -176,23 +176,23 @@ interface ExpenseSummaryData {
 
 // ─── Utilities ────────────────────────────────────────────────────────────────
 
-const getTodayDate = () => new Date().toISOString().split("T")[0];
+const getTodayDate = () => new Date().toISOString().split('T')[0];
 
 // ─── Design Tokens ────────────────────────────────────────────────────────────
 
 const CARD_CLASS =
-  "bg-white rounded-2xl border border-slate-100 shadow-sm hover:shadow-md transition-all duration-300";
+  'bg-white rounded-2xl border border-slate-100 shadow-sm hover:shadow-md transition-all duration-300';
 
 const SECTION_TITLE_CLASS =
-  "text-base sm:text-lg font-bold text-slate-800 tracking-tight";
+  'text-base sm:text-lg font-bold text-slate-800 tracking-tight';
 
-const FILTER_LABEL_CLASS = "text-xs font-semibold text-slate-500 uppercase tracking-wide mr-2";
+const FILTER_LABEL_CLASS = 'text-xs font-semibold text-slate-500 uppercase tracking-wide mr-2';
 
 const FILTER_SELECT_CLASS =
-  "bg-white border border-slate-200 rounded-lg px-3 py-1.5 text-sm text-slate-700 font-medium focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400 outline-none shadow-sm hover:border-slate-300 transition-colors cursor-pointer";
+  'bg-white border border-slate-200 rounded-lg px-3 py-1.5 text-sm text-slate-700 font-medium focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400 outline-none shadow-sm hover:border-slate-300 transition-colors cursor-pointer';
 
 const FILTER_INPUT_CLASS =
-  "bg-white border border-slate-200 rounded-lg px-3 py-1.5 text-sm text-slate-700 font-medium focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400 outline-none shadow-sm hover:border-slate-300 transition-colors";
+  'bg-white border border-slate-200 rounded-lg px-3 py-1.5 text-sm text-slate-700 font-medium focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400 outline-none shadow-sm hover:border-slate-300 transition-colors';
 
 // ─── Custom Chart Tooltip ─────────────────────────────────────────────────────
 
@@ -209,7 +209,7 @@ const CustomTooltip = ({ active, payload, label }: any) => {
             />
             <span className="text-slate-300">{entry.name}:</span>
             <span className="font-bold text-white ml-auto pl-2">
-              {typeof entry.value === "number" ? entry.value.toLocaleString() : entry.value}
+              {typeof entry.value === 'number' ? entry.value.toLocaleString() : entry.value}
             </span>
           </div>
         ))}
@@ -254,7 +254,7 @@ interface FinancialKPIProps {
 }
 
 const FinancialKPI = ({ icon, label, value, iconBg, valueCls, border }: FinancialKPIProps) => (
-  <div className={`bg-white rounded-2xl p-5 shadow-sm border ${border || "border-slate-100"} flex items-center gap-4`}>
+  <div className={`bg-white rounded-2xl p-5 shadow-sm border ${border || 'border-slate-100'} flex items-center gap-4`}>
     <div className={`${iconBg} w-12 h-12 rounded-xl flex items-center justify-center shrink-0 shadow-sm`}>
       {icon}
     </div>
@@ -270,7 +270,7 @@ const FinancialKPI = ({ icon, label, value, iconBg, valueCls, border }: Financia
 const SectionCard = ({
   children,
   delay = 0,
-  className = "",
+  className = '',
 }: {
   children: React.ReactNode;
   delay?: number;
@@ -355,15 +355,15 @@ export default function DashboardRouter() {
   }
 
   switch (role) {
-    case "ADMIN":
-    case "PRINCIPAL":
+    case 'ADMIN':
+    case 'PRINCIPAL':
       return <AdminDashboardView />;
-    case "TEACHER":
+    case 'TEACHER':
       return <TeacherDashboard />;
-    case "ACCOUNTANT":
-    case "FEE_MANAGER":
+    case 'ACCOUNTANT':
+    case 'FEE_MANAGER':
       return <AccountantDashboard />;
-    case "USER":
+    case 'USER':
       return <StudentDashboard />;
     default:
       return (
@@ -401,8 +401,8 @@ function AdminDashboardView() {
   const [selectedExpenseMonth, setSelectedExpenseMonth] = useState<number | null>(null);
 
   const monthNames = [
-    "All Months", "January", "February", "March", "April", "May", "June",
-    "July", "August", "September", "October", "November", "December",
+    'All Months', 'January', 'February', 'March', 'April', 'May', 'June',
+    'July', 'August', 'September', 'October', 'November', 'December',
   ];
 
   const getAttVal = (values: Record<string, number>, key: string): number =>
@@ -491,7 +491,7 @@ function AdminDashboardView() {
     studentSummaryData?.graph.labels.map((label, i) => ({
       name: label,
       value: studentSummaryData.graph.datasets[0].data[i],
-      color: studentSummaryData.graph.datasets[0].backgroundColor[i] || "#6366f1",
+      color: studentSummaryData.graph.datasets[0].backgroundColor[i] || '#6366f1',
     })) || [];
 
   // ─── Year Selector ─────────────────────────────────────────────────────────
@@ -528,7 +528,7 @@ function AdminDashboardView() {
               <div>
                 <p className="text-xs font-semibold text-indigo-500 uppercase tracking-widest mb-0.5">Attendance</p>
                 <h2 className={SECTION_TITLE_CLASS}>
-                  {studentSummaryData?.graph.title || "Student Attendance Summary"}
+                  {studentSummaryData?.graph.title || 'Student Attendance Summary'}
                 </h2>
               </div>
               <div className="flex items-center gap-2 bg-slate-50 border border-slate-200 px-3 py-1.5 rounded-xl shrink-0">
@@ -612,8 +612,8 @@ function AdminDashboardView() {
                         ))}
                       </defs>
                       <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                      <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: "#94a3b8" }} />
-                      <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: "#94a3b8" }} />
+                      <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#94a3b8' }} />
+                      <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#94a3b8' }} />
                       <Tooltip content={<CustomTooltip />} />
                       <Legend iconType="circle" wrapperStyle={{ fontSize: 12 }} />
                       <Bar dataKey="value" name="Count" radius={[6, 6, 0, 0]}>
@@ -632,12 +632,12 @@ function AdminDashboardView() {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
 
             {/* User Roles Pie */}
-            {role !== "PRINCIPAL" && role !== "ACCOUNTANT" && (
+            {role !== 'PRINCIPAL' && role !== 'ACCOUNTANT' && (
               <SectionCard delay={0.08}>
                 <div className="px-5 pt-5 pb-4 border-b border-slate-100">
                   <p className="text-xs font-semibold text-purple-500 uppercase tracking-widest mb-0.5">Team</p>
                   <h2 className={SECTION_TITLE_CLASS}>
-                    {userRolesData?.graph.title || "User Roles Overview"}
+                    {userRolesData?.graph.title || 'User Roles Overview'}
                   </h2>
                 </div>
                 <div className="p-5 h-72">
@@ -684,7 +684,7 @@ function AdminDashboardView() {
                 <div>
                   <p className="text-xs font-semibold text-blue-500 uppercase tracking-widest mb-0.5">Finance</p>
                   <h2 className={SECTION_TITLE_CLASS}>
-                    {feeSummaryData?.graph.title || "Fee Collection Trends"}
+                    {feeSummaryData?.graph.title || 'Fee Collection Trends'}
                   </h2>
                 </div>
                 <YearSelector id="fee-year-select" />
@@ -727,19 +727,19 @@ function AdminDashboardView() {
                           </linearGradient>
                         </defs>
                         <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                        <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: "#94a3b8" }} />
-                        <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: "#94a3b8" }} />
+                        <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: '#94a3b8' }} />
+                        <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: '#94a3b8' }} />
                         <Tooltip content={<CustomTooltip />} />
                         <Legend iconType="circle" wrapperStyle={{ fontSize: 12 }} />
                         <Area type="monotone" dataKey="amount" stroke="none" fillOpacity={1} fill="url(#feeGrad)" />
                         <Line
                           type="monotone"
                           dataKey="amount"
-                          name={feeSummaryData?.graph.datasets[0].label || "Fee Collection"}
+                          name={feeSummaryData?.graph.datasets[0].label || 'Fee Collection'}
                           stroke="#6366f1"
                           strokeWidth={2.5}
-                          activeDot={{ r: 6, strokeWidth: 0, fill: "#4f46e5" }}
-                          dot={{ r: 3.5, strokeWidth: 2, fill: "#fff", stroke: "#6366f1" }}
+                          activeDot={{ r: 6, strokeWidth: 0, fill: '#4f46e5' }}
+                          dot={{ r: 3.5, strokeWidth: 2, fill: '#fff', stroke: '#6366f1' }}
                         />
                       </LineChart>
                     </ResponsiveContainer>
@@ -754,7 +754,7 @@ function AdminDashboardView() {
             <div className="px-5 pt-5 pb-4 border-b border-slate-100">
               <p className="text-xs font-semibold text-teal-500 uppercase tracking-widest mb-0.5">By Class</p>
               <h2 className={SECTION_TITLE_CLASS}>
-                {attendanceSummaryData?.graph.title || "Class Attendance Summary"}
+                {attendanceSummaryData?.graph.title || 'Class Attendance Summary'}
               </h2>
             </div>
 
@@ -786,8 +786,8 @@ function AdminDashboardView() {
                         ))}
                       </defs>
                       <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                      <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: "#94a3b8" }} />
-                      <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: "#94a3b8" }} />
+                      <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: '#94a3b8' }} />
+                      <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: '#94a3b8' }} />
                       <Tooltip content={<CustomTooltip />} />
                       <Legend iconType="circle" wrapperStyle={{ fontSize: 12 }} />
                       {attendanceSummaryData?.graph.datasets.map((ds, i) => (
@@ -804,7 +804,7 @@ function AdminDashboardView() {
                   <table className="min-w-full divide-y divide-slate-100 text-sm">
                     <thead>
                       <tr className="bg-slate-50">
-                        {["Class", "Present", "Absent", "Late", "Leave"].map((h) => (
+                        {['Class', 'Present', 'Absent', 'Late', 'Leave'].map((h) => (
                           <th key={h} className="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider whitespace-nowrap">
                             {h}
                           </th>
@@ -818,22 +818,22 @@ function AdminDashboardView() {
                             <td className="px-4 py-3 font-semibold text-slate-700 whitespace-nowrap">{item.class_name}</td>
                             <td className="px-4 py-3">
                               <span className="inline-flex items-center justify-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-700">
-                                {getAttVal(item.attendance_values, "present")}
+                                {getAttVal(item.attendance_values, 'present')}
                               </span>
                             </td>
                             <td className="px-4 py-3">
                               <span className="inline-flex items-center justify-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-rose-100 text-rose-700">
-                                {getAttVal(item.attendance_values, "absent")}
+                                {getAttVal(item.attendance_values, 'absent')}
                               </span>
                             </td>
                             <td className="px-4 py-3">
                               <span className="inline-flex items-center justify-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-100 text-amber-700">
-                                {getAttVal(item.attendance_values, "late")}
+                                {getAttVal(item.attendance_values, 'late')}
                               </span>
                             </td>
                             <td className="px-4 py-3">
                               <span className="inline-flex items-center justify-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-orange-100 text-orange-700">
-                                {getAttVal(item.attendance_values, "leave")}
+                                {getAttVal(item.attendance_values, 'leave')}
                               </span>
                             </td>
                           </tr>
@@ -853,13 +853,13 @@ function AdminDashboardView() {
           </SectionCard>
 
           {/* ── 4. Financial Summary ──────────────────────────────────────── */}
-          {role !== "PRINCIPAL" && (
+          {role !== 'PRINCIPAL' && (
             <SectionCard delay={0.2}>
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 px-5 pt-5 pb-4 border-b border-slate-100">
                 <div>
                   <p className="text-xs font-semibold text-green-500 uppercase tracking-widest mb-0.5">Financials</p>
                   <h2 className={SECTION_TITLE_CLASS}>
-                    {incomeExpenseSummaryData?.graph.title || "Financial Summary"}
+                    {incomeExpenseSummaryData?.graph.title || 'Financial Summary'}
                   </h2>
                 </div>
                 <YearSelector id="year-select" />
@@ -893,9 +893,9 @@ function AdminDashboardView() {
                       }
                       label="Net Profit / Loss"
                       value={`Rs.${incomeExpenseSummaryData.totals.profit.toLocaleString()}`}
-                      iconBg={incomeExpenseSummaryData.totals.profit >= 0 ? "bg-indigo-500" : "bg-rose-500"}
-                      valueCls={incomeExpenseSummaryData.totals.profit >= 0 ? "text-indigo-700" : "text-rose-700"}
-                      border={incomeExpenseSummaryData.totals.profit >= 0 ? "border-indigo-100" : "border-rose-100"}
+                      iconBg={incomeExpenseSummaryData.totals.profit >= 0 ? 'bg-indigo-500' : 'bg-rose-500'}
+                      valueCls={incomeExpenseSummaryData.totals.profit >= 0 ? 'text-indigo-700' : 'text-rose-700'}
+                      border={incomeExpenseSummaryData.totals.profit >= 0 ? 'border-indigo-100' : 'border-rose-100'}
                     />
                   </div>
                 )}
@@ -933,8 +933,8 @@ function AdminDashboardView() {
                           </linearGradient>
                         </defs>
                         <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                        <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: "#94a3b8" }} />
-                        <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: "#94a3b8" }} />
+                        <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: '#94a3b8' }} />
+                        <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: '#94a3b8' }} />
                         <Tooltip content={<CustomTooltip />} />
                         <Legend iconType="circle" wrapperStyle={{ fontSize: 12 }} />
                         <Bar dataKey="Income" fill="url(#incG)" radius={[4, 4, 0, 0]} />
@@ -948,7 +948,7 @@ function AdminDashboardView() {
                                 fill={
                                   Array.isArray(incomeExpenseSummaryData?.graph.datasets[2].backgroundColor)
                                     ? (incomeExpenseSummaryData?.graph.datasets[2].backgroundColor as string[])[i]
-                                    : "#6366f1"
+                                    : '#6366f1'
                                 }
                               />
                             )),
@@ -963,7 +963,7 @@ function AdminDashboardView() {
           )}
 
           {/* ── 5. Income & Expense Category Details (side by side on lg) ── */}
-          {role !== "PRINCIPAL" && (
+          {role !== 'PRINCIPAL' && (
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
 
               {/* Income */}
@@ -972,7 +972,7 @@ function AdminDashboardView() {
                   <div>
                     <p className="text-xs font-semibold text-emerald-500 uppercase tracking-widest mb-0.5">Income</p>
                     <h2 className={SECTION_TITLE_CLASS}>
-                      {incomeSummaryData?.graph.title || "Income Category Details"}
+                      {incomeSummaryData?.graph.title || 'Income Category Details'}
                     </h2>
                   </div>
                   <div className="flex flex-wrap items-center gap-2">
@@ -996,7 +996,7 @@ function AdminDashboardView() {
                       <div className="w-9 h-9 rounded-lg bg-emerald-500 flex items-center justify-center text-white shrink-0">{icons.currency}</div>
                       <div>
                         <p className="text-xs text-slate-500 font-medium">
-                          Total Income {selectedMonth ? `for ${monthNames[selectedMonth]}` : ""} {selectedYear}
+                          Total Income {selectedMonth ? `for ${monthNames[selectedMonth]}` : ''} {selectedYear}
                         </p>
                         <p className="text-lg font-bold text-emerald-700">Rs.{incomeSummaryData.total.toLocaleString()}</p>
                       </div>
@@ -1013,11 +1013,11 @@ function AdminDashboardView() {
                             </linearGradient>
                           </defs>
                           <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                          <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: "#94a3b8" }} />
-                          <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: "#94a3b8" }} />
+                          <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: '#94a3b8' }} />
+                          <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: '#94a3b8' }} />
                           <Tooltip content={<CustomTooltip />} />
                           <Legend iconType="circle" wrapperStyle={{ fontSize: 12 }} />
-                          <Bar dataKey="amount" name={incomeSummaryData?.graph.datasets[0].label || "Income"} fill="url(#incAmtG)" radius={[6, 6, 0, 0]} />
+                          <Bar dataKey="amount" name={incomeSummaryData?.graph.datasets[0].label || 'Income'} fill="url(#incAmtG)" radius={[6, 6, 0, 0]} />
                         </BarChart>
                       </ResponsiveContainer>
                     )}
@@ -1031,7 +1031,7 @@ function AdminDashboardView() {
                   <div>
                     <p className="text-xs font-semibold text-rose-500 uppercase tracking-widest mb-0.5">Expenses</p>
                     <h2 className={SECTION_TITLE_CLASS}>
-                      {expenseSummaryData?.graph.title || "Expense Category Details"}
+                      {expenseSummaryData?.graph.title || 'Expense Category Details'}
                     </h2>
                   </div>
                   <div className="flex flex-wrap items-center gap-2">
@@ -1055,7 +1055,7 @@ function AdminDashboardView() {
                       <div className="w-9 h-9 rounded-lg bg-rose-500 flex items-center justify-center text-white shrink-0">{icons.creditCard}</div>
                       <div>
                         <p className="text-xs text-slate-500 font-medium">
-                          Total Expenses {selectedExpenseMonth ? `for ${monthNames[selectedExpenseMonth]}` : ""} {selectedYear}
+                          Total Expenses {selectedExpenseMonth ? `for ${monthNames[selectedExpenseMonth]}` : ''} {selectedYear}
                         </p>
                         <p className="text-lg font-bold text-rose-700">Rs.{expenseSummaryData.total.toLocaleString()}</p>
                       </div>
@@ -1072,11 +1072,11 @@ function AdminDashboardView() {
                             </linearGradient>
                           </defs>
                           <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                          <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: "#94a3b8" }} />
-                          <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: "#94a3b8" }} />
+                          <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: '#94a3b8' }} />
+                          <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: '#94a3b8' }} />
                           <Tooltip content={<CustomTooltip />} />
                           <Legend iconType="circle" wrapperStyle={{ fontSize: 12 }} />
-                          <Bar dataKey="amount" name={expenseSummaryData?.graph.datasets[0].label || "Expense"} fill="url(#expAmtG)" radius={[6, 6, 0, 0]} />
+                          <Bar dataKey="amount" name={expenseSummaryData?.graph.datasets[0].label || 'Expense'} fill="url(#expAmtG)" radius={[6, 6, 0, 0]} />
                         </BarChart>
                       </ResponsiveContainer>
                     )}

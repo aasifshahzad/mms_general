@@ -1,11 +1,11 @@
-"use client";
+'use client';
 
-import React, { useState } from "react";
-import { Header } from "@/components/dashboard/Header";
-import { motion } from "framer-motion";
+import React, { useState } from 'react';
+import { Header } from '@/components/dashboard/Header';
+import { motion } from 'framer-motion';
 
 const CARD_CLASS =
-  "bg-white rounded-2xl border border-slate-100 shadow-sm hover:shadow-md transition-all duration-300";
+  'bg-white rounded-2xl border border-slate-100 shadow-sm hover:shadow-md transition-all duration-300';
 
 interface KPICardProps {
   label: string;
@@ -102,9 +102,9 @@ export function AccountantDashboard() {
             label="Net Balance"
             value={`Rs.${financialData.balance.toLocaleString()}`}
             icon={balanceIcon}
-            iconBg={financialData.balance >= 0 ? "bg-blue-500" : "bg-orange-500"}
-            valueCls={financialData.balance >= 0 ? "text-blue-700" : "text-orange-700"}
-            borderCls={financialData.balance >= 0 ? "border-blue-400" : "border-orange-400"}
+            iconBg={financialData.balance >= 0 ? 'bg-blue-500' : 'bg-orange-500'}
+            valueCls={financialData.balance >= 0 ? 'text-blue-700' : 'text-orange-700'}
+            borderCls={financialData.balance >= 0 ? 'border-blue-400' : 'border-orange-400'}
             delay={0.24}
           />
         </div>

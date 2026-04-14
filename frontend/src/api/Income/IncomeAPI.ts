@@ -1,5 +1,5 @@
-import AxiosInstance from "@/api/axiosInterceptorInstance";
-import { AddIncomeModel, CreateIncomeCat } from "@/models/income/income";
+import AxiosInstance from '@/api/axiosInterceptorInstance';
+import { AddIncomeModel, CreateIncomeCat } from '@/models/income/income';
 
 // Helper function to get standard headers
 // const getHeaders = () => ({
@@ -14,10 +14,10 @@ export const IncomeAPI = {
       const response = await AxiosInstance.get(
         `/income/filter_income?category_id=${category_id}`
       );
-      console.log("API Response:", response.data)
+      console.log('API Response:', response.data);
       return response;
     } catch (error) {
-      console.error("API Error:", error);
+      console.error('API Error:', error);
       throw error;
     }
   },
@@ -25,18 +25,18 @@ export const IncomeAPI = {
   AddIncome: async (AddFee: AddIncomeModel) => {
     try {
       const response = await AxiosInstance.post<AddIncomeModel>(
-        "/income/",
+        '/income/',
         JSON.stringify(AddFee),
         {
           headers: {
-            "Content-Type": "application/json",
+            'Content-Type': 'application/json',
           },
         }
       );
-      console.log("API Response:", response);
+      console.log('API Response:', response);
       return response;
     } catch (error) {
-      console.error("API Error:", error);
+      console.error('API Error:', error);
       throw error; 
     }
   },
@@ -44,12 +44,12 @@ export const IncomeAPI = {
   GetIncomeCategory: async () => {
     try {
       const response = await AxiosInstance.get(
-        "/income_cat_names/income-cat-names-all/"
+        '/income_cat_names/income-cat-names-all/'
       );
       // console.log("API Response:", response.data);
       return response;
     } catch (error) {
-      console.error("API Error:", error);
+      console.error('API Error:', error);
       throw error;
     }
   },
@@ -57,18 +57,18 @@ export const IncomeAPI = {
   AddIncomeCategory: async (AddIncomeCat: CreateIncomeCat) => {
     try {
       const response = await AxiosInstance.post<CreateIncomeCat>(
-        "/income_cat_names/add_income_cat_name/",
+        '/income_cat_names/add_income_cat_name/',
         JSON.stringify(AddIncomeCat),
         {
           headers: {
-            "Content-Type": "application/json",
+            'Content-Type': 'application/json',
           },
         }
       );
-      console.log("API Response:", response);
+      console.log('API Response:', response);
       return response;
     } catch (error) {
-      console.error("API Error:", error);
+      console.error('API Error:', error);
       throw error; 
     }
   },
@@ -80,7 +80,7 @@ export const IncomeAPI = {
       );
       return response;
     } catch (error) {
-      console.error("API Error:", error);
+      console.error('API Error:', error);
       throw error;
     }
   }

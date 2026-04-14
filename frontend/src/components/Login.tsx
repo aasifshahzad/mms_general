@@ -1,14 +1,14 @@
-"use client"
+'use client';
 
-import { useState, useEffect } from "react"
-import { useForm } from "react-hook-form"
-import { Loader2, Lock, Mail, Eye, EyeOff, ShieldCheck, ArrowRight } from "lucide-react"
-import { useRouter } from "next/navigation"
-import { LoginAPI } from "@/api/Login/Login"
-import { toast } from "sonner"
-import Image from "next/image"
-import { useRole } from "@/context/RoleContext"
-import { motion, AnimatePresence } from "framer-motion"
+import { useState, useEffect } from 'react';
+import { useForm } from 'react-hook-form';
+import { Loader2, Lock, Mail, Eye, EyeOff, ShieldCheck, ArrowRight } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { LoginAPI } from '@/api/Login/Login';
+import { toast } from 'sonner';
+import Image from 'next/image';
+import { useRole } from '@/context/RoleContext';
+import { motion, AnimatePresence } from 'framer-motion';
 
 type FormData = {
   username: string
@@ -18,7 +18,7 @@ type FormData = {
 interface UserResponse {
   username: string
   email: string
-  role: "ADMIN" | "PRINCIPAL" | "TEACHER" | "ACCOUNTANT" | "FEE_MANAGER" | "USER"
+  role: 'ADMIN' | 'PRINCIPAL' | 'TEACHER' | 'ACCOUNTANT' | 'FEE_MANAGER' | 'USER'
   id: number
 }
 
@@ -43,42 +43,42 @@ export default function LoginForm() {
     register,
     handleSubmit,
     formState: { errors },
-  } = useForm<FormData>()
-  const [isLoading, setIsLoading] = useState(false)
+  } = useForm<FormData>();
+  const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-  const router = useRouter()
-  const { setRole } = useRole()
+  const router = useRouter();
+  const { setRole } = useRole();
 
   const onSubmit = async (data: FormData) => {
-    setIsLoading(true)
+    setIsLoading(true);
     try {
-      const response: LoginResponse = await LoginAPI(data)
+      const response: LoginResponse = await LoginAPI(data);
       if (response?.user) {
         // Security: Tokens are now in HTTPOnly cookies (not accessible here)
         // Store full user object to localStorage (persists across refresh)
-        localStorage.setItem("user", JSON.stringify(response.user))
+        localStorage.setItem('user', JSON.stringify(response.user));
         // Also store to sessionStorage for current session
-        sessionStorage.setItem("user", JSON.stringify(response.user))
+        sessionStorage.setItem('user', JSON.stringify(response.user));
         // Store the user's role for authorization checks
-        sessionStorage.setItem("userRole", response.user.role)
+        sessionStorage.setItem('userRole', response.user.role);
 
         // Update RoleContext's React state directly so ProtectedRoute
         // sees the role immediately on navigation — without waiting for
         // RoleContext's useEffect to re-run
-        setRole(response.user.role)
+        setRole(response.user.role);
 
-        toast.success("Login Successful!", { position: "top-center" })
-        router.push("/dashboard")
+        toast.success('Login Successful!', { position: 'top-center' });
+        router.push('/dashboard');
       } else {
-        toast.error("Invalid credentials, please try again.", { position: "top-center" })
+        toast.error('Invalid credentials, please try again.', { position: 'top-center' });
       }
     } catch (error: unknown) {
-      const apiError = error as ApiErrorResponse
-      toast.error(apiError.response?.data?.detail || "Login failed. Please try again.", { position: "top-center" })
+      const apiError = error as ApiErrorResponse;
+      toast.error(apiError.response?.data?.detail || 'Login failed. Please try again.', { position: 'top-center' });
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
   const togglePasswordVisibility = () => setShowPassword(!showPassword);
 
@@ -145,7 +145,7 @@ export default function LoginForm() {
                     type="text"
                     placeholder="email or username"
                     className="w-full h-12 sm:h-14 bg-slate-50/50 border border-slate-100 text-slate-900 rounded-xl sm:rounded-2xl px-12 text-sm font-medium focus:outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500/40 focus:bg-white transition-all placeholder:text-slate-300"
-                    {...register("username", { required: "User Name is required" })}
+                    {...register('username', { required: 'User Name is required' })}
                   />
                   <AnimatePresence>
                     {errors.username && (
@@ -178,10 +178,10 @@ export default function LoginForm() {
                   <Lock className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-300 group-focus-within:text-indigo-500 transition-colors" />
                   <input
                     id="password"
-                    type={showPassword ? "text" : "password"}
+                    type={showPassword ? 'text' : 'password'}
                     placeholder="••••••••"
                     className="w-full h-12 sm:h-14 bg-slate-50/50 border border-slate-100 text-slate-900 rounded-xl sm:rounded-2xl px-12 text-sm font-medium focus:outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500/40 focus:bg-white transition-all placeholder:text-slate-300"
-                    {...register("password", { required: "Password is required" })}
+                    {...register('password', { required: 'Password is required' })}
                   />
                   <button
                     type="button"
@@ -233,5 +233,5 @@ export default function LoginForm() {
         </div>
       </motion.div>
     </div>
-  )
+  );
 }

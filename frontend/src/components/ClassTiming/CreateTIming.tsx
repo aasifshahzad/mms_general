@@ -1,18 +1,18 @@
-"use client";
-import React, { useState } from "react";
-import { Button } from "../ui/button";
+'use client';
+import React, { useState } from 'react';
+import { Button } from '../ui/button';
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog";
-import { Input } from "../ui/input";
-import { useForm } from "react-hook-form";
-import { toast } from "sonner";
-import { Loader2, Plus, Clock } from "lucide-react";
-import { AttendanceTimeAPI as API } from "@/api/AttendaceTime/attendanceTimeAPI";
-import { CreateTiming } from "@/models/classTiming/classTiming";
+} from '@/components/ui/dialog';
+import { Input } from '../ui/input';
+import { useForm } from 'react-hook-form';
+import { toast } from 'sonner';
+import { Loader2, Plus, Clock } from 'lucide-react';
+import { AttendanceTimeAPI as API } from '@/api/AttendaceTime/attendanceTimeAPI';
+import { CreateTiming } from '@/models/classTiming/classTiming';
 
 const AddClassTime = ({ onClassAdded }: { onClassAdded: () => void }) => {
   const {  
@@ -32,12 +32,12 @@ const AddClassTime = ({ onClassAdded }: { onClassAdded: () => void }) => {
       if (response) {
         setOpen(false);
         reset();
-        toast.success("Attendance Timing Added Successfully!", { position: "bottom-center" });
+        toast.success('Attendance Timing Added Successfully!', { position: 'bottom-center' });
         onClassAdded();
       }
     } catch (error) {
-      console.error("Error creating attendance timing:", error);
-      toast.error("Failed to add attendance timing", { position: "bottom-center" });
+      console.error('Error creating attendance timing:', error);
+      toast.error('Failed to add attendance timing', { position: 'bottom-center' });
     } finally {
       setLoading(false);
     }
@@ -82,7 +82,7 @@ const AddClassTime = ({ onClassAdded }: { onClassAdded: () => void }) => {
                 <Input
                   className="h-10 border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 rounded-xl px-3 text-sm text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-300 focus:border-indigo-400 transition-colors"
                   placeholder="e.g. Morning Shift"
-                  {...register("attendance_time", { required: "Field is required" })}
+                  {...register('attendance_time', { required: 'Field is required' })}
                 />
                 {errors.attendance_time && (
                   <p className="text-rose-500 text-xs mt-1 absolute">{errors.attendance_time.message}</p>
@@ -106,7 +106,7 @@ const AddClassTime = ({ onClassAdded }: { onClassAdded: () => void }) => {
                 {loading ? (
                   <><Loader2 className="w-4 h-4 animate-spin" /> Saving…</>
                 ) : (
-                  "Save Timing"
+                  'Save Timing'
                 )}
               </button>
             </div>

@@ -1,7 +1,7 @@
-"use client";
+'use client';
 
-import React from "react";
-import { Header } from "@/components/dashboard/Header";
+import React from 'react';
+import { Header } from '@/components/dashboard/Header';
 
 interface AdminDashboardProps {
   children: React.ReactNode;

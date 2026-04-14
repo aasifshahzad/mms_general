@@ -1,11 +1,11 @@
-import AxiosInstance from "@/api/axiosInterceptorInstance";
+import AxiosInstance from '@/api/axiosInterceptorInstance';
 
 // eslint-disable-next-line @typescript-eslint/no-namespace
 export namespace DashboardAPI {
   export const GetUserRoles = async () => {
     try {
-      const response = await AxiosInstance.get("/dashboard/user-roles");
-      console.log("API Response:", response);
+      const response = await AxiosInstance.get('/dashboard/user-roles');
+      console.log('API Response:', response);
       return response;
     } catch (error) {
       return error;
@@ -16,7 +16,7 @@ export namespace DashboardAPI {
       const response = await AxiosInstance.get(
         `/dashboard/student-summary?date=${date}`
       );
-      console.log("Student Summary API Response:", response);
+      console.log('Student Summary API Response:', response);
       return response;
     } catch (error) {
       return error;
@@ -25,12 +25,12 @@ export namespace DashboardAPI {
   export const GetAttendanceSummary = async () => {
     try {
       const response = await AxiosInstance.get(
-        "/dashboard/attendance-summary"
+        '/dashboard/attendance-summary'
       );
-      console.log("Attendance Summary API Response:", response);
+      console.log('Attendance Summary API Response:', response);
       return response;
     } catch (error) {
-      console.error("Attendance Summary API Error:", error);
+      console.error('Attendance Summary API Error:', error);
       throw error;
     }
   };
@@ -39,7 +39,7 @@ export namespace DashboardAPI {
       const response = await AxiosInstance.get(
         `/dashboard/income-expense-summary?year=${year}`
       );
-      console.log("Income Expense Summary API Response:", response);
+      console.log('Income Expense Summary API Response:', response);
       return response;
     } catch (error) {
       return error;
@@ -50,7 +50,7 @@ export namespace DashboardAPI {
       const response = await AxiosInstance.get(
         `/dashboard/fee-summary?year=${year}`
       );
-      console.log("Fee Summary API Response:", response);
+      console.log('Fee Summary API Response:', response);
       return response;
     } catch (error) {
       return error;
@@ -64,12 +64,12 @@ export namespace DashboardAPI {
       }
       
       const response = await AxiosInstance.get(url);
-      console.log("Income Summary API Response:", response);
+      console.log('Income Summary API Response:', response);
       return response;
     } catch (error) {
       return error;
     }
-  }
+  };
   export const GetExpenseSummary = async (year: number, month?: number) => {
     try {
       let url = `/dashboard/expense-summary?year=${year}`;
@@ -78,10 +78,10 @@ export namespace DashboardAPI {
       }
       
       const response = await AxiosInstance.get(url);
-      console.log("Expense Summary API Response:", response);
+      console.log('Expense Summary API Response:', response);
       return response;
     } catch (error) {
       return error;
     }
-  }
+  };
 }

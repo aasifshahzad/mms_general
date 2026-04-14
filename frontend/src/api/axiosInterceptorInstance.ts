@@ -1,12 +1,12 @@
-import axios from "axios";
+import axios from 'axios';
 
 // Security: Tokens are now in HTTPOnly cookies, not localStorage
 // This interceptor no longer manages tokens directly
 
 const axiosInterceptorInstance = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000",
+  baseURL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000',
   headers: {
-    "Content-Type": "application/json",
+    'Content-Type': 'application/json',
   },
   withCredentials: true,  // Security: Include HTTPOnly cookies in requests
 });
@@ -52,22 +52,22 @@ axiosInterceptorInstance.interceptors.response.use(
       isRefreshing = true;
       refreshPromise = (async () => {
         try {
-          console.log("Interceptor - 401 detected, attempting token refresh...");
+          console.log('Interceptor - 401 detected, attempting token refresh...');
           
           // Refresh token endpoint - tokens in cookies
-          const baseURL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+          const baseURL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
           const refreshResponse = await axios.post(
             `${baseURL}/auth/refresh`,
             {},
             { 
               withCredentials: true,  // Critical: Include/send cookies
               headers: {
-                "Content-Type": "application/json",
+                'Content-Type': 'application/json',
               }
             }
           );
 
-          console.log("Interceptor - Token refreshed successfully", {
+          console.log('Interceptor - Token refreshed successfully', {
             statusCode: refreshResponse.status,
             hasCookie: !!refreshResponse.headers['set-cookie']
           });
@@ -78,15 +78,15 @@ axiosInterceptorInstance.interceptors.response.use(
           
         } catch (refreshError) {
           // Refresh failed - clear authentication and redirect to login
-          console.error("Interceptor - Token refresh failed:", refreshError);
+          console.error('Interceptor - Token refresh failed:', refreshError);
           
           // Clear sessionStorage on refresh failure
-          sessionStorage.removeItem("user");
-          sessionStorage.removeItem("userRole");
+          sessionStorage.removeItem('user');
+          sessionStorage.removeItem('userRole');
           
           // Redirect to login page
-          if (typeof window !== "undefined") {
-            window.location.href = "/login";
+          if (typeof window !== 'undefined') {
+            window.location.href = '/login';
           }
           throw refreshError;
         } finally {
@@ -109,9 +109,9 @@ axiosInterceptorInstance.interceptors.response.use(
     if (error.response) {
       console.error(`API Error: ${error.response.status}`, error.response.data);
     } else if (error.request) {
-      console.error("API Error: No response from server", error.request);
+      console.error('API Error: No response from server', error.request);
     } else {
-      console.error("API Error:", error.message);
+      console.error('API Error:', error.message);
     }
 
     return Promise.reject(error);

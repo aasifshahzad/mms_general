@@ -1,6 +1,6 @@
-import { Header } from "@/components/dashboard/Header";
-import ModernStudentTable from "@/components/Students/StudentTable";
-import React from "react";
+import { Header } from '@/components/dashboard/Header';
+import ModernStudentTable from '@/components/Students/StudentTable';
+import React from 'react';
 
 const StudentsPage = () => {
   return (

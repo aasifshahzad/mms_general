@@ -1,4 +1,4 @@
-import React, { forwardRef, useId, useState } from "react";
+import React, { forwardRef, useId, useState } from 'react';
 
 export interface SelectOption {
   id: string | number;
@@ -19,10 +19,10 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(function Select
   {
     options = [],
     label,
-    parentStyle = "white",
-    background  = "transparent",
-    DisplayItem = "title",
-    DisplayCode = "code",
+    parentStyle = 'white',
+    background  = 'transparent',
+    DisplayItem = 'title',
+    DisplayCode = 'code',
     ...props
   },
   ref

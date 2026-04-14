@@ -1,4 +1,4 @@
-import { EntityBase } from "../EntityBase";
+import { EntityBase } from '../EntityBase';
 
 export interface TeacherModel extends EntityBase {
     teacher_name_id: number;

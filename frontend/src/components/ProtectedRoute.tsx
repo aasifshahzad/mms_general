@@ -1,8 +1,8 @@
-"use client";
-
-import { useRole } from "@/context/RoleContext";
-import { canAccessRoute } from "@/utils/rolePermissions";
-import { usePathname, useRouter } from "next/navigation";
+'use client';
+import React from 'react';
+import { useRole } from '@/context/RoleContext';
+import { canAccessRoute } from '@/utils/rolePermissions';
+import { usePathname, useRouter } from 'next/navigation';
 
 
 interface ProtectedRouteProps {
@@ -29,14 +29,14 @@ export function ProtectedRoute({ children }: ProtectedRouteProps) {
   }
 
   // If no role and we're in a dashboard route, redirect to login (not unauthorized)
-  if (!role && pathname.startsWith("/dashboard")) {
-    router.replace("/login");
+  if (!role && pathname.startsWith('/dashboard')) {
+    router.replace('/login');
     return null;
   }
 
   // If role is confirmed but user is trying to access a dashboard route they don't have access to, redirect to unauthorized
-  if (role && pathname.startsWith("/dashboard") && !canAccessRoute(role, pathname)) {
-    router.replace("/unauthorized");
+  if (role && pathname.startsWith('/dashboard') && !canAccessRoute(role, pathname)) {
+    router.replace('/unauthorized');
     return null;
   }
 

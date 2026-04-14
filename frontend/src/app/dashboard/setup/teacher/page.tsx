@@ -1,6 +1,6 @@
-import { Header } from '@/components/dashboard/Header'
-import TeacherTable from '@/components/teacher/TeacherTable'
-import React from 'react'
+import { Header } from '@/components/dashboard/Header';
+import TeacherTable from '@/components/teacher/TeacherTable';
+import React from 'react';
 
 const page = () => {
   return (
@@ -10,7 +10,7 @@ const page = () => {
       </div>
       <TeacherTable />
     </div>
-  )
-}
+  );
+};
 
-export default page
+export default page;

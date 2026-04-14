@@ -1,50 +1,50 @@
 // Role-based access control mapping
 export type UserRole =
-  | "ADMIN"
-  | "PRINCIPAL"
-  | "TEACHER"
-  | "ACCOUNTANT"
-  | "FEE_MANAGER"
-  | "USER";
+  | 'ADMIN'
+  | 'PRINCIPAL'
+  | 'TEACHER'
+  | 'ACCOUNTANT'
+  | 'FEE_MANAGER'
+  | 'USER';
 
 export type Section =
-  | "dashboard"
-  | "attendance"
-  | "students"
-  | "teachers"
-  | "classes"
-  | "fees"
-  | "expenses"
-  | "income"
-  | "attendance_time"
-  | "setup";
+  | 'dashboard'
+  | 'attendance'
+  | 'students'
+  | 'teachers'
+  | 'classes'
+  | 'fees'
+  | 'expenses'
+  | 'income'
+  | 'attendance_time'
+  | 'setup';
 
 // Role to accessible sections mapping
 const ROLE_PERMISSIONS: Record<UserRole, Section[]> = {
   ADMIN: [
-    "dashboard",
-    "attendance",
-    "students",
-    "teachers",
-    "classes",
-    "fees",
-    "expenses",
-    "income",
-    "attendance_time",
-    "setup",
+    'dashboard',
+    'attendance',
+    'students',
+    'teachers',
+    'classes',
+    'fees',
+    'expenses',
+    'income',
+    'attendance_time',
+    'setup',
   ],
   PRINCIPAL: [
-    "dashboard",
-    "attendance",
-    "students",
-    "teachers",
-    "classes",
-    "fees",
+    'dashboard',
+    'attendance',
+    'students',
+    'teachers',
+    'classes',
+    'fees',
   ],
-  TEACHER: ["attendance", "students", "dashboard"],
-  ACCOUNTANT: ["expenses", "fees", "income", "dashboard"],
-  FEE_MANAGER: ["fees", "students", "dashboard"],
-  USER: ["dashboard"], // Students can access own attendance & fees through filtered endpoints
+  TEACHER: ['attendance', 'students', 'dashboard'],
+  ACCOUNTANT: ['expenses', 'fees', 'income', 'dashboard'],
+  FEE_MANAGER: ['fees', 'students', 'dashboard'],
+  USER: ['dashboard'], // Students can access own attendance & fees through filtered endpoints
 };
 
 /**
@@ -75,20 +75,20 @@ export function canAccessRoute(role: string | null, pathname: string): boolean {
   // Extract section from pathname
   // Paths like /dashboard/students -> students
   // /dashboard/attendance/time -> attendance, etc.
-  const parts = pathname.split("/").filter(Boolean);
+  const parts = pathname.split('/').filter(Boolean);
 
-  if (parts[0] !== "dashboard") {
+  if (parts[0] !== 'dashboard') {
     // Routes outside dashboard (login, unauthorized) are generally accessible
     return true;
   }
 
   if (parts.length === 1) {
     // Just /dashboard
-    return canAccessSection(role, "dashboard");
+    return canAccessSection(role, 'dashboard');
   }
 
   // Normalize singular → plural to match Section type
-  const sectionMap: Record<string, string> = { expense: "expenses" };
+  const sectionMap: Record<string, string> = { expense: 'expenses' };
   const raw = parts[1];
   const section = sectionMap[raw] ?? raw;
   return canAccessSection(role, section);
@@ -98,7 +98,7 @@ export function canAccessRoute(role: string | null, pathname: string): boolean {
  * Validate if a string is a valid role
  */
 export function isValidRole(role: string): boolean {
-  return ["ADMIN", "PRINCIPAL", "TEACHER", "ACCOUNTANT", "FEE_MANAGER", "USER"].includes(
+  return ['ADMIN', 'PRINCIPAL', 'TEACHER', 'ACCOUNTANT', 'FEE_MANAGER', 'USER'].includes(
     role
   );
 }
@@ -107,15 +107,15 @@ export function isValidRole(role: string): boolean {
  * Get display name for a role
  */
 export function getRoleDisplayName(role: string | null): string {
-  if (!role) return "Unknown";
+  if (!role) return 'Unknown';
   
   const displayNames: Record<UserRole, string> = {
-    ADMIN: "Administrator",
-    PRINCIPAL: "Principal",
-    TEACHER: "Teacher",
-    ACCOUNTANT: "Accountant",
-    FEE_MANAGER: "Fee Manager",
-    USER: "Student",
+    ADMIN: 'Administrator',
+    PRINCIPAL: 'Principal',
+    TEACHER: 'Teacher',
+    ACCOUNTANT: 'Accountant',
+    FEE_MANAGER: 'Fee Manager',
+    USER: 'Student',
   };
 
   return displayNames[role as UserRole] || role;
@@ -129,18 +129,18 @@ export function canAccessSubmenuItem(role: string | null, submenuPath: string): 
   if (!role) return false;
 
   // PRINCIPAL: can view fees but not add
-  if (role === "PRINCIPAL" && submenuPath.includes("/fees/add_fees")) {
+  if (role === 'PRINCIPAL' && submenuPath.includes('/fees/add_fees')) {
     return false;
   }
 
   // ACCOUNTANT: can view fees but not add
-  if (role === "ACCOUNTANT" && submenuPath.includes("/fees/add_fees")) {
+  if (role === 'ACCOUNTANT' && submenuPath.includes('/fees/add_fees')) {
     return false;
   }
 
   // Deleted Students: only ADMIN and PRINCIPAL can access
-  if (submenuPath.includes("/students/deleted")) {
-    return role === "ADMIN" || role === "PRINCIPAL";
+  if (submenuPath.includes('/students/deleted')) {
+    return role === 'ADMIN' || role === 'PRINCIPAL';
   }
 
   // All other cases follow the section-based access control

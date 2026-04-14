@@ -1,6 +1,6 @@
-import AttendanceTable from "@/components/Attendance/ViewAttendance";
-import { Header } from "@/components/dashboard/Header";
-import React from "react";
+import AttendanceTable from '@/components/Attendance/ViewAttendance';
+import { Header } from '@/components/dashboard/Header';
+import React from 'react';
 
 const ViewAttendancePage = () => {
   return (

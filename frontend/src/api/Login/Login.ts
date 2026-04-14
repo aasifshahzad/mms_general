@@ -1,4 +1,4 @@
-import axiosIntance from "@/api/axiosInterceptorInstance";
+import axiosIntance from '@/api/axiosInterceptorInstance';
 
 interface LoginData {
   username: string;
@@ -8,7 +8,7 @@ interface LoginData {
 interface UserResponse {
   username: string;
   email: string;
-  role: "ADMIN" | "PRINCIPAL" | "TEACHER" | "ACCOUNTANT" | "FEE_MANAGER" | "USER";
+  role: 'ADMIN' | 'PRINCIPAL' | 'TEACHER' | 'ACCOUNTANT' | 'FEE_MANAGER' | 'USER';
   id: number;
 }
 
@@ -22,18 +22,18 @@ interface LoginResponse {
   export async function LoginAPI(loginData: LoginData) {
     try {
       const response = await axiosIntance.post<LoginResponse >(
-        "/login",
+        '/login',
         loginData,
         {
           headers: {
-            "Content-Type": "application/json",
+            'Content-Type': 'application/json',
           },
         }
       );
 
       return response.data;
     } catch (error) {
-      console.error("Error during login API call:", error);
+      console.error('Error during login API call:', error);
       throw error;
     }
   }

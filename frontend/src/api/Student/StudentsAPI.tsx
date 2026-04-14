@@ -1,5 +1,5 @@
-import { StudentModel, CreateStudent} from "@/models/students/Student";
-import AxiosInstance from "@/api/axiosInterceptorInstance";
+import { StudentModel, CreateStudent} from '@/models/students/Student';
+import AxiosInstance from '@/api/axiosInterceptorInstance';
 
 // Define the StudentResponse type
 interface StudentResponse {
@@ -13,7 +13,7 @@ export namespace StudentAPI {
   export const Get = async () => {
     try {
       const response = await AxiosInstance.get<StudentModel>(
-        "/students/all_students/"
+        '/students/all_students/'
       );
       return response;
     } catch (error) {
@@ -25,18 +25,18 @@ export namespace StudentAPI {
     try {
         // ClassName = GetActionDetail(ClassName, "create");
       const response = await AxiosInstance.post<CreateStudent>(
-        "/students/add/",
+        '/students/add/',
         JSON.stringify(AddStudent),
         {
           headers: {
-            "Content-Type": "application/json",
+            'Content-Type': 'application/json',
           },
         }
       );
-      console.log("API Response:", response);
+      console.log('API Response:', response);
       return response;
     } catch (error) {
-      console.error("API Error:", error);
+      console.error('API Error:', error);
       throw error; 
     }
   };
@@ -92,7 +92,7 @@ export namespace StudentAPI {
       );
       return response;
     } catch (error) {
-      console.error("Error fetching students by class ID:", error);
+      console.error('Error fetching students by class ID:', error);
       throw error;
     }
   }

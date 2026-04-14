@@ -1,6 +1,6 @@
-import * as React from "react"
+import * as React from 'react';
 
-import { cn } from "@/libs/utils"
+import { cn } from '@/libs/utils';
 
 // Remove the empty interface and directly use the type
 const Input = React.forwardRef<HTMLInputElement, React.InputHTMLAttributes<HTMLInputElement>>(
@@ -9,15 +9,15 @@ const Input = React.forwardRef<HTMLInputElement, React.InputHTMLAttributes<HTMLI
       <input
         type={type}
         className={cn(
-          "flex h-10 sm:h-11 w-full rounded-md border border-input bg-background px-3 sm:px-4 py-2 sm:py-2.5 text-sm sm:text-base ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 transition-colors",
+          'flex h-10 sm:h-11 w-full rounded-md border border-input bg-background px-3 sm:px-4 py-2 sm:py-2.5 text-sm sm:text-base ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 transition-colors',
           className
         )}
         ref={ref}
         {...props}
       />
-    )
+    );
   }
-)
-Input.displayName = "Input"
+);
+Input.displayName = 'Input';
 
-export { Input }
+export { Input };

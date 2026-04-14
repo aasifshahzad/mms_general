@@ -1,13 +1,13 @@
-"use client";
-import React, { useState } from "react";
+'use client';
+import React, { useState } from 'react';
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle,
-} from "@/components/ui/dialog";
-import { useForm } from "react-hook-form";
-import { toast } from "sonner";
-import { Loader2, Pencil, CheckCircle2, XCircle, Clock, LogOut } from "lucide-react";
-import { AttendanceAPI as API } from "@/api/Attendance/AttendanceAPI";
-import { MarkAttUpdate } from "@/models/markattendace/markattendance";
+} from '@/components/ui/dialog';
+import { useForm } from 'react-hook-form';
+import { toast } from 'sonner';
+import { Loader2, Pencil, CheckCircle2, XCircle, Clock, LogOut } from 'lucide-react';
+import { AttendanceAPI as API } from '@/api/Attendance/AttendanceAPI';
+import { MarkAttUpdate } from '@/models/markattendace/markattendance';
 
 interface EditAttendanceProps {
   attendanceId: number;
@@ -19,13 +19,13 @@ interface APIResponse {
   data: { message?: string };
 }
 
-type StatusKey = "present" | "absent" | "late" | "leave";
+type StatusKey = 'present' | 'absent' | 'late' | 'leave';
 
 const STATUS_OPTIONS: { key: StatusKey; label: string; icon: React.ReactNode; value: number; ring: string; bg: string; text: string }[] = [
-  { key: "present", label: "Present", icon: <CheckCircle2 className="w-5 h-5" />, value: 1, ring: "ring-emerald-400",  bg: "bg-emerald-50 dark:bg-emerald-900/30",  text: "text-emerald-700 dark:text-emerald-400" },
-  { key: "absent",  label: "Absent",  icon: <XCircle       className="w-5 h-5" />, value: 2, ring: "ring-rose-400",    bg: "bg-rose-50 dark:bg-rose-900/30",        text: "text-rose-700 dark:text-rose-400"       },
-  { key: "late",    label: "Late",    icon: <Clock         className="w-5 h-5" />, value: 3, ring: "ring-amber-400",  bg: "bg-amber-50 dark:bg-amber-900/30",      text: "text-amber-700 dark:text-amber-400"    },
-  { key: "leave",   label: "Leave",   icon: <LogOut        className="w-5 h-5" />, value: 4, ring: "ring-blue-400",   bg: "bg-blue-50 dark:bg-blue-900/30",        text: "text-blue-700 dark:text-blue-400"      },
+  { key: 'present', label: 'Present', icon: <CheckCircle2 className="w-5 h-5" />, value: 1, ring: 'ring-emerald-400',  bg: 'bg-emerald-50 dark:bg-emerald-900/30',  text: 'text-emerald-700 dark:text-emerald-400' },
+  { key: 'absent',  label: 'Absent',  icon: <XCircle       className="w-5 h-5" />, value: 2, ring: 'ring-rose-400',    bg: 'bg-rose-50 dark:bg-rose-900/30',        text: 'text-rose-700 dark:text-rose-400'       },
+  { key: 'late',    label: 'Late',    icon: <Clock         className="w-5 h-5" />, value: 3, ring: 'ring-amber-400',  bg: 'bg-amber-50 dark:bg-amber-900/30',      text: 'text-amber-700 dark:text-amber-400'    },
+  { key: 'leave',   label: 'Leave',   icon: <LogOut        className="w-5 h-5" />, value: 4, ring: 'ring-blue-400',   bg: 'bg-blue-50 dark:bg-blue-900/30',        text: 'text-blue-700 dark:text-blue-400'      },
 ];
 
 const EditAttendance = ({ attendanceId, onUpdate }: EditAttendanceProps) => {
@@ -36,7 +36,7 @@ const EditAttendance = ({ attendanceId, onUpdate }: EditAttendanceProps) => {
 
   const handleFormSubmit = async () => {
     if (!selected) {
-      toast.error("Please select an attendance status", { position: "bottom-center" });
+      toast.error('Please select an attendance status', { position: 'bottom-center' });
       return;
     }
     setLoading(true);
@@ -47,18 +47,18 @@ const EditAttendance = ({ attendanceId, onUpdate }: EditAttendanceProps) => {
         attendance_value_id: option.value,
         updated_at: new Date(),
       };
-      const response = (await API.Update(updateData.attendance_id, updateData)) as APIResponse;
+      const response = (await API.Update(attendanceId, updateData)) as APIResponse;
       if (response.status === 200) {
         setOpen(false);
         reset();
         setSelected(null);
-        toast.success("Attendance updated!", { position: "bottom-center", duration: 3000 });
+        toast.success('Attendance updated!', { position: 'bottom-center', duration: 3000 });
         onUpdate();
       } else {
-        throw new Error(response.data.message || "Failed to update");
+        throw new Error(response.data.message || 'Failed to update');
       }
     } catch (error: unknown) {
-      toast.error((error as Error).message || "Failed to update attendance", { position: "bottom-center" });
+      toast.error((error as Error).message || 'Failed to update attendance', { position: 'bottom-center' });
     } finally {
       setLoading(false);
     }
@@ -96,7 +96,7 @@ const EditAttendance = ({ attendanceId, onUpdate }: EditAttendanceProps) => {
                   Edit Attendance
                 </DialogTitle>
                 <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-                  Record #{String(attendanceId).padStart(4, "0")}
+                  Record #{String(attendanceId).padStart(4, '0')}
                 </p>
               </div>
             </div>
@@ -116,10 +116,10 @@ const EditAttendance = ({ attendanceId, onUpdate }: EditAttendanceProps) => {
                     className={`flex items-center gap-2.5 p-3 rounded-xl border-2 text-sm font-semibold transition-all ${
                       selected === opt.key
                         ? `${opt.bg} ${opt.text} border-current ring-1 ${opt.ring}`
-                        : "bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600"
+                        : 'bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600'
                     }`}
                   >
-                    <span className={selected === opt.key ? opt.text : "text-slate-400"}>{opt.icon}</span>
+                    <span className={selected === opt.key ? opt.text : 'text-slate-400'}>{opt.icon}</span>
                     {opt.label}
                   </button>
                 ))}
@@ -140,7 +140,7 @@ const EditAttendance = ({ attendanceId, onUpdate }: EditAttendanceProps) => {
                 disabled={loading || !selected}
                 className="flex-1 py-2.5 bg-gradient-to-r from-indigo-500 to-blue-600 hover:from-indigo-600 hover:to-blue-700 text-white font-semibold text-sm rounded-xl shadow-sm hover:shadow-md transition-all disabled:opacity-50 flex items-center justify-center gap-2"
               >
-                {loading ? <><Loader2 className="w-4 h-4 animate-spin" /> Saving…</> : "Save Changes"}
+                {loading ? <><Loader2 className="w-4 h-4 animate-spin" /> Saving…</> : 'Save Changes'}
               </button>
             </div>
           </form>

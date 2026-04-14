@@ -1,4 +1,4 @@
-import { EntityBase } from "../EntityBase";
+import { EntityBase } from '../EntityBase';
 
 export interface MarkAttendance extends EntityBase {
   studentId: string | number;
@@ -29,5 +29,4 @@ export interface MarkAttUpdate extends EntityBase {
   teacher_name_id?: number;
   student_id?: number;
   attendance_value_id?: number;
-}
 }

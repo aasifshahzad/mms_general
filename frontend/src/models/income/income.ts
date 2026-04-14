@@ -1,4 +1,4 @@
-import { EntityBase } from "../EntityBase";
+import { EntityBase } from '../EntityBase';
 
 export interface AddIncomeModel {
   recipt_number: number;

@@ -1,6 +1,6 @@
-"use client";
+'use client';
 
-import * as React from "react";
+import * as React from 'react';
 import {
   ColumnDef,
   flexRender,
@@ -8,11 +8,11 @@ import {
   useReactTable,
   getPaginationRowModel,
   getFilteredRowModel,
-} from "@tanstack/react-table";
-import { Search, Loader2, Eye, Trash2, Printer, Users } from "lucide-react";
-import { StudentAPI as API } from "@/api/Student/StudentsAPI";
-import { usePrint } from "@/components/print/usePrint";
-export { format } from "date-fns";
+} from '@tanstack/react-table';
+import { Search, Loader2, Eye, Trash2, Printer, Users } from 'lucide-react';
+import { StudentAPI as API } from '@/api/Student/StudentsAPI';
+import { usePrint } from '@/components/print/usePrint';
+export { format } from 'date-fns';
 
 import {
   Table,
@@ -21,35 +21,35 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table";
-import { StudentModel } from "@/models/students/Student";
-import { useEffect, useState } from "react";
-import AddNewStudent from "./CreateStudent";
-import DeleteStudentModal from "./DeleteStudentModal";
-import { toast } from "sonner";
+} from '@/components/ui/table';
+import { StudentModel } from '@/models/students/Student';
+import { useEffect, useState } from 'react';
+import AddNewStudent from './CreateStudent';
+import DeleteStudentModal from './DeleteStudentModal';
+import { toast } from 'sonner';
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
   DialogClose,
-} from "@/components/ui/dialog";
-import { useRole } from "@/context/RoleContext";
-import { Pagination } from "@/components/ui/pagination";
+} from '@/components/ui/dialog';
+import { useRole } from '@/context/RoleContext';
+import { Pagination } from '@/components/ui/pagination';
 
 // ─── Detail Row ───────────────────────────────────────────────────────────────
 
 const DetailRow = ({ label, value }: { label: string; value?: string | number }) => (
   <div>
     <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-0.5">{label}</p>
-    <p className="text-sm font-medium text-slate-800 dark:text-slate-200">{value ?? "—"}</p>
+    <p className="text-sm font-medium text-slate-800 dark:text-slate-200">{value ?? '—'}</p>
   </div>
 );
 
 // ─── Main Component ───────────────────────────────────────────────────────────
 
 export default function ModernStudentTable() {
-  const [globalFilter, setGlobalFilter] = useState("");
+  const [globalFilter, setGlobalFilter] = useState('');
   const [data, setData] = useState<StudentModel[]>([]);
   const { printRecords } = usePrint();
   const [loading, setLoading] = useState(true);
@@ -60,7 +60,7 @@ export default function ModernStudentTable() {
   const [currentUserId, setCurrentUserId] = useState<number | null>(null);
 
   useEffect(() => {
-    const user = JSON.parse(localStorage.getItem("user") || "{}");
+    const user = JSON.parse(localStorage.getItem('user') || '{}');
     setCurrentUserId(user?.id || null);
   }, []);
 
@@ -69,51 +69,51 @@ export default function ModernStudentTable() {
     try {
       const payload = { reason, deleted_by: currentUserId };
       const response = await API.Delete(modalStudent.id, payload);
-      if (response && typeof response === "object" && "status" in response) {
+      if (response && typeof response === 'object' && 'status' in response) {
         if (response.status === 200) {
-          toast.success("Student deleted successfully", { position: "bottom-center" });
+          toast.success('Student deleted successfully', { position: 'bottom-center' });
           GetData();
           setModalStudent(null);
         } else {
-          toast.error("An error occurred", { position: "bottom-center" });
+          toast.error('An error occurred', { position: 'bottom-center' });
         }
       }
     } catch (error) {
-      toast.error("Failed to delete student", { position: "bottom-center" });
+      toast.error('Failed to delete student', { position: 'bottom-center' });
     }
   };
 
-  const canDelete = role === "ADMIN" || role === "PRINCIPAL";
+  const canDelete = role === 'ADMIN' || role === 'PRINCIPAL';
 
   const columns: ColumnDef<StudentModel>[] = [
     {
-      accessorKey: "student_id",
-      header: "Sr. No",
+      accessorKey: 'student_id',
+      header: 'Sr. No',
       cell: ({ row }) => (
-        <span className="font-semibold text-slate-600 dark:text-slate-400">{row.getValue("student_id")}</span>
+        <span className="font-semibold text-slate-600 dark:text-slate-400">{row.getValue('student_id')}</span>
       ),
     },
     {
-      accessorKey: "student_name",
-      header: "Student Name",
+      accessorKey: 'student_name',
+      header: 'Student Name',
       cell: ({ row }) => (
-        <span className="font-semibold text-slate-800 dark:text-slate-100">{row.getValue("student_name")}</span>
+        <span className="font-semibold text-slate-800 dark:text-slate-100">{row.getValue('student_name')}</span>
       ),
     },
     {
-      accessorKey: "student_age",
-      header: "Age",
+      accessorKey: 'student_age',
+      header: 'Age',
     },
     {
-      accessorKey: "student_gender",
-      header: "Gender",
+      accessorKey: 'student_gender',
+      header: 'Gender',
       cell: ({ row }) => {
-        const gender = row.getValue("student_gender") as string;
+        const gender = row.getValue('student_gender') as string;
         return (
           <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold border ${
-            gender === "Male"   ? "bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-800"
-            : gender === "Female" ? "bg-pink-50 dark:bg-pink-900/30 text-pink-700 dark:text-pink-300 border-pink-200 dark:border-pink-800"
-            : "bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700"
+            gender === 'Male'   ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-800'
+            : gender === 'Female' ? 'bg-pink-50 dark:bg-pink-900/30 text-pink-700 dark:text-pink-300 border-pink-200 dark:border-pink-800'
+            : 'bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700'
           }`}>
             {gender}
           </span>
@@ -121,39 +121,39 @@ export default function ModernStudentTable() {
       },
     },
     {
-      accessorKey: "class_name",
-      header: "Class",
+      accessorKey: 'class_name',
+      header: 'Class',
       cell: ({ row }) => (
         <span className="inline-flex items-center px-2.5 py-0.5 rounded-lg bg-indigo-50 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 text-xs font-semibold border border-indigo-100 dark:border-indigo-800">
-          {row.getValue("class_name")}
+          {row.getValue('class_name')}
         </span>
       ),
     },
     {
-      accessorKey: "student_city",
-      header: "City",
+      accessorKey: 'student_city',
+      header: 'City',
       cell: ({ row }) => (
-        <span className="text-slate-600 dark:text-slate-300">{row.getValue("student_city")}</span>
+        <span className="text-slate-600 dark:text-slate-300">{row.getValue('student_city')}</span>
       ),
     },
     {
-      accessorKey: "father_name",
-      header: "Father Name",
+      accessorKey: 'father_name',
+      header: 'Father Name',
       cell: ({ row }) => (
-        <span className="text-slate-700 dark:text-slate-300">{row.getValue("father_name")}</span>
+        <span className="text-slate-700 dark:text-slate-300">{row.getValue('father_name')}</span>
       ),
     },
     {
-      accessorKey: "father_contact",
-      header: "Contact",
+      accessorKey: 'father_contact',
+      header: 'Contact',
       cell: ({ row }) => (
-        <span className="text-slate-600 dark:text-slate-400 font-mono text-xs">{row.getValue("father_contact")}</span>
+        <span className="text-slate-600 dark:text-slate-400 font-mono text-xs">{row.getValue('father_contact')}</span>
       ),
     },
     {
-      id: "Action",
-      accessorKey: "Action",
-      header: "Actions",
+      id: 'Action',
+      accessorKey: 'Action',
+      header: 'Actions',
       cell: ({ row }) => (
         <div className="flex gap-2 items-center no-print">
           <button
@@ -183,7 +183,7 @@ export default function ModernStudentTable() {
       const response = (await API.Get()) as { data: StudentModel[] };
       setData(response.data);
     } catch (error) {
-      console.error("Error fetching data:", error);
+      console.error('Error fetching data:', error);
     } finally {
       setLoading(false);
     }
@@ -217,7 +217,7 @@ export default function ModernStudentTable() {
             <input
               type="text"
               placeholder="Search students by name, class, city…"
-              value={globalFilter ?? ""}
+              value={globalFilter ?? ''}
               onChange={(e) => setGlobalFilter(e.target.value)}
               className="w-full pl-10 pr-4 h-10 border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 rounded-xl text-sm text-slate-800 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-300 focus:border-indigo-400 hover:border-slate-300 dark:hover:border-slate-600 transition-colors"
             />
@@ -236,7 +236,7 @@ export default function ModernStudentTable() {
             <button
               onClick={() => {
                 const meta = `Total records: ${data.length} · Printed: ${new Date().toLocaleDateString()}`;
-                printRecords("student-print-area", "Student Report", meta);
+                printRecords('student-print-area', 'Student Report', meta);
               }}
               className="inline-flex items-center gap-2 px-4 h-10 bg-slate-800 dark:bg-slate-700 hover:bg-slate-700 dark:hover:bg-slate-600 text-white text-sm font-semibold rounded-xl transition-colors whitespace-nowrap"
             >
@@ -256,7 +256,7 @@ export default function ModernStudentTable() {
                 {hg.headers.map((header) => (
                   <TableHead
                     key={header.id}
-                    className={`text-slate-100 text-xs font-semibold uppercase tracking-wider px-4 py-3.5 ${header.column.id === "Action" ? "no-print" : ""}`}
+                    className={`text-slate-100 text-xs font-semibold uppercase tracking-wider px-4 py-3.5 ${header.column.id === 'Action' ? 'no-print' : ''}`}
                   >
                     {header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}
                   </TableHead>
@@ -278,12 +278,12 @@ export default function ModernStudentTable() {
               table.getRowModel().rows.map((row, i) => (
                 <TableRow
                   key={row.id}
-                  className={`transition-colors hover:bg-indigo-50/40 dark:hover:bg-indigo-900/10 ${i % 2 === 0 ? "bg-white dark:bg-slate-900" : "bg-slate-50/50 dark:bg-slate-800/30"}`}
+                  className={`transition-colors hover:bg-indigo-50/40 dark:hover:bg-indigo-900/10 ${i % 2 === 0 ? 'bg-white dark:bg-slate-900' : 'bg-slate-50/50 dark:bg-slate-800/30'}`}
                 >
                   {row.getVisibleCells().map((cell) => (
                     <TableCell
                       key={cell.id}
-                      className={`px-4 py-3 text-sm ${cell.column.id === "Action" ? "no-print" : ""}`}
+                      className={`px-4 py-3 text-sm ${cell.column.id === 'Action' ? 'no-print' : ''}`}
                     >
                       {flexRender(cell.column.columnDef.cell, cell.getContext())}
                     </TableCell>
@@ -299,7 +299,7 @@ export default function ModernStudentTable() {
                     </div>
                     <p className="text-slate-500 dark:text-slate-400 font-semibold">No students found</p>
                     <p className="text-slate-400 dark:text-slate-500 text-sm">
-                      {globalFilter ? "Try adjusting your search" : "Add your first student above"}
+                      {globalFilter ? 'Try adjusting your search' : 'Add your first student above'}
                     </p>
                   </div>
                 </TableCell>
@@ -380,14 +380,14 @@ export default function ModernStudentTable() {
       {!loading && data.length > 0 && (
         <div className="px-4 sm:px-6 py-4 border-t border-slate-100 dark:border-slate-800 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <p className="text-sm text-slate-500 dark:text-slate-400">
-            Showing{" "}
+            Showing{' '}
             <span className="font-semibold text-slate-700 dark:text-slate-300">
               {table.getState().pagination.pageIndex * table.getState().pagination.pageSize + 1}–
               {Math.min(
                 (table.getState().pagination.pageIndex + 1) * table.getState().pagination.pageSize,
                 filteredCount
               )}
-            </span>{" "}
+            </span>{' '}
             of <span className="font-semibold text-slate-700 dark:text-slate-300">{filteredCount}</span> students
           </p>
           <Pagination
@@ -431,7 +431,7 @@ export default function ModernStudentTable() {
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
                   <DetailRow label="Student ID" value={selectedStudent.student_id} />
                   <DetailRow label="Full Name" value={selectedStudent.student_name} />
-                  <DetailRow label="Date of Birth" value={new Date(selectedStudent.student_date_of_birth).toLocaleDateString("en-GB")} />
+                  <DetailRow label="Date of Birth" value={new Date(selectedStudent.student_date_of_birth).toLocaleDateString('en-GB')} />
                   <DetailRow label="Age" value={selectedStudent.student_age} />
                   <DetailRow label="Gender" value={selectedStudent.student_gender} />
                   <DetailRow label="Education" value={selectedStudent.student_education} />

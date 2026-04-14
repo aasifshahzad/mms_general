@@ -1,6 +1,6 @@
-import ClassTable from "@/components/ClassName/ClassTable";
-import { Header } from "@/components/dashboard/Header";
-import React from "react";
+import ClassTable from '@/components/ClassName/ClassTable';
+import { Header } from '@/components/dashboard/Header';
+import React from 'react';
 
 const page = () => {
   return (

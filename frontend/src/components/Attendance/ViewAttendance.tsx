@@ -1,32 +1,32 @@
-"use client";
-import type React from "react";
-import { useState, useEffect } from "react";
+'use client';
+import type React from 'react';
+import { useState, useEffect } from 'react';
 import {
   AlertCircle, Check, CheckCircle2, XCircle, Clock, LogOut,
   ChevronLeft, ChevronRight, Printer, Search, SlidersHorizontal,
-} from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Select, SelectOption as SelectComponentOption } from "../Select";
-import { useForm } from "react-hook-form";
-import { AttendanceAPI as API } from "@/api/Attendance/AttendanceAPI";
-import { ClassNameAPI as API2 } from "@/api/Classname/ClassNameAPI";
-import { AttendanceTimeAPI as API13 } from "@/api/AttendaceTime/attendanceTimeAPI";
-import { TeacherNameAPI as API4 } from "@/api/Teacher/TeachetAPI";
-import { StudentAPI as API5 } from "@/api/Student/StudentsAPI";
-import { usePrint } from "@/components/print/usePrint";
-import { toast } from "sonner";
-import { ChevronsUpDown } from "lucide-react";
-import { cn } from "@/libs/utils";
-import EditAttendance from "./EditAttendance";
+} from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Select, SelectOption as SelectComponentOption } from '../Select';
+import { useForm } from 'react-hook-form';
+import { AttendanceAPI as API } from '@/api/Attendance/AttendanceAPI';
+import { ClassNameAPI as API2 } from '@/api/Classname/ClassNameAPI';
+import { AttendanceTimeAPI as API13 } from '@/api/AttendaceTime/attendanceTimeAPI';
+import { TeacherNameAPI as API4 } from '@/api/Teacher/TeachetAPI';
+import { StudentAPI as API5 } from '@/api/Student/StudentsAPI';
+import { usePrint } from '@/components/print/usePrint';
+import { toast } from 'sonner';
+import { ChevronsUpDown } from 'lucide-react';
+import { cn } from '@/libs/utils';
+import EditAttendance from './EditAttendance';
 import {
   Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList,
-} from "@/components/ui/command";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+} from '@/components/ui/command';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import {
   flexRender, getCoreRowModel, getPaginationRowModel, useReactTable, type ColumnDef,
-} from "@tanstack/react-table";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import DelConfirmMsg from "../DelConfMsg";
+} from '@tanstack/react-table';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import DelConfirmMsg from '../DelConfMsg';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -61,22 +61,22 @@ interface APIError               { response: { data: { message: string } } }
 
 const StatusBadge = ({ value }: { value: string }) => {
   const v = value.toLowerCase();
-  if (v === "present") return (
+  if (v === 'present') return (
     <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400">
       <CheckCircle2 className="w-3 h-3" /> Present
     </span>
   );
-  if (v === "absent") return (
+  if (v === 'absent') return (
     <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-rose-100 dark:bg-rose-900/30 text-rose-700 dark:text-rose-400">
       <XCircle className="w-3 h-3" /> Absent
     </span>
   );
-  if (v === "late") return (
+  if (v === 'late') return (
     <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400">
       <Clock className="w-3 h-3" /> Late
     </span>
   );
-  if (v === "leave") return (
+  if (v === 'leave') return (
     <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400">
       <LogOut className="w-3 h-3" /> Leave
     </span>
@@ -89,7 +89,7 @@ const StatusBadge = ({ value }: { value: string }) => {
 };
 
 const selectCls =
-  "h-10 w-full border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 rounded-xl px-3 text-sm text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-300 focus:border-indigo-400 hover:border-slate-300 dark:hover:border-slate-600 transition-colors";
+  'h-10 w-full border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 rounded-xl px-3 text-sm text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-300 focus:border-indigo-400 hover:border-slate-300 dark:hover:border-slate-600 transition-colors';
 
 const FieldLabel = ({ children }: { children: React.ReactNode }) => (
   <p className="text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wide mb-1.5">{children}</p>
@@ -110,44 +110,44 @@ const AttendanceTable: React.FC = () => {
   const [formRefresh, setFormRefresh]   = useState(true);
   const [studentsList, setStudentsList] = useState<SelectComponentOption[]>([]);
   const [open, setOpen]   = useState(false);
-  const [value, setValue] = useState("");
+  const [value, setValue] = useState('');
 
   const handleAttendanceUpdate = async () => {
     setFormRefresh(prev => !prev);
     await HandleSubmitForStudentGet({
-      attendance_date: "", attendance_time_id: 0, class_name_id: 0,
-      teacher_name_id: 0, student_id: Number(value) || 0, father_name: "", attendance_value_id: 0,
+      attendance_date: '', attendance_time_id: 0, class_name_id: 0,
+      teacher_name_id: 0, student_id: Number(value) || 0, father_name: '', attendance_value_id: 0,
     });
   };
 
   const columns: ColumnDef<AttendanceRecord>[] = [
     {
-      accessorKey: "sr_no", header: "Sr.No",
+      accessorKey: 'sr_no', header: 'Sr.No',
       cell: ({ row }) => <span className="font-semibold text-slate-500 dark:text-slate-400">{row.index + 1}</span>,
     },
     {
-      accessorKey: "attendance_id", header: "ID",
-      cell: ({ row }) => <span className="font-mono text-xs text-slate-500 dark:text-slate-400">#{String(row.getValue("attendance_id")).padStart(4, "0")}</span>,
+      accessorKey: 'attendance_id', header: 'ID',
+      cell: ({ row }) => <span className="font-mono text-xs text-slate-500 dark:text-slate-400">#{String(row.getValue('attendance_id')).padStart(4, '0')}</span>,
     },
     {
-      accessorKey: "attendance_date", header: "Date",
+      accessorKey: 'attendance_date', header: 'Date',
       cell: ({ row }) => (
         <span className="text-slate-700 dark:text-slate-300">
-          {new Date(row.getValue("attendance_date") as string).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" })}
+          {new Date(row.getValue('attendance_date') as string).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}
         </span>
       ),
     },
-    { accessorKey: "attendance_time",    header: "Time",    cell: ({ row }) => <span className="text-slate-600 dark:text-slate-300">{row.getValue("attendance_time")}</span> },
-    { accessorKey: "attendance_class",   header: "Class",   cell: ({ row }) => <span className="inline-flex items-center px-2 py-0.5 rounded-lg bg-indigo-50 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 text-xs font-semibold border border-indigo-100 dark:border-indigo-800">{row.getValue("attendance_class")}</span> },
-    { accessorKey: "attendance_teacher", header: "Teacher", cell: ({ row }) => <span className="text-slate-700 dark:text-slate-300">{row.getValue("attendance_teacher")}</span> },
-    { accessorKey: "attendance_student", header: "Student", cell: ({ row }) => <span className="font-semibold text-slate-800 dark:text-slate-100">{row.getValue("attendance_student")}</span> },
-    { accessorKey: "attendance_std_fname", header: "Father", cell: ({ row }) => <span className="text-slate-600 dark:text-slate-300">{row.getValue("attendance_std_fname")}</span> },
+    { accessorKey: 'attendance_time',    header: 'Time',    cell: ({ row }) => <span className="text-slate-600 dark:text-slate-300">{row.getValue('attendance_time')}</span> },
+    { accessorKey: 'attendance_class',   header: 'Class',   cell: ({ row }) => <span className="inline-flex items-center px-2 py-0.5 rounded-lg bg-indigo-50 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 text-xs font-semibold border border-indigo-100 dark:border-indigo-800">{row.getValue('attendance_class')}</span> },
+    { accessorKey: 'attendance_teacher', header: 'Teacher', cell: ({ row }) => <span className="text-slate-700 dark:text-slate-300">{row.getValue('attendance_teacher')}</span> },
+    { accessorKey: 'attendance_student', header: 'Student', cell: ({ row }) => <span className="font-semibold text-slate-800 dark:text-slate-100">{row.getValue('attendance_student')}</span> },
+    { accessorKey: 'attendance_std_fname', header: 'Father', cell: ({ row }) => <span className="text-slate-600 dark:text-slate-300">{row.getValue('attendance_std_fname')}</span> },
     {
-      accessorKey: "attendance_value", header: "Status",
-      cell: ({ row }) => <StatusBadge value={row.getValue("attendance_value") as string} />,
+      accessorKey: 'attendance_value', header: 'Status',
+      cell: ({ row }) => <StatusBadge value={row.getValue('attendance_value') as string} />,
     },
     {
-      id: "actions", header: "Actions",
+      id: 'actions', header: 'Actions',
       cell: ({ row }) => (
         <div className="no-print flex items-center gap-2">
           <EditAttendance attendanceId={row.original.attendance_id} onUpdate={handleAttendanceUpdate} />
@@ -168,17 +168,17 @@ const AttendanceTable: React.FC = () => {
     try {
       const response = await API.Delete(attendanceId);
       if (response.status === 200) {
-        toast.success("Attendance deleted", { position: "bottom-center" });
+        toast.success('Attendance deleted', { position: 'bottom-center' });
         handleAttendanceUpdate();
       }
-    } catch { toast.error("Failed to delete"); }
+    } catch { toast.error('Failed to delete'); }
   };
 
   const GetStudents = async () => {
     try {
       const response = (await API5.Get()) as { data: StudentResponse[] };
       setStudentsList([
-        { id: 0, title: "All Students" },
+        { id: 0, title: 'All Students' },
         ...response.data.map(s => ({ id: s.student_id, title: s.student_name })),
       ]);
     } catch (e) { console.error(e); }
@@ -188,7 +188,7 @@ const AttendanceTable: React.FC = () => {
     try {
       const response = (await API2.Get()) as { data: ClassNameResponse[] };
       setClassNameList([
-        { id: 0, title: "All" },
+        { id: 0, title: 'All' },
         ...response.data.map(i => ({ id: i.class_name_id, title: i.class_name })),
       ]);
     } catch (e) { console.error(e); }
@@ -198,7 +198,7 @@ const AttendanceTable: React.FC = () => {
     try {
       const response = (await API13.Get()) as { data: AttendanceTimeResponse[] };
       setClassTimeList([
-        { id: 0, title: "All" },
+        { id: 0, title: 'All' },
         ...response.data.map(i => ({ id: i.attendance_time_id, title: i.attendance_time })),
       ]);
     } catch (e) { console.error(e); }
@@ -208,7 +208,7 @@ const AttendanceTable: React.FC = () => {
     try {
       const response = (await API4.Get()) as unknown as { data: TeacherResponse[] };
       setTeacherNameList([
-        { id: 0, title: "All" },
+        { id: 0, title: 'All' },
         ...response.data.map(i => ({ id: i.teacher_name_id, title: i.teacher_name })),
       ]);
     } catch (e) { console.error(e); }
@@ -219,12 +219,12 @@ const AttendanceTable: React.FC = () => {
     setIsLoading(true);
     try {
       const filter: FilteredAttendance = {
-        attendance_date: formData.attendance_date || "",
+        attendance_date: formData.attendance_date || '',
         attendance_time_id: Number(formData.attendance_time_id) || 0,
         class_name_id: Number(formData.class_name_id) || 0,
         teacher_name_id: Number(formData.teacher_name_id) || 0,
         student_id: Number(formData.student_id) || 0,
-        father_name: formData.father_name || "",
+        father_name: formData.father_name || '',
         attendance_value_id: Number(formData.attendance_value_id) || 0,
       };
       const response = await API.GetbyFilter(filter);
@@ -233,8 +233,8 @@ const AttendanceTable: React.FC = () => {
         setCurrentPage(1);
       }
     } catch (error: unknown) {
-      if (error && typeof error === "object" && "response" in error) {
-        toast.error((error as APIError).response?.data?.message || "No Records Found", { position: "bottom-center" });
+      if (error && typeof error === 'object' && 'response' in error) {
+        toast.error((error as APIError).response?.data?.message || 'No Records Found', { position: 'bottom-center' });
       }
     } finally {
       setIsLoading(false);
@@ -253,10 +253,10 @@ const AttendanceTable: React.FC = () => {
   const totalPages = Math.ceil(attendanceRecords.length / recordsPerPage);
 
   // Summary counts
-  const presentCount = attendanceRecords.filter(r => r.attendance_value.toLowerCase() === "present").length;
-  const absentCount  = attendanceRecords.filter(r => r.attendance_value.toLowerCase() === "absent").length;
-  const lateCount    = attendanceRecords.filter(r => r.attendance_value.toLowerCase() === "late").length;
-  const leaveCount   = attendanceRecords.filter(r => r.attendance_value.toLowerCase() === "leave").length;
+  const presentCount = attendanceRecords.filter(r => r.attendance_value.toLowerCase() === 'present').length;
+  const absentCount  = attendanceRecords.filter(r => r.attendance_value.toLowerCase() === 'absent').length;
+  const lateCount    = attendanceRecords.filter(r => r.attendance_value.toLowerCase() === 'late').length;
+  const leaveCount   = attendanceRecords.filter(r => r.attendance_value.toLowerCase() === 'leave').length;
 
   return (
     <div className="w-full space-y-5">
@@ -282,7 +282,7 @@ const AttendanceTable: React.FC = () => {
               <input
                 type="date"
                 className={selectCls}
-                {...register("attendance_date")}
+                {...register('attendance_date')}
               />
             </div>
 
@@ -291,7 +291,7 @@ const AttendanceTable: React.FC = () => {
               <FieldLabel>Class Time</FieldLabel>
               <Select
                 options={classTimeList}
-                {...register("attendance_time_id", { valueAsNumber: true })}
+                {...register('attendance_time_id', { valueAsNumber: true })}
                 DisplayItem="title"
                 className={selectCls}
               />
@@ -302,7 +302,7 @@ const AttendanceTable: React.FC = () => {
               <FieldLabel>Class Name</FieldLabel>
               <Select
                 options={classNameList}
-                {...register("class_name_id", { valueAsNumber: true })}
+                {...register('class_name_id', { valueAsNumber: true })}
                 DisplayItem="title"
                 className={selectCls}
               />
@@ -313,7 +313,7 @@ const AttendanceTable: React.FC = () => {
               <FieldLabel>Teacher</FieldLabel>
               <Select
                 options={teacherNameList}
-                {...register("teacher_name_id", { valueAsNumber: true })}
+                {...register('teacher_name_id', { valueAsNumber: true })}
                 DisplayItem="title"
                 className={selectCls}
               />
@@ -331,7 +331,7 @@ const AttendanceTable: React.FC = () => {
                     className={`${selectCls} flex items-center justify-between`}
                   >
                     <span className="truncate">
-                      {value ? studentsList.find(s => s.id.toString() === value)?.title : "All Students"}
+                      {value ? studentsList.find(s => s.id.toString() === value)?.title : 'All Students'}
                     </span>
                     <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                   </button>
@@ -347,14 +347,14 @@ const AttendanceTable: React.FC = () => {
                             key={student.id}
                             value={student.id.toString()}
                             onSelect={(currentValue: string) => {
-                              setValue(currentValue === value ? "" : currentValue);
+                              setValue(currentValue === value ? '' : currentValue);
                               setOpen(false);
                               const sel = studentsList.find(s => s.id.toString() === currentValue);
-                              if (sel) setFormValue("student_id", Number(sel.id));
+                              if (sel) setFormValue('student_id', Number(sel.id));
                             }}
                           >
                             {student.title}
-                            <Check className={cn("ml-auto h-4 w-4", value === student.id.toString() ? "opacity-100" : "opacity-0")} />
+                            <Check className={cn('ml-auto h-4 w-4', value === student.id.toString() ? 'opacity-100' : 'opacity-0')} />
                           </CommandItem>
                         ))}
                       </CommandGroup>
@@ -386,10 +386,10 @@ const AttendanceTable: React.FC = () => {
       {attendanceRecords.length > 0 && (
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           {[
-            { label: "Present", count: presentCount, icon: <CheckCircle2 className="w-5 h-5" />, bg: "bg-emerald-50 dark:bg-emerald-900/20", text: "text-emerald-700 dark:text-emerald-400", border: "border-emerald-200 dark:border-emerald-800" },
-            { label: "Absent",  count: absentCount,  icon: <XCircle      className="w-5 h-5" />, bg: "bg-rose-50 dark:bg-rose-900/20",       text: "text-rose-700 dark:text-rose-400",       border: "border-rose-200 dark:border-rose-800" },
-            { label: "Late",    count: lateCount,    icon: <Clock        className="w-5 h-5" />, bg: "bg-amber-50 dark:bg-amber-900/20",     text: "text-amber-700 dark:text-amber-400",     border: "border-amber-200 dark:border-amber-800" },
-            { label: "Leave",   count: leaveCount,   icon: <LogOut       className="w-5 h-5" />, bg: "bg-blue-50 dark:bg-blue-900/20",       text: "text-blue-700 dark:text-blue-400",       border: "border-blue-200 dark:border-blue-800" },
+            { label: 'Present', count: presentCount, icon: <CheckCircle2 className="w-5 h-5" />, bg: 'bg-emerald-50 dark:bg-emerald-900/20', text: 'text-emerald-700 dark:text-emerald-400', border: 'border-emerald-200 dark:border-emerald-800' },
+            { label: 'Absent',  count: absentCount,  icon: <XCircle      className="w-5 h-5" />, bg: 'bg-rose-50 dark:bg-rose-900/20',       text: 'text-rose-700 dark:text-rose-400',       border: 'border-rose-200 dark:border-rose-800' },
+            { label: 'Late',    count: lateCount,    icon: <Clock        className="w-5 h-5" />, bg: 'bg-amber-50 dark:bg-amber-900/20',     text: 'text-amber-700 dark:text-amber-400',     border: 'border-amber-200 dark:border-amber-800' },
+            { label: 'Leave',   count: leaveCount,   icon: <LogOut       className="w-5 h-5" />, bg: 'bg-blue-50 dark:bg-blue-900/20',       text: 'text-blue-700 dark:text-blue-400',       border: 'border-blue-200 dark:border-blue-800' },
           ].map(({ label, count, icon, bg, text, border }) => (
             <div key={label} className={`${bg} border ${border} rounded-2xl p-4 flex items-center gap-3`}>
               <div className={`${text} shrink-0`}>{icon}</div>
@@ -420,7 +420,7 @@ const AttendanceTable: React.FC = () => {
             <button
               onClick={() => {
                 const meta = `Total records: ${attendanceRecords.length} · Printed: ${new Date().toLocaleDateString()}`;
-                printRecords("attendance-print-area", "Attendance Report", meta);
+                printRecords('attendance-print-area', 'Attendance Report', meta);
               }}
               className="no-print inline-flex items-center gap-2 px-4 py-2 bg-slate-800 dark:bg-slate-700 hover:bg-slate-700 dark:hover:bg-slate-600 text-white text-sm font-semibold rounded-xl transition-colors"
             >
@@ -439,7 +439,7 @@ const AttendanceTable: React.FC = () => {
                   {hg.headers.map(header => (
                     <TableHead
                       key={header.id}
-                      className={`text-slate-100 text-xs font-semibold uppercase tracking-wider px-4 py-3.5 ${header.column.columnDef.id === "actions" ? "no-print" : ""}`}
+                      className={`text-slate-100 text-xs font-semibold uppercase tracking-wider px-4 py-3.5 ${header.column.columnDef.id === 'actions' ? 'no-print' : ''}`}
                     >
                       {header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}
                     </TableHead>
@@ -461,12 +461,12 @@ const AttendanceTable: React.FC = () => {
                 table.getRowModel().rows.map((row, i) => (
                   <TableRow
                     key={row.id}
-                    className={`transition-colors hover:bg-indigo-50/40 dark:hover:bg-indigo-900/10 ${i % 2 === 0 ? "bg-white dark:bg-slate-900" : "bg-slate-50/50 dark:bg-slate-800/30"}`}
+                    className={`transition-colors hover:bg-indigo-50/40 dark:hover:bg-indigo-900/10 ${i % 2 === 0 ? 'bg-white dark:bg-slate-900' : 'bg-slate-50/50 dark:bg-slate-800/30'}`}
                   >
                     {row.getVisibleCells().map(cell => (
                       <TableCell
                         key={cell.id}
-                        className={`px-4 py-3 text-sm ${cell.column.columnDef.id === "actions" ? "no-print" : ""}`}
+                        className={`px-4 py-3 text-sm ${cell.column.columnDef.id === 'actions' ? 'no-print' : ''}`}
                       >
                         {flexRender(cell.column.columnDef.cell, cell.getContext())}
                       </TableCell>
@@ -494,10 +494,10 @@ const AttendanceTable: React.FC = () => {
         {attendanceRecords.length > 0 && (
           <div className="px-5 py-4 border-t border-slate-100 dark:border-slate-800 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
             <p className="text-sm text-slate-500 dark:text-slate-400">
-              Showing{" "}
+              Showing{' '}
               <span className="font-semibold text-slate-700 dark:text-slate-300">
                 {(currentPage - 1) * recordsPerPage + 1}–{Math.min(currentPage * recordsPerPage, attendanceRecords.length)}
-              </span>{" "}
+              </span>{' '}
               of <span className="font-semibold text-slate-700 dark:text-slate-300">{attendanceRecords.length}</span> records
             </p>
             <div className="flex items-center gap-1.5">
@@ -519,9 +519,9 @@ const AttendanceTable: React.FC = () => {
                 return (
                   <Button
                     key={page}
-                    variant={currentPage === page ? "default" : "outline"}
+                    variant={currentPage === page ? 'default' : 'outline'}
                     size="sm"
-                    className={`h-9 w-9 p-0 rounded-lg ${currentPage !== page ? "border-slate-200 dark:border-slate-700" : ""}`}
+                    className={`h-9 w-9 p-0 rounded-lg ${currentPage !== page ? 'border-slate-200 dark:border-slate-700' : ''}`}
                     onClick={() => setCurrentPage(page)}
                   >
                     {page}

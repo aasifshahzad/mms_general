@@ -1,29 +1,29 @@
-"use client";
-import React, { useEffect, useState } from "react";
-import { Button } from "../ui/button";
+'use client';
+import React, { useEffect, useState } from 'react';
+import { Button } from '../ui/button';
 import {
   Dialog,
   DialogContent,
   DialogDescription,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog";
-import { Input } from "../ui/input";
-import { useForm } from "react-hook-form";
-import { toast } from "sonner";
-import { Loader2, UserPlus, X } from "lucide-react";
-import { StudentAPI as API } from "@/api/Student/StudentsAPI";
-import { CreateStudent } from "@/models/students/Student";
-import { Select, SelectOption as SelectComponentOption } from "../Select";
-import { ClassNameAPI as API1 } from "@/api/Classname/ClassNameAPI";
+} from '@/components/ui/dialog';
+import { Input } from '../ui/input';
+import { useForm } from 'react-hook-form';
+import { toast } from 'sonner';
+import { Loader2, UserPlus, X } from 'lucide-react';
+import { StudentAPI as API } from '@/api/Student/StudentsAPI';
+import { CreateStudent } from '@/models/students/Student';
+import { Select, SelectOption as SelectComponentOption } from '../Select';
+import { ClassNameAPI as API1 } from '@/api/Classname/ClassNameAPI';
 
 // ─── Shared styles ────────────────────────────────────────────────────────────
 
 const inputCls =
-  "h-10 border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 hover:border-slate-300 dark:hover:border-slate-600 focus:border-indigo-400 focus:ring-indigo-300 text-slate-800 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500 rounded-xl text-sm transition-colors";
+  'h-10 border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 hover:border-slate-300 dark:hover:border-slate-600 focus:border-indigo-400 focus:ring-indigo-300 text-slate-800 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500 rounded-xl text-sm transition-colors';
 
 const selectCls =
-  "h-10 w-full border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 hover:border-slate-300 dark:hover:border-slate-600 focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-300 rounded-xl px-3 text-sm text-slate-800 dark:text-slate-100 transition-colors";
+  'h-10 w-full border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 hover:border-slate-300 dark:hover:border-slate-600 focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-300 rounded-xl px-3 text-sm text-slate-800 dark:text-slate-100 transition-colors';
 
 // ─── Field wrapper ────────────────────────────────────────────────────────────
 
@@ -65,19 +65,19 @@ const AddNewStudent = ({ onClassAdded }: { onClassAdded: () => void }) => {
   const handleFormSubmit = async (data: CreateStudent) => {
     setLoading(true);
     if (data.student_date_of_birth.length === 10) {
-      data.student_date_of_birth += "T00:00:00Z";
+      data.student_date_of_birth += 'T00:00:00Z';
     }
     try {
       const response = await CreateStudentAPI(data);
       if (response) {
         setOpen(false);
         reset();
-        toast.success("Student added successfully!");
+        toast.success('Student added successfully!');
         onClassAdded();
       }
     } catch (error) {
-      console.error("Error creating student:", error);
-      toast.error("Failed to add student. Please try again.");
+      console.error('Error creating student:', error);
+      toast.error('Failed to add student. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -95,7 +95,7 @@ const AddNewStudent = ({ onClassAdded }: { onClassAdded: () => void }) => {
         );
       }
     } catch (error) {
-      console.error("Error fetching class names:", error);
+      console.error('Error fetching class names:', error);
     }
   }, []);
 
@@ -108,10 +108,10 @@ const AddNewStudent = ({ onClassAdded }: { onClassAdded: () => void }) => {
       const response = await API.Create(data);
       return response.data;
     } catch (error: unknown) {
-      if (error instanceof Error && "response" in error) {
-        console.error("API Error:", (error as { response: { data: unknown } }).response.data);
+      if (error instanceof Error && 'response' in error) {
+        console.error('API Error:', (error as { response: { data: unknown } }).response.data);
       } else {
-        console.error("API Error:", error);
+        console.error('API Error:', error);
       }
       throw error;
     }
@@ -172,9 +172,9 @@ const AddNewStudent = ({ onClassAdded }: { onClassAdded: () => void }) => {
               <Field label="Class Name" required error={errors.class_name?.message}>
                 <Select
                   options={classNameList}
-                  {...register("class_name", { required: "Class is required" })}
+                  {...register('class_name', { required: 'Class is required' })}
                   onChange={(event: React.ChangeEvent<HTMLSelectElement>) => {
-                    register("class_name").onChange({ target: { value: event.target.value } });
+                    register('class_name').onChange({ target: { value: event.target.value } });
                   }}
                   DisplayItem="title"
                   className={selectCls}
@@ -188,16 +188,16 @@ const AddNewStudent = ({ onClassAdded }: { onClassAdded: () => void }) => {
                 </p>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <Field label="Student Name" required error={errors.student_name?.message}>
-                    <Input className={inputCls} placeholder="Full name" {...register("student_name", { required: "Required" })} />
+                    <Input className={inputCls} placeholder="Full name" {...register('student_name', { required: 'Required' })} />
                   </Field>
                   <Field label="Date of Birth" required error={errors.student_date_of_birth?.message}>
-                    <Input type="date" className={inputCls} {...register("student_date_of_birth", { required: "Required" })} />
+                    <Input type="date" className={inputCls} {...register('student_date_of_birth', { required: 'Required' })} />
                   </Field>
                   <Field label="Age" required error={errors.student_age?.message}>
-                    <Input type="number" className={inputCls} placeholder="Age" {...register("student_age", { required: "Required" })} />
+                    <Input type="number" className={inputCls} placeholder="Age" {...register('student_age', { required: 'Required' })} />
                   </Field>
                   <Field label="Gender" required error={errors.student_gender?.message}>
-                    <select className={selectCls} {...register("student_gender", { required: "Required" })} defaultValue="">
+                    <select className={selectCls} {...register('student_gender', { required: 'Required' })} defaultValue="">
                       <option value="" disabled>Select Gender</option>
                       <option value="Male">Male</option>
                       <option value="Female">Female</option>
@@ -205,13 +205,13 @@ const AddNewStudent = ({ onClassAdded }: { onClassAdded: () => void }) => {
                     </select>
                   </Field>
                   <Field label="Education" required error={errors.student_education?.message}>
-                    <Input className={inputCls} placeholder="Education level" {...register("student_education", { required: "Required" })} />
+                    <Input className={inputCls} placeholder="Education level" {...register('student_education', { required: 'Required' })} />
                   </Field>
                   <Field label="City" required error={errors.student_city?.message}>
-                    <Input className={inputCls} placeholder="City" {...register("student_city", { required: "Required" })} />
+                    <Input className={inputCls} placeholder="City" {...register('student_city', { required: 'Required' })} />
                   </Field>
                   <Field label="Address" required error={errors.student_address?.message}>
-                    <Input className={inputCls} placeholder="Full address" {...register("student_address", { required: "Required" })} />
+                    <Input className={inputCls} placeholder="Full address" {...register('student_address', { required: 'Required' })} />
                   </Field>
                 </div>
               </div>
@@ -223,19 +223,19 @@ const AddNewStudent = ({ onClassAdded }: { onClassAdded: () => void }) => {
                 </p>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <Field label="Father Name" required error={errors.father_name?.message}>
-                    <Input className={inputCls} placeholder="Father's full name" {...register("father_name", { required: "Required" })} />
+                    <Input className={inputCls} placeholder="Father's full name" {...register('father_name', { required: 'Required' })} />
                   </Field>
                   <Field label="Father Contact" required error={errors.father_contact?.message}>
-                    <Input type="number" className={inputCls} placeholder="Contact number" {...register("father_contact", { required: "Required" })} />
+                    <Input type="number" className={inputCls} placeholder="Contact number" {...register('father_contact', { required: 'Required' })} />
                   </Field>
                   <Field label="Father's CNIC" required error={errors.father_cnic?.message}>
-                    <Input className={inputCls} placeholder="CNIC number" {...register("father_cnic", { required: "Required" })} />
+                    <Input className={inputCls} placeholder="CNIC number" {...register('father_cnic', { required: 'Required' })} />
                   </Field>
                   <Field label="Father Caste" required error={errors.father_cast_name?.message}>
-                    <Input className={inputCls} placeholder="Caste / tribe" {...register("father_cast_name", { required: "Required" })} />
+                    <Input className={inputCls} placeholder="Caste / tribe" {...register('father_cast_name', { required: 'Required' })} />
                   </Field>
                   <Field label="Father Occupation" required error={errors.father_occupation?.message}>
-                    <Input className={inputCls} placeholder="Occupation" {...register("father_occupation", { required: "Required" })} />
+                    <Input className={inputCls} placeholder="Occupation" {...register('father_occupation', { required: 'Required' })} />
                   </Field>
                 </div>
               </div>
@@ -257,7 +257,7 @@ const AddNewStudent = ({ onClassAdded }: { onClassAdded: () => void }) => {
                 >
                   {loading ? (
                     <><Loader2 className="w-4 h-4 animate-spin" /> Saving…</>
-                  ) : "Save Student"}
+                  ) : 'Save Student'}
                 </button>
               </div>
             </form>

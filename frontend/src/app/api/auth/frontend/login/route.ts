@@ -8,20 +8,20 @@ export async function POST(request: Request) {
         if (body.username && body.password) {
             return NextResponse.json({ 
                 success: true, 
-                message: "Login successful" 
+                message: 'Login successful' 
             });
         }
 
         return NextResponse.json({ 
             success: false, 
-            message: "Invalid credentials" 
+            message: 'Invalid credentials' 
         }, { status: 401 });
 
     } catch (error) {
         console.error('Login error:', error);
         return NextResponse.json({ 
             success: false, 
-            message: "Internal server error" 
+            message: 'Internal server error' 
         }, { status: 500 });
     }
 }

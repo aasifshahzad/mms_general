@@ -1,5 +1,5 @@
-import { Header } from "@/components/dashboard/Header";
-import React from "react";
+import { Header } from '@/components/dashboard/Header';
+import React from 'react';
 
 const page = () => {
   return (

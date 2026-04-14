@@ -1,6 +1,6 @@
-import ClassTiming from '@/components/ClassTiming/TimingTable'
-import { Header } from '@/components/dashboard/Header'
-import React from 'react'
+import ClassTiming from '@/components/ClassTiming/TimingTable';
+import { Header } from '@/components/dashboard/Header';
+import React from 'react';
 
 const page = () => {
   return (
@@ -10,7 +10,7 @@ const page = () => {
       </div>
       <ClassTiming />
     </div>
-  )
-}
+  );
+};
 
-export default page
+export default page;

@@ -1,17 +1,17 @@
-"use client";
+'use client';
 
-import React, { useState, useEffect } from "react";
-import { useForm } from "react-hook-form";
-import { Input } from "@/components/ui/input";
-import { Header } from "@/components/dashboard/Header";
-import { toast } from "sonner";
-import { IncomeAPI as API } from "@/api/Income/IncomeAPI";
-import { IncomeCategory, AddIncomeModel } from "@/models/income/income";
-import { AxiosResponse } from "axios";
-import { Loader2, Save, Wallet } from "lucide-react";
+import React, { useState, useEffect } from 'react';
+import { useForm } from 'react-hook-form';
+import { Input } from '@/components/ui/input';
+import { Header } from '@/components/dashboard/Header';
+import { toast } from 'sonner';
+import { IncomeAPI as API } from '@/api/Income/IncomeAPI';
+import { IncomeCategory, AddIncomeModel } from '@/models/income/income';
+import { AxiosResponse } from 'axios';
+import { Loader2, Save, Wallet } from 'lucide-react';
 
 const inputCls =
-  "h-10 w-full border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 rounded-xl px-3 text-sm text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-300 focus:border-indigo-400 hover:border-slate-300 dark:hover:border-slate-600 transition-colors";
+  'h-10 w-full border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 rounded-xl px-3 text-sm text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-300 focus:border-indigo-400 hover:border-slate-300 dark:hover:border-slate-600 transition-colors';
 
 const FieldLabel = ({ children }: { children: React.ReactNode }) => (
   <label className="text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wide mb-1.5 block">
@@ -44,7 +44,7 @@ const AddIncome = () => {
       }));
       setIncomeCategory(data);
     } catch (error) {
-      console.error("Error fetching income categories:", error);
+      console.error('Error fetching income categories:', error);
       setIncomeCategory([]);
     }
   };
@@ -54,14 +54,14 @@ const AddIncome = () => {
     try {
       const response = await API.AddIncome(data);
       if (response.status === 201) {
-        toast.success("Income record added successfully", { position: "bottom-center" });
+        toast.success('Income record added successfully', { position: 'bottom-center' });
         reset();
       } else {
-        toast.error("Failed to add income record", { position: "bottom-center" });
+        toast.error('Failed to add income record', { position: 'bottom-center' });
       }
     } catch (error) {
-      console.error("Error adding income:", error);
-      toast.error("Failed to add income record", { position: "bottom-center" });
+      console.error('Error adding income:', error);
+      toast.error('Failed to add income record', { position: 'bottom-center' });
     } finally {
       setIsLoading(false);
     }
@@ -91,7 +91,7 @@ const AddIncome = () => {
                 <FieldLabel>Receipt Number <span className="text-rose-500">*</span></FieldLabel>
                 <Input
                   type="number"
-                  {...register("recipt_number", { valueAsNumber: true, required: "Required" })}
+                  {...register('recipt_number', { valueAsNumber: true, required: 'Required' })}
                   placeholder="e.g. 100234"
                   className={inputCls}
                 />
@@ -103,7 +103,7 @@ const AddIncome = () => {
                 <FieldLabel>Date <span className="text-rose-500">*</span></FieldLabel>
                 <Input
                   type="date"
-                  {...register("date", { required: "Required" })}
+                  {...register('date', { required: 'Required' })}
                   className={inputCls}
                 />
                 {errors.date && <p className="text-rose-500 text-xs mt-1 absolute">{errors.date.message}</p>}
@@ -113,7 +113,7 @@ const AddIncome = () => {
               <div className="space-y-1">
                 <FieldLabel>Category <span className="text-rose-500">*</span></FieldLabel>
                 <select
-                  {...register("category_id", { valueAsNumber: true, required: "Required" })}
+                  {...register('category_id', { valueAsNumber: true, required: 'Required' })}
                   className={inputCls}
                 >
                   <option disabled value="">Select Category</option>
@@ -131,10 +131,10 @@ const AddIncome = () => {
                 <FieldLabel>Amount (PKR) <span className="text-rose-500">*</span></FieldLabel>
                 <Input
                   type="number"
-                  {...register("amount", {
+                  {...register('amount', {
                     valueAsNumber: true,
-                    required: "Required",
-                    min: { value: 1, message: "Must be > 0" },
+                    required: 'Required',
+                    min: { value: 1, message: 'Must be > 0' },
                   })}
                   placeholder="e.g. 10000"
                   className={inputCls}
@@ -146,7 +146,7 @@ const AddIncome = () => {
               <div className="space-y-1">
                 <FieldLabel>Source <span className="text-rose-500">*</span></FieldLabel>
                 <Input
-                  {...register("source", { required: "Required" })}
+                  {...register('source', { required: 'Required' })}
                   placeholder="e.g. Grant, Event"
                   className={inputCls}
                 />
@@ -157,7 +157,7 @@ const AddIncome = () => {
               <div className="space-y-1">
                 <FieldLabel>Contact</FieldLabel>
                 <Input
-                  {...register("contact")}
+                  {...register('contact')}
                   placeholder="e.g. 0300-1234567"
                   className={inputCls}
                 />
@@ -167,7 +167,7 @@ const AddIncome = () => {
               <div className="space-y-1 sm:col-span-2 lg:col-span-3 xl:col-span-4">
                 <FieldLabel>Description <span className="text-rose-500">*</span></FieldLabel>
                 <Input
-                  {...register("description", { required: "Required" })}
+                  {...register('description', { required: 'Required' })}
                   placeholder="Detail the source of the income..."
                   className={inputCls}
                 />

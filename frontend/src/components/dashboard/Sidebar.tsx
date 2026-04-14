@@ -1,10 +1,10 @@
-"use client";
+'use client';
 
-import React, { useEffect, useState } from "react";
-import { GoDotFill } from "react-icons/go";
-import { usePathname, useRouter } from "next/navigation";
-import Link from "next/link";
-import Image from "next/image";
+import React, { useEffect, useState } from 'react';
+import { GoDotFill } from 'react-icons/go';
+import { usePathname, useRouter } from 'next/navigation';
+import Link from 'next/link';
+import Image from 'next/image';
 import {
   GraduationCap,
   Hand,
@@ -14,13 +14,13 @@ import {
   UserCog2,
   LogOut,
   ChevronDown,
-} from "lucide-react";
-import { RiCashLine } from "react-icons/ri";
-import { BsCashCoin } from "react-icons/bs";
-import { GiExpense } from "react-icons/gi";
-import { useRole } from "@/context/RoleContext";
-import { canAccessSection, canAccessSubmenuItem } from "@/utils/rolePermissions";
-import axiosInstance from "@/api/axiosInterceptorInstance";
+} from 'lucide-react';
+import { RiCashLine } from 'react-icons/ri';
+import { BsCashCoin } from 'react-icons/bs';
+import { GiExpense } from 'react-icons/gi';
+import { useRole } from '@/context/RoleContext';
+import { canAccessSection, canAccessSubmenuItem } from '@/utils/rolePermissions';
+import axiosInstance from '@/api/axiosInterceptorInstance';
 
 type MenuItem = {
   id: number;
@@ -42,165 +42,165 @@ type SidebarProps = {
 };
 
 const menuList: MenuItem[] = [
-  { id: 1, name: "Dashboard", icon: LayoutDashboard, path: "/dashboard" },
+  { id: 1, name: 'Dashboard', icon: LayoutDashboard, path: '/dashboard' },
   {
     id: 2,
-    name: "Student",
+    name: 'Student',
     icon: GraduationCap,
-    path: "/dashboard/students",
+    path: '/dashboard/students',
     hasSubmenu: true,
     submenu: [
       {
         id: 21,
-        name: "All Students",
+        name: 'All Students',
         icon: GoDotFill,
-        path: "/dashboard/students",
+        path: '/dashboard/students',
       },
       {
         id: 22,
-        name: "Deleted Students",
+        name: 'Deleted Students',
         icon: GoDotFill,
-        path: "/dashboard/students/deleted",
+        path: '/dashboard/students/deleted',
       },
     ],
   },
   {
     id: 3,
-    name: "Attendance",
+    name: 'Attendance',
     icon: Hand,
-    path: "/dashboard/attendance",
+    path: '/dashboard/attendance',
     hasSubmenu: true,
     submenu: [
       {
         id: 8,
-        name: "Mark Attendance",
+        name: 'Mark Attendance',
         icon: GoDotFill,
-        path: "/dashboard/attendance/mark_attendance",
+        path: '/dashboard/attendance/mark_attendance',
       },
       {
         id: 9,
-        name: "View Attendance",
+        name: 'View Attendance',
         icon: GoDotFill,
-        path: "/dashboard/attendance/view_attendance",
+        path: '/dashboard/attendance/view_attendance',
       },
     ],
   },
   {
     id: 10,
-    name: "Fees",
+    name: 'Fees',
     icon: RiCashLine,
-    path: "/dashboard/fees",
+    path: '/dashboard/fees',
     hasSubmenu: true,
     submenu: [
       {
         id: 11,
-        name: "Add Fees",
+        name: 'Add Fees',
         icon: GoDotFill,
-        path: "/dashboard/fees/add_fees",
+        path: '/dashboard/fees/add_fees',
       },
       {
         id: 12,
-        name: "View Fees",
+        name: 'View Fees',
         icon: GoDotFill,
-        path: "/dashboard/fees/view_fees",
+        path: '/dashboard/fees/view_fees',
       },
     ],
   },
   {
     id: 13,
-    name: "Income",
+    name: 'Income',
     icon: BsCashCoin,
-    path: "/dashboard/income",
+    path: '/dashboard/income',
     hasSubmenu: true,
     submenu: [
       {
         id: 14,
-        name: "Add Income",
+        name: 'Add Income',
         icon: GoDotFill,
-        path: "/dashboard/income/add_income",
+        path: '/dashboard/income/add_income',
       },
       {
         id: 15,
-        name: "View Income",
+        name: 'View Income',
         icon: GoDotFill,
-        path: "/dashboard/income/view_income",
+        path: '/dashboard/income/view_income',
       },
     ],
   },
   {
     id: 17,
-    name: "Expense",
+    name: 'Expense',
     icon: GiExpense,
-    path: "/dashboard/Expense",
+    path: '/dashboard/Expense',
     hasSubmenu: true,
     submenu: [
       {
         id: 18,
-        name: "Add Expense",
+        name: 'Add Expense',
         icon: GoDotFill,
-        path: "/dashboard/expense/add_expense",
+        path: '/dashboard/expense/add_expense',
       },
       {
         id: 19,
-        name: "View Expense",
+        name: 'View Expense',
         icon: GoDotFill,
-        path: "/dashboard/expense/view_expense",
+        path: '/dashboard/expense/view_expense',
       },
     ],
   },
   {
     id: 4,
-    name: "Setup",
+    name: 'Setup',
     icon: UserCog2,
-    path: "/dashboard/settings",
+    path: '/dashboard/settings',
     hasSubmenu: true,
     submenu: [
       {
         id: 5,
-        name: "Class Name",
+        name: 'Class Name',
         icon: GoDotFill,
-        path: "/dashboard/setup/class_name",
+        path: '/dashboard/setup/class_name',
       },
       {
         id: 6,
-        name: "Class Timings",
+        name: 'Class Timings',
         icon: GoDotFill,
-        path: "/dashboard/setup/class_timings",
+        path: '/dashboard/setup/class_timings',
       },
       {
         id: 7,
-        name: "Teacher",
+        name: 'Teacher',
         icon: GoDotFill,
-        path: "/dashboard/setup/teacher",
+        path: '/dashboard/setup/teacher',
       },
       {
         id: 16,
-        name: "Income Category",
+        name: 'Income Category',
         icon: GoDotFill,
-        path: "/dashboard/setup/income_category",
+        path: '/dashboard/setup/income_category',
       },
       {
         id: 20,
-        name: "Expense Category",
+        name: 'Expense Category',
         icon: GoDotFill,
-        path: "/dashboard/setup/expense_category",
+        path: '/dashboard/setup/expense_category',
       },
     ],
   },
-  { id: 5, name: "Logout", icon: LogOut, path: "/" },
+  { id: 5, name: 'Logout', icon: LogOut, path: '/' },
 ];
 
 // Map menu item paths to role access sections
 const getMenuItemSection = (path: string): string => {
   const lowerPath = path.toLowerCase();
-  if (lowerPath.includes("/students")) return "students";
-  if (lowerPath.includes("/attendance")) return "attendance";
-  if (lowerPath.includes("/fees")) return "fees";
-  if (lowerPath.includes("/income")) return "income";
-  if (lowerPath.includes("/expense")) return "expenses";
-  if (lowerPath.includes("/setup") || lowerPath.includes("/settings")) return "setup";
-  if (lowerPath.includes("/dashboard")) return "dashboard";
-  return "dashboard";
+  if (lowerPath.includes('/students')) return 'students';
+  if (lowerPath.includes('/attendance')) return 'attendance';
+  if (lowerPath.includes('/fees')) return 'fees';
+  if (lowerPath.includes('/income')) return 'income';
+  if (lowerPath.includes('/expense')) return 'expenses';
+  if (lowerPath.includes('/setup') || lowerPath.includes('/settings')) return 'setup';
+  if (lowerPath.includes('/dashboard')) return 'dashboard';
+  return 'dashboard';
 };
 
 const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
@@ -213,14 +213,14 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
   
   useEffect(() => {
     // This runs only in the browser
-    const storedUser = localStorage.getItem("user");
+    const storedUser = localStorage.getItem('user');
     setUserData(storedUser);
   }, []);
 
   // Filter menu items based on user role
   const visibleMenuItems = menuList.filter((item) => {
     // Logout is always visible
-    if (item.name === "Logout") return true;
+    if (item.name === 'Logout') return true;
 
     // Check if role can access this section
     const section = getMenuItemSection(item.path);
@@ -232,14 +232,14 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
 
   const handleLogout = async () => {
     try {
-      await axiosInstance.post("/auth/logout");  // clears HTTPOnly cookies server-side
+      await axiosInstance.post('/auth/logout');  // clears HTTPOnly cookies server-side
     } catch {
       // proceed with local cleanup even if the call fails
     } finally {
       clearRole();            // clears sessionStorage + localStorage via context
       localStorage.clear();   // belt-and-suspenders
       sessionStorage.clear();
-      router.replace("/login");
+      router.replace('/login');
     }
   };
 
@@ -260,7 +260,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
       {/* Mobile Overlay */}
       <div
         className={`fixed inset-0 bg-black bg-opacity-70 z-40 md:hidden transition-opacity ${
-          isOpen ? "opacity-100 visible" : "opacity-0 invisible -z-10"
+          isOpen ? 'opacity-100 visible' : 'opacity-0 invisible -z-10'
         }`}
         onClick={onClose}
       />
@@ -269,7 +269,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
       <aside
         className={`fixed z-50 top-0 left-0 h-screen w-64 bg-white dark:bg-neutral-950 border-r border-gray-200 dark:border-gray-700 p-4 flex flex-col transform transition-transform duration-300 shadow-lg
           ${
-            isOpen ? "translate-x-0" : "-translate-x-full"
+            isOpen ? 'translate-x-0' : '-translate-x-full'
           } md:translate-x-0 md:static md:z-auto`}
       >
         <div className="flex items-center justify-between border-b border-gray-200 dark:border-gray-700 pb-4">
@@ -295,7 +295,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
           />
           <div>
             <h2 className="text-sm font-semibold text-gray-700 uppercase dark:text-gray-200">
-                {userData ? JSON.parse(userData).username : "Guest"}
+                {userData ? JSON.parse(userData).username : 'Guest'}
             </h2>
             
           </div>
@@ -309,8 +309,8 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
                   onClick={() => toggleSubmenu(item.id)}
                   className={`w-full flex items-center justify-between p-2 rounded-lg mb-1 transition ${
                     isActivePath(item.path)
-                      ? "bg-primary text-primary-foreground"
-                      : "hover:bg-gray-100 dark:hover:bg-neutral-800"
+                      ? 'bg-primary text-primary-foreground'
+                      : 'hover:bg-gray-100 dark:hover:bg-neutral-800'
                   }`}
                 >
                   <div className="flex items-center">
@@ -319,11 +319,11 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
                   </div>
                   <ChevronDown
                     className={`w-5 h-5 transition-transform ${
-                      openSubmenu === item.id ? "rotate-180" : "rotate-0"
+                      openSubmenu === item.id ? 'rotate-180' : 'rotate-0'
                     }`}
                   />
                 </button>
-              ) : item.name === "Logout" ? (
+              ) : item.name === 'Logout' ? (
                 <button
                   onClick={handleLogout}
                   className="flex items-center p-2 w-full rounded-lg mb-1 hover:bg-gray-100 dark:hover:bg-neutral-800"
@@ -336,8 +336,8 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
                   href={item.path}
                   className={`flex items-center p-2 rounded-lg mb-1 transition ${
                     isExactPath(item.path)
-                      ? "bg-primary text-primary-foreground"
-                      : "hover:bg-gray-100 dark:hover:bg-neutral-800"
+                      ? 'bg-primary text-primary-foreground'
+                      : 'hover:bg-gray-100 dark:hover:bg-neutral-800'
                   }`}
                 >
                   <item.icon className="w-5 h-5 mr-3" />
@@ -371,7 +371,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
         <button
           onClick={() => {
             setIsDarkMode(!isDarkMode);
-            document.documentElement.classList.toggle("dark");
+            document.documentElement.classList.toggle('dark');
           }}
           className="mt-auto p-2 rounded-lg bg-gray-50 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600"
         >

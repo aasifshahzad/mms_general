@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState } from 'react';
 import {
   AlertDialog,
   AlertDialogTrigger,
@@ -6,13 +6,13 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
   AlertDialogFooter,
-} from "@/components/ui/alert-dialog";
-import { Button } from "@/components/ui/button";
-import { RiDeleteBinLine } from "react-icons/ri";
+} from '@/components/ui/alert-dialog';
+import { Button } from '@/components/ui/button';
+import { RiDeleteBinLine } from 'react-icons/ri';
 const DelConfirmMsg = ({
   OnDelete,
-  title = "Are you sure?",
-  text = "You want to delete this item?",
+  title = 'Are you sure?',
+  text = 'You want to delete this item?',
 }: {
   rowId: number;
   OnDelete: (confirmed: boolean) => void;

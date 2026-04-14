@@ -1,4 +1,4 @@
-import React from "react";
+import React from 'react';
 
 interface HeaderProps {
   value: string;
@@ -13,8 +13,8 @@ export const Header = ({ value, subtitle }: HeaderProps) => {
       {/* Subtle background pattern */}
       <div className="absolute inset-0 opacity-5 pointer-events-none"
         style={{
-          backgroundImage: "radial-gradient(circle at 1px 1px, white 1px, transparent 0)",
-          backgroundSize: "24px 24px"
+          backgroundImage: 'radial-gradient(circle at 1px 1px, white 1px, transparent 0)',
+          backgroundSize: '24px 24px'
         }}
       />
       <div className="relative flex items-center gap-3">

@@ -1,6 +1,6 @@
-import { Header } from '@/components/dashboard/Header'
-import IncomeCat from '@/components/Income/IncomeCat'
-import React from 'react'
+import { Header } from '@/components/dashboard/Header';
+import IncomeCat from '@/components/Income/IncomeCat';
+import React from 'react';
 
 const page = () => {
   return (
@@ -10,7 +10,7 @@ const page = () => {
       </div>
       <IncomeCat />
     </div>
-  )
-}
+  );
+};
 
-export default page
+export default page;

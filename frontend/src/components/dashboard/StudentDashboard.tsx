@@ -1,15 +1,15 @@
-"use client";
+'use client';
 
-import React, { useState, useEffect } from "react";
-import { Header } from "@/components/dashboard/Header";
-import { motion } from "framer-motion";
-import { ResponsiveH3, ResponsiveBody, ResponsiveLabel } from "@/components/responsive/ResponsiveTypography";
+import React, { useState, useEffect } from 'react';
+import { Header } from '@/components/dashboard/Header';
+import { motion } from 'framer-motion';
+import { ResponsiveH3, ResponsiveBody, ResponsiveLabel } from '@/components/responsive/ResponsiveTypography';
 
 export function StudentDashboard() {
   const [studentData, setStudentData] = useState({
-    name: "Loading...",
-    rollNumber: "--",
-    class: "--",
+    name: 'Loading...',
+    rollNumber: '--',
+    class: '--',
     attendance: 0,
     totalDue: 0,
     totalPaid: 0,
@@ -19,9 +19,9 @@ export function StudentDashboard() {
     // TODO: Fetch student's own data from API
     // Filter data by current user's student_id
     setStudentData({
-      name: "Student Name",
-      rollNumber: "001",
-      class: "Class Name",
+      name: 'Student Name',
+      rollNumber: '001',
+      class: 'Class Name',
       attendance: 0,
       totalDue: 0,
       totalPaid: 0,

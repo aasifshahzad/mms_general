@@ -1,5 +1,5 @@
-import AxiosInstance from "@/api/axiosInterceptorInstance";
-import { AddExpenseModel, ExpenseCategory } from "@/models/expense/expense";
+import AxiosInstance from '@/api/axiosInterceptorInstance';
+import { AddExpenseModel, ExpenseCategory } from '@/models/expense/expense';
 
 
 // Export as a single API object
@@ -9,10 +9,10 @@ export const ExpenseAPI = {
       const response = await AxiosInstance.get(
         `/expenses/filter-by-category/${category_id}`
       );
-      console.log("API Response:", response.data);
+      console.log('API Response:', response.data);
       return response;
     } catch (error) {
-      console.error("API Error:", error);
+      console.error('API Error:', error);
       throw error;
     }
   },
@@ -20,18 +20,18 @@ export const ExpenseAPI = {
   AddExpense: async (AddFee: AddExpenseModel) => {
     try {
       const response = await AxiosInstance.post<AddExpenseModel>(
-        "/expenses/add_expense/",
+        '/expenses/add_expense/',
         JSON.stringify(AddFee),
         {
           headers: {
-            "Content-Type": "application/json",
+            'Content-Type': 'application/json',
           },
         }
       );
-      console.log("API Response:", response);
+      console.log('API Response:', response);
       return response;
     } catch (error) {
-      console.error("API Error:", error);
+      console.error('API Error:', error);
       throw error;
     }
   },
@@ -39,18 +39,18 @@ export const ExpenseAPI = {
   AddExpenseCat: async (AddExpenseCat: ExpenseCategory) => {
     try {
       const response = await AxiosInstance.post<AddExpenseModel>(
-        "/expense_cat_names/add_expense_cat_name/",
+        '/expense_cat_names/add_expense_cat_name/',
         JSON.stringify(AddExpenseCat),
         {
           headers: {
-            "Content-Type": "application/json",
+            'Content-Type': 'application/json',
           },
         }
       );
-      console.log("API Response:", response);
+      console.log('API Response:', response);
       return response;
     } catch (error) {
-      console.error("API Error:", error);
+      console.error('API Error:', error);
       throw error;
     }
   },
@@ -58,12 +58,12 @@ export const ExpenseAPI = {
   GetExpenseCategory: async () => {
     try {
       const response = await AxiosInstance.get(
-        "/expense_cat_names/expense-cat-names-all/"
+        '/expense_cat_names/expense-cat-names-all/'
       );
-      console.log("API Response:", response.data);
+      console.log('API Response:', response.data);
       return response;
     } catch (error) {
-      console.error("API Error:", error);
+      console.error('API Error:', error);
       throw error;
     }
   },
@@ -75,7 +75,7 @@ export const ExpenseAPI = {
       );
       return response;
     } catch (error) {
-      console.error("API Error:", error);
+      console.error('API Error:', error);
       throw error;
     }
   }

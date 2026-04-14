@@ -10,6 +10,7 @@ export interface AddExpenseModel {
 export interface ExpenseCategory {
   expense_cat_name_id: number;
   expense_cat_name: string;
+  created_at?: string | Date;
 }
 
 export interface ExpenseData {

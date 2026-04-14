@@ -1,16 +1,16 @@
-import React from "react";
+import React from 'react';
 
 export const Skeleton = ({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) => {
     return (
         <div
             className={`animate-pulse bg-gradient-to-r from-slate-200 via-slate-100 to-slate-200 rounded-lg ${className}`}
-            style={{ backgroundSize: "200% 100%", animation: "pulse 1.5s ease-in-out infinite" }}
+            style={{ backgroundSize: '200% 100%', animation: 'pulse 1.5s ease-in-out infinite' }}
             {...props}
         />
     );
 };
 
-export const ChartSkeleton = ({ height = "h-64" }: { height?: string }) => {
+export const ChartSkeleton = ({ height = 'h-64' }: { height?: string }) => {
     return (
         <div className={`w-full ${height} flex flex-col gap-3 p-2`}>
             {/* Fake Y-axis labels */}

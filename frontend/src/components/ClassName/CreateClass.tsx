@@ -1,18 +1,18 @@
-"use client";
-import React, { useState } from "react";
-import { Button } from "../ui/button";
+'use client';
+import React, { useState } from 'react';
+import { Button } from '../ui/button';
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog";
-import { Input } from "../ui/input";
-import { useForm } from "react-hook-form";
-import { toast } from "sonner";
-import { Loader2, Plus, BookOpen } from "lucide-react";
-import { ClassNameAPI as API } from "@/api/Classname/ClassNameAPI";
-import { CreateClassModel } from "@/models/className/className";
+} from '@/components/ui/dialog';
+import { Input } from '../ui/input';
+import { useForm } from 'react-hook-form';
+import { toast } from 'sonner';
+import { Loader2, Plus, BookOpen } from 'lucide-react';
+import { ClassNameAPI as API } from '@/api/Classname/ClassNameAPI';
+import { CreateClassModel } from '@/models/className/className';
 
 const AddNewClass = ({ onClassAdded }: { onClassAdded: () => void }) => {
   const {  
@@ -32,12 +32,12 @@ const AddNewClass = ({ onClassAdded }: { onClassAdded: () => void }) => {
       if (response) {
         setOpen(false);
         reset();
-        toast.success("Class Name Added Successfully!", { position: "bottom-center" });
+        toast.success('Class Name Added Successfully!', { position: 'bottom-center' });
         onClassAdded();
       }
     } catch (error) {
-      console.error("Error creating class:", error);
-      toast.error("Failed to add class name", { position: "bottom-center" });
+      console.error('Error creating class:', error);
+      toast.error('Failed to add class name', { position: 'bottom-center' });
     } finally {
       setLoading(false);
     }
@@ -85,7 +85,7 @@ const AddNewClass = ({ onClassAdded }: { onClassAdded: () => void }) => {
                 <Input
                   className="h-10 border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 rounded-xl px-3 text-sm text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-300 focus:border-indigo-400 transition-colors"
                   placeholder="e.g. Grade 10 - Section A"
-                  {...register("class_name", { required: "Class name is required" })}
+                  {...register('class_name', { required: 'Class name is required' })}
                 />
                 {errors.class_name && (
                   <p className="text-rose-500 text-xs mt-1 absolute">{errors.class_name.message}</p>
@@ -109,7 +109,7 @@ const AddNewClass = ({ onClassAdded }: { onClassAdded: () => void }) => {
                 {loading ? (
                   <><Loader2 className="w-4 h-4 animate-spin" /> Saving…</>
                 ) : (
-                  "Save Class"
+                  'Save Class'
                 )}
               </button>
             </div>

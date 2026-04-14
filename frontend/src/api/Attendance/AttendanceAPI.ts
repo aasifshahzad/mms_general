@@ -1,6 +1,6 @@
-import { MarkAttInput, MarkAttUpdate } from "@/models/markattendace/markattendance";
-import AxiosInstance from "@/api/axiosInterceptorInstance";
-import { GetActionDetail } from "@/models/EntityBase";
+import { MarkAttInput, MarkAttUpdate } from '@/models/markattendace/markattendance';
+import AxiosInstance from '@/api/axiosInterceptorInstance';
+import { GetActionDetail } from '@/models/EntityBase';
 
 interface FilteredAttendance {
   attendance_date: string;
@@ -17,21 +17,21 @@ export namespace AttendanceAPI {
 export const Create = async (Attendances: MarkAttInput) => {
     try {
       const response = await AxiosInstance.post<MarkAttInput>(
-        "/mark_attendance/add_bulk_attendance/",
+        '/mark_attendance/add_bulk_attendance/',
         JSON.stringify(Attendances),
         {
           headers: {
-            "Content-Type": "application/json",
+            'Content-Type': 'application/json',
           },
         }
       );
-      console.log("API Response:", response);
+      console.log('API Response:', response);
       return response;
     } catch (error) {
-      console.error("API Error:", error);
+      console.error('API Error:', error);
       throw error; 
     }
-  }
+  };
   export const GetbyFilter = async (FilteredAttendance: FilteredAttendance) => {
     try {
       const response = await AxiosInstance.get<FilteredAttendance>(
@@ -40,38 +40,38 @@ export const Create = async (Attendances: MarkAttInput) => {
       return response;
     }
     catch (error) {
-      console.error("API Error:", error);
+      console.error('API Error:', error);
       throw error;
     }
-  }
+  };
   export const Update = async (attendance_id: number, Attendances: MarkAttUpdate) => {
     try {
-      const updatedAttendance = GetActionDetail(Attendances, "update");
-      if (!updatedAttendance) throw new Error("Failed to update attendance");
+      const updatedAttendance = GetActionDetail(Attendances, 'update');
+      if (!updatedAttendance) throw new Error('Failed to update attendance');
       
       const response = await AxiosInstance.patch<MarkAttUpdate>(
         `/mark_attendance/update_attendance/${attendance_id}`,
         JSON.stringify(updatedAttendance),
         {
           headers: {
-            "Content-Type": "application/json",
+            'Content-Type': 'application/json',
           },
         }
       );
-      console.log("API Response:", response);
+      console.log('API Response:', response);
       return response;
     } catch (error) {
-      console.error("API Error:", error);
+      console.error('API Error:', error);
       throw error; 
     }
-  }
+  };
   export async function Delete(attendance_id: number) {
     try {
       const response = await AxiosInstance.delete(
         `mark_attendance/delete_attendance/${attendance_id}`,
         {
           headers: {
-            "Content-Type": "application/json",
+            'Content-Type': 'application/json',
           },
         }
       );

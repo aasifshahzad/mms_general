@@ -1,4 +1,4 @@
-import { EntityBase } from "../EntityBase";
+import { EntityBase } from '../EntityBase';
 
 export interface ClassTiming extends EntityBase {
     attendance_time_id: number;

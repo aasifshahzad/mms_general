@@ -1,9 +1,9 @@
-"use client";
+'use client';
 
-import React, { useState, useEffect } from "react";
-import { Header } from "@/components/dashboard/Header";
-import { motion } from "framer-motion";
-import { ResponsiveH3, ResponsiveLabel, ResponsiveLarge } from "@/components/responsive/ResponsiveTypography";
+import React, { useState, useEffect } from 'react';
+import { Header } from '@/components/dashboard/Header';
+import { motion } from 'framer-motion';
+import { ResponsiveH3, ResponsiveLabel, ResponsiveLarge } from '@/components/responsive/ResponsiveTypography';
 
 export function TeacherDashboard() {
   const [studentStats, setStudentStats] = useState({

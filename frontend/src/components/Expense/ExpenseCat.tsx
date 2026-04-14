@@ -1,6 +1,6 @@
-"use client";
+'use client';
 
-import * as React from "react";
+import * as React from 'react';
 import {
   ColumnDef,
   flexRender,
@@ -8,14 +8,14 @@ import {
   useReactTable,
   getPaginationRowModel,
   getFilteredRowModel,
-} from "@tanstack/react-table";
-import { Search, ChevronLeft, ChevronRight, LoaderIcon, Tag, Calendar } from "lucide-react";
-import { ExpenseAPI as API } from "@/api/Expense/ExpenseAPI";
-import { useEffect, useState } from "react";
-import AddExpenseCategory from "./CreateExpenseCat";
-import { ExpenseCategory} from "@/models/expense/expense";
-import DelConfirmMsg from "../DelConfMsg";
-import { toast } from "sonner";
+} from '@tanstack/react-table';
+import { Search, ChevronLeft, ChevronRight, LoaderIcon, Tag, Calendar } from 'lucide-react';
+import { ExpenseAPI as API } from '@/api/Expense/ExpenseAPI';
+import { useEffect, useState } from 'react';
+import AddExpenseCategory from './CreateExpenseCat';
+import { ExpenseCategory} from '@/models/expense/expense';
+import DelConfirmMsg from '../DelConfMsg';
+import { toast } from 'sonner';
 
 import {
   Table,
@@ -24,12 +24,12 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
+} from '@/components/ui/table';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
 
 export default function ExpenseCat() {
-  const [globalFilter, setGlobalFilter] = useState("");
+  const [globalFilter, setGlobalFilter] = useState('');
   const [data, setData] = useState<ExpenseCategory[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -38,13 +38,13 @@ export default function ExpenseCat() {
   }, []);
 
   const GetData = async () => {
-    setLoading(true)
+    setLoading(true);
     try {
       const response = await API.GetExpenseCategory();
       const responseData = (response as { data?: ExpenseCategory[] })?.data;
       setData(Array.isArray(responseData) ? responseData : []);
     } catch (error) {
-      console.error("Error fetching data:", error);
+      console.error('Error fetching data:', error);
       setData([]);
     } finally {
       setLoading(false);
@@ -55,21 +55,21 @@ export default function ExpenseCat() {
     if (!confirmed) return;
     try {
       await API.DeleteExpenseCategory(deleteData.expense_cat_name_id);
-      toast.success("Category deleted successfully", {
-        position: "bottom-center",
+      toast.success('Category deleted successfully', {
+        position: 'bottom-center',
       });
       GetData();
     } catch (error: unknown) {
       const axiosError = error as { response?: { status: number; data?: { detail?: string } } };
       if (axiosError.response?.status === 409) {
         toast.error(
-          "Please delete related expense records first before deleting this category.",
-          { position: "bottom-center" }
+          'Please delete related expense records first before deleting this category.',
+          { position: 'bottom-center' }
         );
       } else {
         toast.error(
-          axiosError.response?.data?.detail || "Failed to delete category.",
-          { position: "bottom-center" }
+          axiosError.response?.data?.detail || 'Failed to delete category.',
+          { position: 'bottom-center' }
         );
       }
     }
@@ -77,29 +77,31 @@ export default function ExpenseCat() {
 
   const columns: ColumnDef<ExpenseCategory>[] = [
     {
-      accessorKey: "expense_cat_name_id",
-      header: "Sr. No",
+      accessorKey: 'expense_cat_name_id',
+      header: 'Sr. No',
       cell: ({ row }) => (
         <div className="font-semibold text-slate-500 dark:text-slate-400">
-          #{row.getValue("expense_cat_name_id")}
+          #{row.getValue('expense_cat_name_id')}
         </div>
       ),
     },
     {
-      accessorKey: "expense_cat_name",
-      header: "Expense Category",
+      accessorKey: 'expense_cat_name',
+      header: 'Expense Category',
       cell: ({ row }) => (
         <div className="text-slate-800 dark:text-slate-100 font-semibold">
-          {row.getValue("expense_cat_name")}
+          {row.getValue('expense_cat_name')}
         </div>
       ),
     },
     {
-      accessorKey: "created_at",
-      header: "Created Date",
+      accessorKey: 'created_at',
+      header: 'Created Date',
       cell: ({ row }) => {
-        const date = new Date(row.getValue("created_at"));
-        const formattedDate = date.toLocaleDateString("en-GB");
+        const createdAt = row.getValue('created_at');
+        if (!createdAt) return <div className="text-slate-400">—</div>;
+        const date = new Date(createdAt as string | number | Date);
+        const formattedDate = date.toLocaleDateString('en-GB');
         return (
           <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-slate-100 text-slate-600 border border-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:border-slate-700">
             <Calendar className="w-3 h-3" />
@@ -109,8 +111,8 @@ export default function ExpenseCat() {
       }
     },
     {
-      id: "delete",
-      header: "Action",
+      id: 'delete',
+      header: 'Action',
       cell: ({ row }) => (
         <DelConfirmMsg
           rowId={row.original.expense_cat_name_id}
@@ -152,7 +154,7 @@ export default function ExpenseCat() {
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 h-4 w-4" />
               <Input
                 placeholder="Search Categories..."
-                value={globalFilter ?? ""}
+                value={globalFilter ?? ''}
                 onChange={(e) => setGlobalFilter(e.target.value)}
                 className="pl-9 h-10 w-full border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 rounded-xl text-sm focus:ring-2 focus:ring-indigo-300 dark:text-slate-100 transition-colors"
               />
@@ -197,8 +199,8 @@ export default function ExpenseCat() {
                     key={row.id}
                     className={`transition-colors hover:bg-slate-50/80 dark:hover:bg-slate-800/40 ${
                       i % 2 === 0
-                        ? "bg-white dark:bg-slate-900"
-                        : "bg-slate-50/50 dark:bg-slate-800/20"
+                        ? 'bg-white dark:bg-slate-900'
+                        : 'bg-slate-50/50 dark:bg-slate-800/20'
                     }`}
                   >
                     {row.getVisibleCells().map((cell) => (
@@ -253,7 +255,7 @@ export default function ExpenseCat() {
                   <p className="text-[10px] uppercase font-semibold text-slate-400 tracking-wider">Created Date</p>
                   <p className="text-sm text-slate-600 dark:text-slate-300 mt-0.5 flex items-center gap-1.5 ">
                     <Calendar className="w-3 h-3"/>
-                    {new Date(row.original.created_at).toLocaleDateString("en-GB")}
+                    {row.original.created_at ? new Date(row.original.created_at).toLocaleDateString('en-GB') : '—'}
                   </p>
                 </div>
               </div>
@@ -266,20 +268,20 @@ export default function ExpenseCat() {
         {/* Pagination */}
         <div className="px-5 py-4 border-t border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/20 flex flex-col sm:flex-row items-center justify-between gap-4">
           <span className="text-xs sm:text-sm text-slate-500 dark:text-slate-400">
-            Showing{" "}
+            Showing{' '}
             <span className="font-semibold text-slate-700 dark:text-slate-300">
               {table.getRowModel().rows.length > 0 
                 ? table.getState().pagination.pageIndex * table.getState().pagination.pageSize + 1 
                 : 0}
             </span>
-            {" - "}
+            {' - '}
             <span className="font-semibold text-slate-700 dark:text-slate-300">
               {Math.min(
                 (table.getState().pagination.pageIndex + 1) * table.getState().pagination.pageSize,
                 table.getFilteredRowModel().rows.length
               )}
-            </span>{" "}
-            of{" "}
+            </span>{' '}
+            of{' '}
             <span className="font-semibold text-slate-700 dark:text-slate-300">
               {table.getFilteredRowModel().rows.length}
             </span> categories

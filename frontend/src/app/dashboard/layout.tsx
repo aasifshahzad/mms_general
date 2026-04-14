@@ -1,8 +1,8 @@
-"use client";
-import Sidebar from "@/components/dashboard/Sidebar";
-import { ProtectedRoute } from "@/components/ProtectedRoute";
-import React, { useState } from "react";
-import { Menu } from "lucide-react";
+'use client';
+import Sidebar from '@/components/dashboard/Sidebar';
+import { ProtectedRoute } from '@/components/ProtectedRoute';
+import React, { useState } from 'react';
+import { Menu } from 'lucide-react';
 
 function Layout({ children }: { children: React.ReactNode }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);

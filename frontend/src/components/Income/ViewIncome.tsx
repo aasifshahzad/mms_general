@@ -1,16 +1,16 @@
-"use client";
-import { IncomeCategory } from "@/models/income/income";
-import React, { useEffect, useState } from "react";
-import { IncomeAPI as API } from "@/api/Income/IncomeAPI";
-import { useForm } from "react-hook-form";
-import { usePrint } from "@/components/print/usePrint";
-import { Printer, Filter, PieChart, Calendar, Phone, Hash, List } from "lucide-react";
+'use client';
+import { IncomeCategory } from '@/models/income/income';
+import React, { useEffect, useState } from 'react';
+import { IncomeAPI as API } from '@/api/Income/IncomeAPI';
+import { useForm } from 'react-hook-form';
+import { usePrint } from '@/components/print/usePrint';
+import { Printer, Filter, PieChart, Calendar, Phone, Hash, List } from 'lucide-react';
 
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
-} from "@/components/ui/table";
-import { Header } from "../dashboard/Header";
-import Loader from "../Loader";
+} from '@/components/ui/table';
+import { Header } from '../dashboard/Header';
+import Loader from '../Loader';
 
 interface IncomeFormValues { category_id: number; }
 interface IncomeDataItem {
@@ -19,7 +19,7 @@ interface IncomeDataItem {
 interface ApiResponse<T> { data: T; status: number; message?: string; }
 
 const inputCls =
-  "h-10 w-full border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 rounded-xl px-3 text-sm text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-300 focus:border-indigo-400 hover:border-slate-300 dark:hover:border-slate-600 transition-colors";
+  'h-10 w-full border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 rounded-xl px-3 text-sm text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-300 focus:border-indigo-400 hover:border-slate-300 dark:hover:border-slate-600 transition-colors';
 
 const ViewIncome = () => {
   const { register, formState: { errors } } = useForm<IncomeFormValues>();
@@ -45,7 +45,7 @@ const ViewIncome = () => {
       }));
       setIncomeCategory(data);
     } catch (error) {
-      console.error("Error fetching income categories:", error);
+      console.error('Error fetching income categories:', error);
       setIncomeCategory([]);
     }
   };
@@ -56,7 +56,7 @@ const ViewIncome = () => {
       const res = (await API.GetIncomeData(0)) as ApiResponse<IncomeDataItem[]>;
       setIncomeData(res.data);
     } catch (error) {
-      console.error("Error fetching all income data:", error);
+      console.error('Error fetching all income data:', error);
       setIncomeData([]);
     } finally {
       setIsFetching(false);
@@ -73,7 +73,7 @@ const ViewIncome = () => {
       const res = (await API.GetIncomeData(CategoryId)) as ApiResponse<IncomeDataItem[]>;
       setIncomeData(res.data);
     } catch (error) {
-      console.error("Error fetching income data:", error);
+      console.error('Error fetching income data:', error);
       setIncomeData([]);
     } finally {
       setIsFetching(false);
@@ -103,7 +103,7 @@ const ViewIncome = () => {
               Income Category
             </label>
             <select
-              {...register("category_id", { valueAsNumber: true })}
+              {...register('category_id', { valueAsNumber: true })}
               className={inputCls}
               onChange={(e) => getIncome(Number(e.target.value))}
             >
@@ -164,7 +164,7 @@ const ViewIncome = () => {
                 </TableHeader>
                 <TableBody className="divide-y divide-slate-100 dark:divide-slate-800">
                   {incomeData.map((item, i) => (
-                    <TableRow key={item.id} className={`transition-colors hover:bg-slate-50 dark:hover:bg-slate-800/40 ${i % 2 === 0 ? "bg-white dark:bg-slate-900" : "bg-slate-50/50 dark:bg-slate-800/30"}`}>
+                    <TableRow key={item.id} className={`transition-colors hover:bg-slate-50 dark:hover:bg-slate-800/40 ${i % 2 === 0 ? 'bg-white dark:bg-slate-900' : 'bg-slate-50/50 dark:bg-slate-800/30'}`}>
                       <TableCell className="px-4 py-3 text-slate-500 dark:text-slate-400 font-medium">#{item.id}</TableCell>
                       <TableCell className="px-4 py-3 text-sm text-slate-700 dark:text-slate-300">{item.date}</TableCell>
                       <TableCell className="px-4 py-3">

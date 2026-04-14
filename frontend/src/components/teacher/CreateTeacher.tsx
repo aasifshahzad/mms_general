@@ -1,18 +1,18 @@
-"use client";
-import React, { useState } from "react";
-import { Button } from "../ui/button";
+'use client';
+import React, { useState } from 'react';
+import { Button } from '../ui/button';
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog";
-import { Input } from "../ui/input";
-import { useForm } from "react-hook-form";
-import { toast } from "sonner";
-import { Loader2, Plus, UserPlus } from "lucide-react";
-import { TeacherNameAPI as API } from "@/api/Teacher/TeachetAPI";
-import { TeacherModel } from "@/models/teacher/Teacher";
+} from '@/components/ui/dialog';
+import { Input } from '../ui/input';
+import { useForm } from 'react-hook-form';
+import { toast } from 'sonner';
+import { Loader2, Plus, UserPlus } from 'lucide-react';
+import { TeacherNameAPI as API } from '@/api/Teacher/TeachetAPI';
+import { TeacherModel } from '@/models/teacher/Teacher';
 
 const AddNewTeacher = ({ onClassAdded }: { onClassAdded: () => void }) => {
   const {
@@ -32,12 +32,12 @@ const AddNewTeacher = ({ onClassAdded }: { onClassAdded: () => void }) => {
       if (response) {
         setOpen(false);
         reset();
-        toast.success("Teacher Name Added Successfully!", { position: "bottom-center" });
+        toast.success('Teacher Name Added Successfully!', { position: 'bottom-center' });
         onClassAdded();
       }
     } catch (error) {
-      console.error("Error creating teacher:", error);
-      toast.error("Failed to add teacher name", { position: "bottom-center" });
+      console.error('Error creating teacher:', error);
+      toast.error('Failed to add teacher name', { position: 'bottom-center' });
     } finally {
       setLoading(false);
     }
@@ -82,8 +82,8 @@ const AddNewTeacher = ({ onClassAdded }: { onClassAdded: () => void }) => {
                 <Input
                   className="h-10 border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 rounded-xl px-3 text-sm text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-300 focus:border-indigo-400 transition-colors"
                   placeholder="e.g. Asad Qureshi"
-                  {...register("teacher_name", {
-                    required: "Teacher name is required",
+                  {...register('teacher_name', {
+                    required: 'Teacher name is required',
                   })}
                 />
                 {errors.teacher_name && (
@@ -108,7 +108,7 @@ const AddNewTeacher = ({ onClassAdded }: { onClassAdded: () => void }) => {
                 {loading ? (
                   <><Loader2 className="w-4 h-4 animate-spin" /> Saving…</>
                 ) : (
-                  "Save Teacher"
+                  'Save Teacher'
                 )}
               </button>
             </div>

@@ -1,26 +1,26 @@
-"use client";
+'use client';
 
-import { useRouter } from "next/navigation";
-import { useRole } from "@/context/RoleContext";
-import { getRoleDisplayName } from "@/utils/rolePermissions";
-import { Button } from "@/components/ui/button";
+import { useRouter } from 'next/navigation';
+import { useRole } from '@/context/RoleContext';
+import { getRoleDisplayName } from '@/utils/rolePermissions';
+import { Button } from '@/components/ui/button';
 
 export default function UnauthorizedPage() {
   const router = useRouter();
   const { role, clearRole } = useRole();
 
   const handleGoHome = () => {
-    router.push("/dashboard");
+    router.push('/dashboard');
   };
 
   const handleLogout = () => {
     // Clear role context
     clearRole();
     // Clear other auth tokens if stored
-    sessionStorage.removeItem("access_token");
-    localStorage.removeItem("access_token");
+    sessionStorage.removeItem('access_token');
+    localStorage.removeItem('access_token');
     // Redirect to login
-    router.push("/login");
+    router.push('/login');
   };
 
   return (

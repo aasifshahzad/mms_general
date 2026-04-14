@@ -1,7 +1,7 @@
-"use client";
+'use client';
 
-import React from "react";
-import { cn } from "@/libs/utils";
+import React from 'react';
+import { cn } from '@/libs/utils';
 
 /**
  * Responsive Typography Utilities
@@ -23,7 +23,7 @@ export const ResponsiveH1: React.FC<ResponsiveHeadingProps> = ({
 }) => (
   <h1
     className={cn(
-      "text-2xl sm:text-3xl md:text-4xl font-bold text-slate-900 dark:text-white leading-tight",
+      'text-2xl sm:text-3xl md:text-4xl font-bold text-slate-900 dark:text-white leading-tight',
       className
     )}
   >
@@ -41,7 +41,7 @@ export const ResponsiveH2: React.FC<ResponsiveHeadingProps> = ({
 }) => (
   <h2
     className={cn(
-      "text-xl sm:text-2xl md:text-3xl font-bold text-slate-900 dark:text-white leading-snug",
+      'text-xl sm:text-2xl md:text-3xl font-bold text-slate-900 dark:text-white leading-snug',
       className
     )}
   >
@@ -59,7 +59,7 @@ export const ResponsiveH3: React.FC<ResponsiveHeadingProps> = ({
 }) => (
   <h3
     className={cn(
-      "text-lg sm:text-xl md:text-2xl font-semibold text-slate-900 dark:text-white leading-snug",
+      'text-lg sm:text-xl md:text-2xl font-semibold text-slate-900 dark:text-white leading-snug',
       className
     )}
   >
@@ -77,7 +77,7 @@ export const ResponsiveH4: React.FC<ResponsiveHeadingProps> = ({
 }) => (
   <h4
     className={cn(
-      "text-base sm:text-lg md:text-xl font-semibold text-slate-900 dark:text-white",
+      'text-base sm:text-lg md:text-xl font-semibold text-slate-900 dark:text-white',
       className
     )}
   >
@@ -100,7 +100,7 @@ export const ResponsiveBody: React.FC<ResponsiveTextProps> = ({
 }) => (
   <p
     className={cn(
-      "text-sm sm:text-base text-slate-700 dark:text-slate-300 leading-relaxed",
+      'text-sm sm:text-base text-slate-700 dark:text-slate-300 leading-relaxed',
       className
     )}
   >
@@ -118,7 +118,7 @@ export const ResponsiveSmall: React.FC<ResponsiveTextProps> = ({
 }) => (
   <p
     className={cn(
-      "text-xs sm:text-sm text-slate-600 dark:text-slate-400",
+      'text-xs sm:text-sm text-slate-600 dark:text-slate-400',
       className
     )}
   >
@@ -136,7 +136,7 @@ export const ResponsiveLarge: React.FC<ResponsiveTextProps> = ({
 }) => (
   <p
     className={cn(
-      "text-lg sm:text-xl text-slate-800 dark:text-slate-200 font-medium",
+      'text-lg sm:text-xl text-slate-800 dark:text-slate-200 font-medium',
       className
     )}
   >
@@ -154,7 +154,7 @@ export const ResponsiveLabel: React.FC<ResponsiveTextProps> = ({
 }) => (
   <label
     className={cn(
-      "text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-300 uppercase tracking-wide",
+      'text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-300 uppercase tracking-wide',
       className
     )}
   >

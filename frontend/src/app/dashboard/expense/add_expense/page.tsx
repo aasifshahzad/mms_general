@@ -1,14 +1,14 @@
-"use client";
+'use client';
 
-import React, { useState, useEffect } from "react";
-import { useForm } from "react-hook-form";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { Header } from "@/components/dashboard/Header";
-import { toast } from "sonner";
-import { ExpenseAPI as API } from "@/api/Expense/ExpenseAPI";
-import { AddExpenseModel, ExpenseCategory } from "@/models/expense/expense";
-import { AxiosResponse } from "axios";
+import React, { useState, useEffect } from 'react';
+import { useForm } from 'react-hook-form';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import { Header } from '@/components/dashboard/Header';
+import { toast } from 'sonner';
+import { ExpenseAPI as API } from '@/api/Expense/ExpenseAPI';
+import { AddExpenseModel, ExpenseCategory } from '@/models/expense/expense';
+import { AxiosResponse } from 'axios';
 
 const AddExpense = () => {
   const {
@@ -36,7 +36,7 @@ const AddExpense = () => {
       // console.log("Categories:", data);
       setExpenseCategory(data); // Ensure this is an array
     } catch (error) {
-      console.error("Error fetching expense categories:", error);
+      console.error('Error fetching expense categories:', error);
       setExpenseCategory([]); // Fallback to an empty array
     } finally {
       setIsLoading(false);
@@ -48,20 +48,20 @@ const AddExpense = () => {
     try {
       const response = await API.AddExpense(data);
       if (response.status === 200 || response.status === 201) {
-        toast.success("expense record added successfully");
+        toast.success('expense record added successfully');
         reset();
       } else {
-        toast.error("Failed to add expense record");
+        toast.error('Failed to add expense record');
       }
     } catch (error) {
-      console.error("Error adding expense:", error);
-      toast.error("Failed to add expense record");
+      console.error('Error adding expense:', error);
+      toast.error('Failed to add expense record');
     } finally {
       setIsLoading(false);
     }
   };
   const onSubmit = async (data: AddExpenseModel) => {
-    console.log("Form Data:", data);
+    console.log('Form Data:', data);
     await AddExpenseFunction(data);
   };
 
@@ -77,9 +77,9 @@ const AddExpense = () => {
               </label>
               <Input
                 type="number"
-                {...register("recipt_number", {
+                {...register('recipt_number', {
                   valueAsNumber: true,
-                  required: "Receipt number is required",
+                  required: 'Receipt number is required',
                 })}
                 placeholder="Enter receipt number"
                 className="h-8 sm:h-10 text-sm"
@@ -95,7 +95,7 @@ const AddExpense = () => {
               </label>
               <Input
                 type="date"
-                {...register("date", { required: "Date is required" })}
+                {...register('date', { required: 'Date is required' })}
                 className="h-8 sm:h-10 text-sm"
               />
               <p className="text-red-500 text-xs">{errors.date?.message}</p>
@@ -106,9 +106,9 @@ const AddExpense = () => {
                 Category
               </label>
               <select
-                {...register("category_id", {
+                {...register('category_id', {
                   valueAsNumber: true,
-                  required: "Category is required",
+                  required: 'Category is required',
                 })}
                 className="w-full border bg-white rounded-md px-3 py-1 sm:py-2 h-8 sm:h-10 text-sm focus:ring focus:ring-indigo-300 dark:bg-gray-800 dark:text-gray-300"
               >
@@ -134,7 +134,7 @@ const AddExpense = () => {
                 To Whom
               </label>
               <Input
-                {...register("to_whom", { required: "Source is required" })}
+                {...register('to_whom', { required: 'Source is required' })}
                 placeholder="e.g. Donation, Sponsorship"
                 className="h-8 sm:h-10 text-sm"
               />
@@ -146,8 +146,8 @@ const AddExpense = () => {
                 Description
               </label>
               <Input
-                {...register("description", {
-                  required: "Description is required",
+                {...register('description', {
+                  required: 'Description is required',
                 })}
                 placeholder="Enter description"
                 className="h-8 sm:h-10 text-sm"
@@ -163,10 +163,10 @@ const AddExpense = () => {
               </label>
               <Input
                 type="number"
-                {...register("amount", {
+                {...register('amount', {
                   valueAsNumber: true,
-                  required: "Amount is required",
-                  min: { value: 1, message: "Amount must be at least 1" },
+                  required: 'Amount is required',
+                  min: { value: 1, message: 'Amount must be at least 1' },
                 })}
                 placeholder="Enter amount"
                 className="h-8 sm:h-10 text-sm"
@@ -183,7 +183,7 @@ const AddExpense = () => {
                   Saving...
                 </>
               ) : (
-                "Add expense"
+                'Add expense'
               )}
             </Button>
           </div>

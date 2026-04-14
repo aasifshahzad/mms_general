@@ -1,18 +1,18 @@
-"use client";
-import React, { useState } from "react";
-import { Button } from "../ui/button";
+'use client';
+import React, { useState } from 'react';
+import { Button } from '../ui/button';
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog";
-import { Input } from "../ui/input";
-import { useForm } from "react-hook-form";
-import { toast } from "sonner";
-import { Loader2, Plus, Tags } from "lucide-react";
-import { IncomeAPI as API } from "@/api/Income/IncomeAPI";
-import { CreateIncomeCat } from "@/models/income/income";
+} from '@/components/ui/dialog';
+import { Input } from '../ui/input';
+import { useForm } from 'react-hook-form';
+import { toast } from 'sonner';
+import { Loader2, Plus, Tags } from 'lucide-react';
+import { IncomeAPI as API } from '@/api/Income/IncomeAPI';
+import { CreateIncomeCat } from '@/models/income/income';
 
 const AddIncomeCategory = ({
   onIncomeCatAdd,
@@ -36,12 +36,12 @@ const AddIncomeCategory = ({
       if (response) {
         setOpen(false);
         reset();
-        toast.success("Income Category Added Successfully!", { position: "bottom-center" });
+        toast.success('Income Category Added Successfully!', { position: 'bottom-center' });
         onIncomeCatAdd();
       }
     } catch (error) {
-      console.error("Error creating income category:", error);
-      toast.error("Failed to add income category", { position: "bottom-center" });
+      console.error('Error creating income category:', error);
+      toast.error('Failed to add income category', { position: 'bottom-center' });
     } finally {
       setLoading(false);
     }
@@ -86,8 +86,8 @@ const AddIncomeCategory = ({
                 <Input
                   className="h-10 border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 rounded-xl px-3 text-sm text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-emerald-300 focus:border-emerald-400 transition-colors"
                   placeholder="e.g. Donations"
-                  {...register("income_cat_name", {
-                    required: "Category name is required",
+                  {...register('income_cat_name', {
+                    required: 'Category name is required',
                   })}
                 />
                 {errors.income_cat_name && (
@@ -112,7 +112,7 @@ const AddIncomeCategory = ({
                 {loading ? (
                   <><Loader2 className="w-4 h-4 animate-spin" /> Saving…</>
                 ) : (
-                  "Save Category"
+                  'Save Category'
                 )}
               </button>
             </div>

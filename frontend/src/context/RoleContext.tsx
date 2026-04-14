@@ -1,6 +1,6 @@
-"use client";
+'use client';
 
-import React, { createContext, useState, useContext, useEffect } from "react";
+import React, { createContext, useState, useContext, useEffect } from 'react';
 
 interface RoleContextType {
   role: string | null;
@@ -17,13 +17,13 @@ export function RoleProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     // Guard against SSR — storage is only available in browser
-    if (typeof window === "undefined") {
+    if (typeof window === 'undefined') {
       setIsLoading(false);
       return;
     }
 
     // 1. Try sessionStorage first (set by setRole() calls within the same tab)
-    const storedRole = sessionStorage.getItem("userRole");
+    const storedRole = sessionStorage.getItem('userRole');
 
     if (storedRole) {
       setRole(storedRole);
@@ -34,23 +34,23 @@ export function RoleProvider({ children }: { children: React.ReactNode }) {
     // 2. Fallback: extract role from the user object in localStorage.
     //    This handles the case where the login page saves the full user object
     //    to localStorage but doesn't separately call context.setRole().
-    const storedUser = localStorage.getItem("user");
+    const storedUser = localStorage.getItem('user');
     if (storedUser) {
       try {
         const user = JSON.parse(storedUser);
         if (user?.role) {
-          console.log("RoleContext - Recovered role from localStorage:", user.role);
+          console.log('RoleContext - Recovered role from localStorage:', user.role);
           setRole(user.role);
           // Sync into sessionStorage so subsequent checks are fast
-          sessionStorage.setItem("userRole", user.role);
+          sessionStorage.setItem('userRole', user.role);
         } else {
-          console.warn("RoleContext - user object in localStorage has no role field:", user);
+          console.warn('RoleContext - user object in localStorage has no role field:', user);
         }
       } catch {
-        console.error("RoleContext - Failed to parse user from localStorage");
+        console.error('RoleContext - Failed to parse user from localStorage');
       }
     } else {
-      console.warn("RoleContext - No user found in localStorage or sessionStorage");
+      console.warn('RoleContext - No user found in localStorage or sessionStorage');
     }
 
     setIsLoading(false);
@@ -59,14 +59,14 @@ export function RoleProvider({ children }: { children: React.ReactNode }) {
   const setRoleAndStore = (newRole: string) => {
     setRole(newRole);
     // Write to BOTH storages so either path works on next load
-    sessionStorage.setItem("userRole", newRole);
+    sessionStorage.setItem('userRole', newRole);
     // Also update the role field inside the stored user object
     try {
-      const storedUser = localStorage.getItem("user");
+      const storedUser = localStorage.getItem('user');
       if (storedUser) {
         const user = JSON.parse(storedUser);
         user.role = newRole;
-        localStorage.setItem("user", JSON.stringify(user));
+        localStorage.setItem('user', JSON.stringify(user));
       }
     } catch {
       // Non-critical — sessionStorage is the primary source
@@ -75,9 +75,9 @@ export function RoleProvider({ children }: { children: React.ReactNode }) {
 
   const clearRole = () => {
     setRole(null);
-    sessionStorage.removeItem("userRole");
-    localStorage.removeItem("user");
-    localStorage.removeItem("userRole");
+    sessionStorage.removeItem('userRole');
+    localStorage.removeItem('user');
+    localStorage.removeItem('userRole');
   };
 
   return (
@@ -97,7 +97,7 @@ export function RoleProvider({ children }: { children: React.ReactNode }) {
 export function useRole() {
   const context = useContext(RoleContext);
   if (context === undefined) {
-    throw new Error("useRole must be used within a RoleProvider");
+    throw new Error('useRole must be used within a RoleProvider');
   }
   return context;
 }

@@ -1,7 +1,7 @@
-"use client";
+'use client';
 
-import React from "react";
-import { cn } from "@/libs/utils";
+import React from 'react';
+import { cn } from '@/libs/utils';
 
 interface ResponsiveTableProps {
   children: React.ReactNode;
@@ -20,7 +20,7 @@ export const ResponsiveTable: React.FC<ResponsiveTableProps> = ({
   className,
 }) => {
   return (
-    <div className={cn("w-full overflow-x-auto -mx-2 sm:mx-0", className)}>
+    <div className={cn('w-full overflow-x-auto -mx-2 sm:mx-0', className)}>
       <div className="inline-block min-w-full px-2 sm:px-0">
         {children}
       </div>
@@ -38,7 +38,7 @@ export const ResponsiveTableHeader: React.FC<ResponsiveTableProps> = ({
   return (
     <thead
       className={cn(
-        "sticky top-0 bg-slate-100 dark:bg-slate-800 z-10",
+        'sticky top-0 bg-slate-100 dark:bg-slate-800 z-10',
         className
       )}
     >
@@ -57,7 +57,7 @@ export const ResponsiveTableRow: React.FC<ResponsiveTableProps> = ({
   return (
     <tr
       className={cn(
-        "border-b hover:bg-slate-50 dark:hover:bg-slate-900 transition-colors",
+        'border-b hover:bg-slate-50 dark:hover:bg-slate-900 transition-colors',
         className
       )}
     >
@@ -79,15 +79,15 @@ export const ResponsiveTableCell: React.FC<ResponsiveTableCellProps> = ({
   isHeader = false,
   className,
 }) => {
-  const Element = isHeader ? "th" : "td";
+  const Element = isHeader ? 'th' : 'td';
 
   return (
     <Element
       className={cn(
-        "px-2 sm:px-3 md:px-4 py-2 sm:py-3 text-xs sm:text-sm",
+        'px-2 sm:px-3 md:px-4 py-2 sm:py-3 text-xs sm:text-sm',
         isHeader
-          ? "font-semibold text-left align-middle"
-          : "align-middle whitespace-nowrap",
+          ? 'font-semibold text-left align-middle'
+          : 'align-middle whitespace-nowrap',
         className
       )}
     >
@@ -113,7 +113,7 @@ export const MobileTableCard: React.FC<{
   return (
     <div
       className={cn(
-        "bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg p-3 sm:p-4 mb-3",
+        'bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg p-3 sm:p-4 mb-3',
         className
       )}
     >
@@ -128,7 +128,7 @@ export const MobileCardField: React.FC<MobileCardProps> = ({
   className,
 }) => {
   return (
-    <div className={cn("mb-2 last:mb-0", className)}>
+    <div className={cn('mb-2 last:mb-0', className)}>
       <p className="text-xs font-medium text-slate-600 dark:text-slate-400 uppercase tracking-wide">
         {label}
       </p>
